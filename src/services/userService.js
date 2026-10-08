@@ -4,6 +4,7 @@ import { SANDI_DEMO, SEMUA_PENGGUNA } from '@/data/users'
 import { validasiRegistrasi } from '@/auth/validasiRegistrasi'
 import { buatJwt } from '@/auth/jwt'
 import { MODE_DEMO } from '@/config/mode'
+import { supabase, apakahSupabaseAktif } from '@/lib/supabase'
 
 const PENGGUNA_BAWAAN = MODE_DEMO ? SEMUA_PENGGUNA : []
 
@@ -121,6 +122,25 @@ export async function registrasi(data = {}, opsi = {}) {
 
   simpanAkun([...bacaAkun(), { user, password: data.password }])
 
+  if (apakahSupabaseAktif()) {
+    try {
+      await supabase.auth.signUp({
+        email: user.email,
+        password: data.password,
+        options: {
+          data: {
+            nama: user.nama,
+            role: user.role,
+            prodi: user.prodi,
+            nim: user.nim,
+            angkatan: user.angkatan,
+          },
+        },
+      })
+    } catch {
+    }
+  }
+
   return { user: { ...user }, token: buatToken(user) }
 }
 
@@ -129,6 +149,13 @@ export async function perbaruiSandiPengguna({ email, passwordBaru }, opsi = {}) 
   const target = String(email ?? '').trim().toLowerCase()
   if (!target) throw new ServiceError('Email wajib diisi.', { kode: 'EMAIL_KOSONG' })
   if (!passwordBaru) throw new ServiceError('Kata sandi baru wajib diisi.', { kode: 'SANDI_KOSONG' })
+
+  if (apakahSupabaseAktif()) {
+    try {
+      await supabase.auth.updateUser({ password: passwordBaru })
+    } catch {
+    }
+  }
 
   const daftar = bacaAkun()
   const indeks = daftar.findIndex((item) => item.user.email.toLowerCase() === target)
