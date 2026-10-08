@@ -1,4 +1,5 @@
-import { Route, Routes } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { AppShell } from '@/components/layout/AppShell'
 import { ToastProvider } from '@/components/ui/Toast'
 import { AuthProvider } from '@/auth/AuthContext'
@@ -21,14 +22,44 @@ import RegisterStaf from '@/pages/RegisterStaf'
 import LupaPassword from '@/pages/LupaPassword'
 import ResetPassword from '@/pages/ResetPassword'
 import NotFound from '@/pages/NotFound'
+import { supabase, apakahSupabaseAktif } from '@/lib/supabase'
 import { MODE_DEMO } from '@/config/mode'
 
 const ROLE_PEMANTAU = ['dosen', 'admin']
+
+function DeteksiRedirectRecovery() {
+  const navigate = useNavigate()
+  const lokasi = useLocation()
+
+  useEffect(() => {
+    const hash = window.location.hash
+    if (hash && (hash.includes('type=recovery') || hash.includes('access_token'))) {
+      if (lokasi.pathname !== '/reset-password') {
+        navigate(`/reset-password${hash}`, { replace: true })
+        return
+      }
+    }
+
+    if (apakahSupabaseAktif()) {
+      const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          if (lokasi.pathname !== '/reset-password') {
+            navigate('/reset-password', { replace: true })
+          }
+        }
+      })
+      return () => authListener?.subscription?.unsubscribe()
+    }
+  }, [navigate, lokasi])
+
+  return null
+}
 
 export default function App({ sesiAwal }) {
   return (
     <AuthProvider sesiAwal={sesiAwal}>
       <ToastProvider>
+        <DeteksiRedirectRecovery />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/daftar" element={<Register />} />

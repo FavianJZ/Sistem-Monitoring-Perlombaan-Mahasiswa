@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { CalendarClock, CircleAlert, FolderCheck, LogIn, Trophy } from 'lucide-react'
 import { AuthLayout } from '@/components/layout/AuthLayout'
@@ -38,6 +38,13 @@ export default function Login() {
   const [galatField, setGalatField] = useState({})
 
   const tujuan = lokasi.state?.dari
+
+  useEffect(() => {
+    const hash = window.location.hash
+    if (hash && (hash.includes('type=recovery') || hash.includes('access_token'))) {
+      navigate(`/reset-password${hash}`, { replace: true })
+    }
+  }, [navigate])
 
   if (user) {
     return <Navigate to={tujuan ?? berandaRole(user.role)} replace />
