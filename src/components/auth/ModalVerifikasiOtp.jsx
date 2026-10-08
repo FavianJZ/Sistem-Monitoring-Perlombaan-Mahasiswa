@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Check, CircleAlert, Mail, RefreshCw, ShieldCheck } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
-import { kirimOtpAktivasi, verifikasiOtpAktivasi } from '@/services/otpService'
+import { kirimOtpEmail, verifikasiOtpEmail } from '@/lib/supabase'
 
 export function ModalVerifikasiOtp({ terbuka, onClose, email, onSukses }) {
   const [kodeOtp, setKodeOtp] = useState('')
@@ -17,12 +17,13 @@ export function ModalVerifikasiOtp({ terbuka, onClose, email, onSukses }) {
       setGalat(null)
       setHitungMundur(60)
 
-      try {
-        kirimOtpAktivasi(email)
-      } catch (e) {
-        setGalat(e.message)
-      }
-      setTimeout(() => inputRef.current?.focus(), 150)
+      kirimOtpEmail({ email })
+        .then(() => {
+          setTimeout(() => inputRef.current?.focus(), 150)
+        })
+        .catch((e) => {
+          setGalat(e.message)
+        })
     }
   }, [terbuka, email])
 
@@ -34,10 +35,10 @@ export function ModalVerifikasiOtp({ terbuka, onClose, email, onSukses }) {
     return () => clearInterval(timer)
   }, [terbuka, hitungMundur])
 
-  function handleKirimUlang() {
+  async function handleKirimUlang() {
     try {
       setGalat(null)
-      kirimOtpAktivasi(email)
+      await kirimOtpEmail({ email })
       setHitungMundur(60)
     } catch (e) {
       setGalat(e.message)
@@ -55,7 +56,7 @@ export function ModalVerifikasiOtp({ terbuka, onClose, email, onSukses }) {
 
     setMemproses(true)
     try {
-      verifikasiOtpAktivasi({ email, kode: kodeOtp.trim() })
+      await verifikasiOtpEmail({ email, kode: kodeOtp.trim() })
       await onSukses?.(kodeOtp.trim())
     } catch (e) {
       setGalat(e.message)

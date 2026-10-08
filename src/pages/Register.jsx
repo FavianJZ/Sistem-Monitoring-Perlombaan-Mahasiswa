@@ -194,6 +194,11 @@ export default function Register() {
       return
     }
 
+    if (!emailTerverifikasi) {
+      setModalOtpTerbuka(true)
+      return
+    }
+
     try {
       const pengguna = await daftar({ ...form, role })
       toast({
@@ -428,11 +433,17 @@ export default function Register() {
         onSukses={async () => {
           setEmailTerverifikasi(true)
           setModalOtpTerbuka(false)
-          toast({
-            variant: 'success',
-            title: 'Email Terverifikasi',
-            description: 'Kode OTP valid. Email kampus Anda telah diaktifkan.',
-          })
+          try {
+            const pengguna = await daftar({ ...form, role })
+            toast({
+              variant: 'success',
+              title: 'Akun berhasil dibuat',
+              description: `Email terverifikasi. Selamat datang, ${pengguna.nama}.`,
+            })
+            navigate(tujuan ?? berandaRole(pengguna.role), { replace: true })
+          } catch (error) {
+            setGalatServer(error.message)
+          }
         }}
       />
     </AuthLayout>
