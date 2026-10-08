@@ -17,6 +17,5 @@ yarn-error.log*
 .idea/
 .vscode/
 archive/
-supabase/
 scripts/
 *.zip
