@@ -5,13 +5,14 @@ import { renderApp } from '@/test/utils'
 import { KODE_ADMIN_DEMO, KODE_DOSEN_DEMO } from '@/services/userService'
 
 describe('Halaman RegisterStaf (Portal Dosen & Admin Prodi)', () => {
-  it('dapat diakses dari tautan portal staf di halaman login', async () => {
-    const user = userEvent.setup()
+  it('tidak menampilkan tautan pendaftaran staf di halaman login publik', () => {
     renderApp('/login')
+    expect(screen.queryByRole('link', { name: /Portal Pendaftaran Staf/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /Portal Staf/ })).not.toBeInTheDocument()
+  })
 
-    const linkStaf = screen.getByRole('link', { name: /Portal Pendaftaran Staf/ })
-    await user.click(linkStaf)
-
+  it('dapat diakses secara langsung melalui rute khusus /daftar-staf', async () => {
+    renderApp('/daftar-staf')
     expect(await screen.findByRole('heading', { level: 2, name: 'Daftar Akun Staf' })).toBeInTheDocument()
   })
 

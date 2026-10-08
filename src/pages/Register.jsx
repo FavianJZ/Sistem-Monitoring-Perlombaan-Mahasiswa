@@ -5,10 +5,7 @@ import {
   CircleAlert,
   Eye,
   EyeOff,
-  GraduationCap,
   Mail,
-  Presentation,
-  ShieldCheck,
   UserPlus,
 } from 'lucide-react'
 import { ModalVerifikasiOtp } from '@/components/auth/ModalVerifikasiOtp'
@@ -21,17 +18,12 @@ import { useAuth } from '@/auth/AuthContext'
 import { berandaRole } from '@/auth/sesi'
 import {
   DOMAIN_KAMPUS,
-  FIELD_PER_LANGKAH,
-  PERAN_REGISTRASI,
   kekuatanSandi,
   validasiRegistrasi,
 } from '@/auth/validasiRegistrasi'
-import { emailTerpakai, nimTerpakai, KODE_ADMIN_DEMO } from '@/services/userService'
-import { MODE_DEMO } from '@/config/mode'
+import { emailTerpakai, nimTerpakai } from '@/services/userService'
 import { PROGRAM_STUDI } from '@/config/domain'
 import { cn } from '@/lib/cn'
-
-const IKON_PERAN = { mahasiswa: GraduationCap, dosen: Presentation, admin: ShieldCheck }
 
 const TAHUN_INI = new Date().getFullYear()
 const PILIHAN_ANGKATAN = Array.from({ length: 8 }, (_, i) => String(TAHUN_INI - i))
@@ -42,7 +34,6 @@ const FORM_AWAL = {
   nim: '',
   angkatan: String(TAHUN_INI),
   prodi: '',
-  kodeAdmin: '',
   password: '',
   konfirmasi: '',
 }
@@ -94,66 +85,6 @@ function DaftarLangkah({ langkah }) {
         )
       })}
     </ol>
-  )
-}
-
-function PilihanPeran({ nilai, onChange }) {
-  return (
-    <fieldset>
-      <legend className="mb-1.5 block text-sm font-medium text-slate-700">Daftar sebagai</legend>
-      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
-        {PERAN_REGISTRASI.map((peran) => {
-          const Icon = IKON_PERAN[peran.value]
-          const dipilih = nilai === peran.value
-          return (
-            <label
-              key={peran.value}
-              className={cn(
-                'relative flex cursor-pointer gap-3 rounded-lg border bg-white p-3 transition-all sm:flex-col sm:gap-2',
-                'has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary-600',
-                dipilih
-                  ? 'border-primary-500 bg-primary-50/60 shadow-card ring-1 ring-primary-500'
-                  : 'border-slate-200 hover:border-primary-300 hover:bg-slate-50',
-              )}
-            >
-              <input
-                type="radio"
-                name="role"
-                value={peran.value}
-                checked={dipilih}
-                onChange={() => onChange(peran.value)}
-                className="sr-only"
-              />
-              <span
-                className={cn(
-                  'grid size-9 shrink-0 place-items-center rounded-md transition-colors',
-                  dipilih ? 'bg-primary-600 text-white' : 'bg-slate-100 text-slate-500',
-                )}
-              >
-                <Icon className="size-5" aria-hidden="true" />
-              </span>
-              <span className="min-w-0">
-                <span
-                  className={cn(
-                    'block text-sm font-semibold',
-                    dipilih ? 'text-primary-800' : 'text-slate-900',
-                  )}
-                >
-                  {peran.label}
-                </span>
-                <span className="block text-xs leading-snug text-slate-500">{peran.deskripsi}</span>
-              </span>
-              {dipilih && (
-                <Check
-                  className="absolute right-2.5 top-2.5 size-4 text-primary-600"
-                  aria-hidden="true"
-                />
-              )}
-            </label>
-          )
-        })}
-      </div>
-    </fieldset>
   )
 }
 
@@ -214,7 +145,7 @@ export default function Register() {
   const lokasi = useLocation()
   const formRef = useRef(null)
 
-  const [role, setRole] = useState('mahasiswa')
+  const role = 'mahasiswa'
   const [form, setForm] = useState(FORM_AWAL)
   const [setuju, setSetuju] = useState(false)
   const [lihatSandi, setLihatSandi] = useState(false)
@@ -254,11 +185,6 @@ export default function Register() {
     return () => setDisentuh((sebelum) => ({ ...sebelum, [field]: true }))
   }
 
-  function gantiPeran(peranBaru) {
-    setRole(peranBaru)
-    setGalatServer(null)
-  }
-
   async function handleSubmit(event) {
     event.preventDefault()
     setGalatServer(null)
@@ -281,17 +207,11 @@ export default function Register() {
     }
   }
 
-  const isian = FIELD_PER_LANGKAH.dataDiri.filter((field) => {
-    if (field === 'nim' || field === 'angkatan') return role === 'mahasiswa'
-    if (field === 'kodeAdmin') return role === 'admin'
-    return true
-  })
+  const isian = ['nama', 'email', 'nim', 'angkatan', 'prodi']
   const isianLengkap = isian.filter((field) => !galat[field]).length
   const skorSandi = kekuatanSandi(form.password).skor
-  const labelPeran = PERAN_REGISTRASI.find((item) => item.value === role)?.label
 
   const langkah = [
-    { judul: 'Pilih peran', keterangan: `Mendaftar sebagai ${labelPeran}`, selesai: true },
     {
       judul: 'Lengkapi data diri',
       keterangan: `${isianLengkap} dari ${isian.length} isian lengkap`,
@@ -323,7 +243,7 @@ export default function Register() {
   return (
     <AuthLayout
       judul="Mulai catat dan pantau perlombaan dari satu akun."
-      deskripsi="Pilih peran Anda, lengkapi data singkat, lalu langsung masuk ke dasbor yang sesuai."
+      deskripsi="Lengkapi data diri akun mahasiswa Anda, lalu langsung mulai mencatat keikutsertaan lomba."
       catatan="Prototipe antarmuka. Akun disimpan lokal di peramban ini saja."
       panel={<DaftarLangkah langkah={langkah} />}
       lebarForm="lg:w-[34rem]"
@@ -350,19 +270,7 @@ export default function Register() {
         </div>
       )}
 
-      <div className="mt-4 mb-2 rounded-lg border border-accent-200 bg-accent-50/70 p-3 text-xs text-accent-900 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="size-4 shrink-0 text-accent-600" />
-          <span>Pendaftaran Dosen Pembimbing & Admin Prodi dipisahkan untuk keamanan institusi.</span>
-        </div>
-        <Link to="/daftar-staf" className="font-bold underline text-accent-800 hover:text-accent-950 shrink-0">
-          Portal Staf →
-        </Link>
-      </div>
-
       <form ref={formRef} onSubmit={handleSubmit} noValidate className="mt-6 space-y-5">
-        <PilihanPeran nilai={role} onChange={gantiPeran} />
-
         <JudulBagian>Data diri</JudulBagian>
 
         <Input
@@ -392,7 +300,7 @@ export default function Register() {
             required
           />
 
-          {role === 'mahasiswa' && form.email.endsWith(DOMAIN_KAMPUS) && (
+          {form.email.endsWith(DOMAIN_KAMPUS) && (
             <div className="mt-2 flex items-center justify-between gap-2">
               {emailTerverifikasi ? (
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-success-700 bg-success-50 border border-success-200 px-2.5 py-1 rounded-md">
@@ -412,33 +320,31 @@ export default function Register() {
           )}
         </div>
 
-        {role === 'mahasiswa' && (
-          <div className="grid gap-5 sm:grid-cols-[1.4fr_1fr]">
-            <Input
-              label="NIM"
-              name="nim"
-              inputMode="numeric"
-              maxLength={10}
-              placeholder="10 digit angka"
-              value={form.nim}
-              onChange={ubah('nim')}
-              onBlur={sentuh('nim')}
-              error={tampilkan('nim')}
-              suffix={`${form.nim.length}/10`}
-              required
-            />
-            <Select
-              label="Angkatan"
-              name="angkatan"
-              value={form.angkatan}
-              onChange={ubah('angkatan')}
-              onBlur={sentuh('angkatan')}
-              error={tampilkan('angkatan')}
-              options={PILIHAN_ANGKATAN}
-              required
-            />
-          </div>
-        )}
+        <div className="grid gap-5 sm:grid-cols-[1.4fr_1fr]">
+          <Input
+            label="NIM"
+            name="nim"
+            inputMode="numeric"
+            maxLength={10}
+            placeholder="10 digit angka"
+            value={form.nim}
+            onChange={ubah('nim')}
+            onBlur={sentuh('nim')}
+            error={tampilkan('nim')}
+            suffix={`${form.nim.length}/10`}
+            required
+          />
+          <Select
+            label="Angkatan"
+            name="angkatan"
+            value={form.angkatan}
+            onChange={ubah('angkatan')}
+            onBlur={sentuh('angkatan')}
+            error={tampilkan('angkatan')}
+            options={PILIHAN_ANGKATAN}
+            required
+          />
+        </div>
 
         <Select
           label="Program studi"
@@ -451,25 +357,6 @@ export default function Register() {
           options={PROGRAM_STUDI}
           required
         />
-
-        {role === 'admin' && (
-          <Input
-            label="Kode verifikasi Admin Prodi"
-            name="kodeAdmin"
-            autoComplete="off"
-            placeholder="Masukkan kode dari pengelola sistem"
-            hint={
-              MODE_DEMO
-                ? `Kode diberikan oleh pengelola sistem. Untuk demo: ${KODE_ADMIN_DEMO}.`
-                : 'Kode diberikan oleh pengelola sistem.'
-            }
-            value={form.kodeAdmin}
-            onChange={ubah('kodeAdmin')}
-            onBlur={sentuh('kodeAdmin')}
-            error={tampilkan('kodeAdmin')}
-            required
-          />
-        )}
 
         <JudulBagian>Keamanan akun</JudulBagian>
 
