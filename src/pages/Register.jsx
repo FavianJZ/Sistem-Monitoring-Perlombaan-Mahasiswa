@@ -429,6 +429,14 @@ export default function Register() {
       <ModalVerifikasiOtp
         terbuka={modalOtpTerbuka}
         email={form.email}
+        password={form.password}
+        metadata={{
+          nama: form.nama,
+          role: 'mahasiswa',
+          prodi: form.prodi,
+          nim: form.nim,
+          angkatan: Number(form.angkatan),
+        }}
         onClose={() => setModalOtpTerbuka(false)}
         onSukses={async () => {
           setEmailTerverifikasi(true)

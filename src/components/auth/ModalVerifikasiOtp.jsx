@@ -4,7 +4,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { kirimOtpEmail, verifikasiOtpEmail } from '@/lib/supabase'
 
-export function ModalVerifikasiOtp({ terbuka, onClose, email, onSukses }) {
+export function ModalVerifikasiOtp({ terbuka, onClose, email, password, metadata, onSukses }) {
   const [kodeOtp, setKodeOtp] = useState('')
   const [memproses, setMemproses] = useState(false)
   const [galat, setGalat] = useState(null)
@@ -17,7 +17,7 @@ export function ModalVerifikasiOtp({ terbuka, onClose, email, onSukses }) {
       setGalat(null)
       setHitungMundur(60)
 
-      kirimOtpEmail({ email })
+      kirimOtpEmail({ email, password, metadata })
         .then(() => {
           setTimeout(() => inputRef.current?.focus(), 150)
         })
@@ -25,7 +25,7 @@ export function ModalVerifikasiOtp({ terbuka, onClose, email, onSukses }) {
           setGalat(e.message)
         })
     }
-  }, [terbuka, email])
+  }, [terbuka, email, password, metadata])
 
   useEffect(() => {
     if (!terbuka || hitungMundur <= 0) return
@@ -38,7 +38,7 @@ export function ModalVerifikasiOtp({ terbuka, onClose, email, onSukses }) {
   async function handleKirimUlang() {
     try {
       setGalat(null)
-      await kirimOtpEmail({ email })
+      await kirimOtpEmail({ email, password, metadata })
       setHitungMundur(60)
     } catch (e) {
       setGalat(e.message)
