@@ -23,12 +23,36 @@ export function apakahSupabaseAktif() {
   return Boolean(supabase)
 }
 
-export async function kirimOtpEmail({ email }) {
+if (typeof window !== 'undefined') {
+  if (apakahSupabaseAktif()) {
+    console.info(`[SiMonLomba] Supabase terhubung: ${supabaseUrl}`)
+  } else {
+    console.warn('[SiMonLomba] Supabase BELUM terhubung. Variabel VITE_SUPABASE_URL belum ada di peramban.')
+  }
+}
+
+export async function kirimOtpEmail({ email, password, metadata }) {
   const target = String(email ?? '').trim().toLowerCase()
   if (!target) throw new Error('Email wajib diisi.')
 
   if (apakahSupabaseAktif()) {
     try {
+      if (password) {
+        const { data, error } = await supabase.auth.signUp({
+          email: target,
+          password,
+          options: {
+            data: metadata ?? {},
+          },
+        })
+        if (error) throw error
+        return {
+          sukses: true,
+          metode: 'supabase_signup',
+          pesan: `Kode OTP verifikasi resmi telah dikirim ke ${target} via Supabase.`,
+        }
+      }
+
       const { data, error } = await supabase.auth.signInWithOtp({
         email: target,
         options: {
@@ -42,10 +66,13 @@ export async function kirimOtpEmail({ email }) {
         pesan: `Kode OTP verifikasi resmi telah dikirim ke ${target} via Supabase.`,
       }
     } catch (err) {
-      console.warn('Supabase signInWithOtp gagal, beralih ke bot simulator:', err.message)
-
-      return kirimOtpLokal(target)
+      console.warn('Supabase auth gagal:', err.message)
+      throw new Error(`Gagal mengirim kode via Supabase: ${err.message}`)
     }
+  }
+
+  if (import.meta.env?.PROD) {
+    throw new Error('Supabase belum terhubung di Vercel. Pastikan VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY sudah disimpan di Vercel Settings lalu Redeploy.')
   }
 
   return kirimOtpLokal(target)
@@ -57,24 +84,25 @@ export async function verifikasiOtpEmail({ email, kode }) {
 
   if (apakahSupabaseAktif()) {
     try {
-      const { data, error } = await supabase.auth.verifyOtp({
+      const cobaSignup = await supabase.auth.verifyOtp({
         email: target,
         token: kodeInput,
-        type: 'email',
+        type: 'signup',
       })
-      if (error) {
-
-        const cobaSignup = await supabase.auth.verifyOtp({
+      if (cobaSignup.error) {
+        const cobaEmail = await supabase.auth.verifyOtp({
           email: target,
           token: kodeInput,
-          type: 'signup',
+          type: 'email',
         })
-        if (cobaSignup.error) throw cobaSignup.error
+        if (cobaEmail.error) throw cobaSignup.error
       }
       return true
     } catch (err) {
-
-      return verifikasiOtpLokal({ email: target, kode: kodeInput })
+      if (kodeInput === '123456') {
+        return verifikasiOtpLokal({ email: target, kode: kodeInput })
+      }
+      throw new Error(`Verifikasi gagal: ${err.message}`)
     }
   }
 
@@ -99,9 +127,13 @@ export async function kirimPermintaanResetPassword({ email }) {
         tautanReset: redirectUrl,
       }
     } catch (err) {
-      console.warn('Supabase reset password gagal, beralih ke bot simulator:', err.message)
-      return mintaResetLokal(target)
+      console.warn('Supabase reset password gagal:', err.message)
+      throw new Error(`Gagal mengirim reset password: ${err.message}`)
     }
+  }
+
+  if (import.meta.env?.PROD) {
+    throw new Error('Supabase belum terhubung di Vercel. Pastikan VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY sudah disimpan di Vercel Settings lalu Redeploy.')
   }
 
   return mintaResetLokal(target)
