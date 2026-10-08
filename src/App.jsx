@@ -21,7 +21,6 @@ import RegisterStaf from '@/pages/RegisterStaf'
 import LupaPassword from '@/pages/LupaPassword'
 import ResetPassword from '@/pages/ResetPassword'
 import NotFound from '@/pages/NotFound'
-import { BotEmailSimulator } from '@/components/auth/BotEmailSimulator'
 import { MODE_DEMO } from '@/config/mode'
 
 const ROLE_PEMANTAU = ['dosen', 'admin']
@@ -30,7 +29,6 @@ export default function App({ sesiAwal }) {
   return (
     <AuthProvider sesiAwal={sesiAwal}>
       <ToastProvider>
-        <BotEmailSimulator />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/daftar" element={<Register />} />

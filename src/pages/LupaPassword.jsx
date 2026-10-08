@@ -1,19 +1,18 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, CheckCircle2, CircleAlert, KeyRound, Mail, Send } from 'lucide-react'
+import { ArrowLeft, CircleAlert, ExternalLink, Mail, Send } from 'lucide-react'
 import { AuthLayout } from '@/components/layout/AuthLayout'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { DOMAIN_KAMPUS } from '@/auth/validasiRegistrasi'
 import { emailTerpakai } from '@/services/userService'
-import { mintaResetPassword } from '@/services/otpService'
+import { kirimPermintaanResetPassword } from '@/lib/supabase'
 
 export default function LupaPassword() {
   const [email, setEmail] = useState('')
   const [memproses, setMemproses] = useState(false)
   const [galat, setGalat] = useState(null)
   const [terkirim, setTerkirim] = useState(false)
-  const [emailInfo, setEmailInfo] = useState(null)
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -37,8 +36,7 @@ export default function LupaPassword() {
 
     setMemproses(true)
     try {
-      const hasil = mintaResetPassword(alamat)
-      setEmailInfo(hasil)
+      await kirimPermintaanResetPassword({ email: alamat })
       setTerkirim(true)
     } catch (e) {
       setGalat(e.message)
@@ -51,7 +49,7 @@ export default function LupaPassword() {
     <AuthLayout
       judul="Pemulihan Akses Akun SiMonLomba"
       deskripsi="Lupa kata sandi? Masukkan email kampus Anda dan kami akan mengirimkan tautan untuk mengatur ulang kata sandi."
-      catatan="Layanan bot pemulihan kata sandi akun resmi SiMonLomba."
+      catatan="Layanan pemulihan kata sandi resmi SiMonLomba."
     >
       <div className="flex items-center gap-2 mb-2">
         <Link
@@ -81,24 +79,24 @@ export default function LupaPassword() {
       {terkirim ? (
         <div className="mt-6 rounded-xl border border-success-200 bg-success-50/60 p-5 text-center">
           <div className="mx-auto grid size-12 place-items-center rounded-full bg-success-600 text-white shadow-sm">
-            <CheckCircle2 className="size-6" />
+            <Mail className="size-6" />
           </div>
-          <h3 className="mt-3 text-base font-bold text-slate-800">Tautan Berhasil Dikirim</h3>
+          <h3 className="mt-3 text-base font-bold text-slate-800">Periksa Email Outlook Anda</h3>
           <p className="mt-1.5 text-xs text-slate-600 leading-relaxed max-w-sm mx-auto">
-            Bot SiMonLomba telah mengirimkan tautan reset kata sandi ke{' '}
-            <strong className="text-slate-900">{email}</strong>. Periksa kotak masuk email Anda (atau notifikasi bot simulator di layar).
+            Tautan reset kata sandi telah dikirim ke{' '}
+            <strong className="text-slate-900">{email}</strong>. Silakan buka pesan masuk di email Outlook kampus Anda (periksa juga folder Spam/Junk), lalu klik tautan di dalamnya untuk mengatur ulang kata sandi.
           </p>
 
           <div className="mt-5 flex flex-col sm:flex-row gap-2.5 justify-center">
-            {emailInfo?.tautanReset && (
-              <Link
-                to={emailInfo.tautanReset}
-                className="inline-flex items-center justify-center gap-1.5 rounded-md bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700 shadow-sm"
-              >
-                <KeyRound className="size-4" />
-                Buka Halaman Reset Sekarang
-              </Link>
-            )}
+            <a
+              href="https://outlook.office.com/mail/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700 shadow-sm"
+            >
+              <ExternalLink className="size-4" />
+              Buka Outlook Webmail
+            </a>
             <Button
               type="button"
               variant="outline"
@@ -107,7 +105,7 @@ export default function LupaPassword() {
                 setEmail('')
               }}
             >
-              Kirim Ulang ke Email Lain
+              Kirim Ulang Email
             </Button>
           </div>
         </div>
