@@ -4,7 +4,6 @@ import { Badge } from './Badge'
 import { akhirHari, awalHari, dalamRentang, formatRentangTanggal, jarakHari } from '@/lib/date'
 import { labelTahapan } from '@/config/domain'
 
-/** Menentukan posisi tahapan terhadap hari ini. */
 export function posisiTahapan(tahap, acuan = new Date()) {
   const akhir = akhirHari(tahap.tanggalSelesai ?? tahap.tanggalMulai)
   const batas = awalHari(acuan)
@@ -39,10 +38,6 @@ function judul(tahap) {
   return labelTahapan(tahap.jenis)
 }
 
-/**
- * Timeline vertikal tahapan perlombaan.
- * Menandai tahapan yang sudah lewat, yang sedang berjalan, dan yang akan datang.
- */
 export function TimelineVertical({ tahapan = [], acuan = new Date(), className }) {
   if (tahapan.length === 0) return null
 

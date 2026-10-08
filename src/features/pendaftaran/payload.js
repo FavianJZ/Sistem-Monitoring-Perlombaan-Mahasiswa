@@ -1,12 +1,6 @@
 import { posterDataUri } from '@/lib/posterPlaceholder'
 import { toISODate } from '@/lib/date'
 
-/**
- * Mengubah draft formulir menjadi payload yang diterima service.
- *
- * Bentuk keluarannya sengaja dibuat sama dengan badan permintaan REST yang
- * nanti dipakai backend, sehingga peralihan ke API tidak mengubah formulir.
- */
 export function draftKePayload(draft, pengguna) {
   const tim = draft.jenis === 'tim'
 
@@ -17,6 +11,7 @@ export function draftKePayload(draft, pengguna) {
       namaFile: meta.namaFile,
       mimeType: meta.mimeType,
       size: meta.size,
+      url: meta.url ?? null,
       diunggahPada: toISODate(new Date()),
     }))
 
@@ -36,11 +31,6 @@ export function draftKePayload(draft, pengguna) {
     peran: index === 0 ? 'ketua' : 'anggota',
   }))
 
-  /*
-   * Isi biner poster tidak disimpan di peramban, jadi pratinjau dibuat dari
-   * nama lomba. Setelah tersambung ke backend, posterUrl diisi alamat berkas
-   * hasil unggahan.
-   */
   const posterUrl = draft.berkas?.poster
     ? posterDataUri({
         nama: draft.nama,

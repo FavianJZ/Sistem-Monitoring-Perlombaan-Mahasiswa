@@ -9,10 +9,6 @@ import {
   simpanDraft,
 } from './draft'
 
-/**
- * Mengelola isi formulir pendaftaran beserta penyimpanan otomatisnya.
- * Draft disimpan per pengguna sehingga tidak tertukar antar akun.
- */
 export function useDraftLomba(pengguna) {
   const kunci = useMemo(() => kunciDraft(pengguna.id), [pengguna.id])
 
@@ -21,20 +17,12 @@ export function useDraftLomba(pengguna) {
     return tersimpan ? { ...draftAwal(pengguna), ...tersimpan } : draftAwal(pengguna)
   })
 
-  // Dihitung sekali saat mount, sebelum autosave menulis apa pun.
   const adaDraftTersimpanRef = useRef(draftTerisi(bacaDraft(kunci), pengguna))
   const [pulihkan, setPulihkan] = useState(adaDraftTersimpanRef.current)
 
-  /*
-   * Penyimpanan ditunda sebentar supaya mengetik tidak memicu serialisasi
-   * seluruh draft pada setiap huruf. Isian terakhir ditulis paksa saat
-   * komponen dilepas agar tidak ada perubahan yang hilang.
-   */
   const draftRef = useRef(draft)
   draftRef.current = draft
 
-  // Menandai draft yang sudah sengaja dibuang supaya tidak ditulis ulang
-  // oleh flush saat komponen dilepas, misalnya setelah pendaftaran tersimpan.
   const dibuangRef = useRef(false)
 
   useEffect(() => {
@@ -75,7 +63,7 @@ export function useDraftLomba(pengguna) {
   const hapusAnggota = useCallback((indeks) => {
     setDraft((sebelum) => ({
       ...sebelum,
-      // Ketua tim tidak bisa dihapus karena merupakan pemilik data.
+
       anggota: sebelum.anggota.filter((item, posisi) => posisi === 0 || posisi !== indeks),
     }))
   }, [])

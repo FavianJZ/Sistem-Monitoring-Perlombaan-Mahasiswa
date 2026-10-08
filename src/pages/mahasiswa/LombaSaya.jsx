@@ -37,7 +37,6 @@ export default function LombaSaya() {
   const kataKunci = useDebounce(cari)
   const adaFilter = Boolean(kataKunci || status)
 
-  // Kembali ke halaman pertama setiap kriteria berubah.
   useEffect(() => {
     setPage(1)
   }, [kataKunci, status, sort.key, sort.order])

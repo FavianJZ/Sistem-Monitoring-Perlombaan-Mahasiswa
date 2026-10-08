@@ -2,10 +2,6 @@ import { useId, useRef } from 'react'
 import { cn } from '@/lib/cn'
 import { Badge } from './Badge'
 
-/**
- * Tab terkendali dengan navigasi panah kiri/kanan, Home, dan End.
- * Panel dirender oleh pemanggil lewat komponen TabPanel.
- */
 export function Tabs({ tabs, aktif, onGanti, idPrefix, className }) {
   const autoId = useId()
   const prefix = idPrefix ?? autoId
@@ -58,8 +54,7 @@ export function Tabs({ tabs, aktif, onGanti, idPrefix, className }) {
             )}
           >
             {tab.label}
-            {/* Angka hanya penanda visual; isinya tetap terbaca di dalam panel,
-                dan menyembunyikannya menjaga nama tab tetap bersih untuk pembaca layar. */}
+
             {tab.badge !== undefined && tab.badge !== null && (
               <Badge aria-hidden="true" size="sm" tone={terpilih ? 'primary' : 'neutral'}>
                 {tab.badge}

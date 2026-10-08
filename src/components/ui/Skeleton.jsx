@@ -1,6 +1,5 @@
 import { cn } from '@/lib/cn'
 
-/** Placeholder saat data sedang dimuat. */
 export function Skeleton({ className, rounded = 'md', ...props }) {
   const radius = {
     md: 'rounded-md',
@@ -18,7 +17,6 @@ export function Skeleton({ className, rounded = 'md', ...props }) {
   )
 }
 
-/** Beberapa baris teks palsu, untuk blok deskripsi yang sedang dimuat. */
 export function SkeletonText({ lines = 3, className }) {
   return (
     <span className={cn('block space-y-2', className)}>
@@ -32,7 +30,6 @@ export function SkeletonText({ lines = 3, className }) {
   )
 }
 
-/** Kerangka tabel, dipakai DataTable saat memuat. */
 export function SkeletonTable({ rows = 5, columns = 4 }) {
   return (
     <div role="status" aria-label="Memuat data" className="space-y-3 p-5">

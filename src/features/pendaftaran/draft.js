@@ -1,22 +1,13 @@
 import { JENIS_TAHAPAN } from '@/config/domain'
 
-/**
- * Draft pendaftaran lomba yang disimpan di peramban.
- *
- * Formulirnya panjang, jadi isian disimpan otomatis agar progres tidak
- * hilang saat halaman tertutup atau dimuat ulang.
- */
-
 export function kunciDraft(idPengguna) {
   return `simonlomba.draft.${idPengguna}`
 }
 
-/** Baris anggota kosong, dipakai saat menambah anggota tim. */
 export function anggotaKosong() {
   return { nim: '', nama: '', prodi: '', peran: 'anggota' }
 }
 
-/** Tahapan bawaan sesuai urutan di PRD, semuanya boleh dibiarkan kosong. */
 export function tahapanAwal() {
   return JENIS_TAHAPAN.map((tahap) => ({
     jenis: tahap.jenis ?? tahap.value,
@@ -67,7 +58,7 @@ export function simpanDraft(kunci, draft) {
   try {
     window.localStorage.setItem(kunci, JSON.stringify(draft))
   } catch {
-    // Penyimpanan penuh atau diblokir: formulir tetap bisa dilanjutkan.
+
   }
 }
 
@@ -75,11 +66,10 @@ export function hapusDraft(kunci) {
   try {
     window.localStorage.removeItem(kunci)
   } catch {
-    // Diabaikan dengan sengaja.
+
   }
 }
 
-/** Benar bila pengguna sudah mengisi sesuatu di luar data bawaan. */
 export function draftTerisi(draft, pengguna) {
   if (!draft) return false
 

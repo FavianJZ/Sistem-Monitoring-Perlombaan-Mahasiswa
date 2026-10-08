@@ -53,7 +53,7 @@ describe('Pembatasan rute', () => {
     renderApp('/profil', { sesi: SESI_DOSEN() })
 
     expect(screen.getByRole('heading', { level: 1, name: 'Profil' })).toBeInTheDocument()
-    // Nama juga tampil di topbar, jadi dicari lewat judul kartu profil.
+
     expect(
       screen.getByRole('heading', { level: 2, name: 'Pandu Wicaksono, S.Kom., M.Kom.' }),
     ).toBeInTheDocument()

@@ -7,7 +7,6 @@ const TONES = {
   danger: 'bg-danger-500',
 }
 
-/** Bilah progres dengan nilai yang bisa dibaca pembaca layar. */
 export function ProgressBar({ nilai = 0, label, tone = 'primary', tinggi = 'h-2', className }) {
   const aman = Math.max(0, Math.min(100, Math.round(nilai)))
 

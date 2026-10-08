@@ -24,7 +24,7 @@ describe('Halaman Lomba Saya', () => {
     expect(screen.getByText('Menampilkan 1-5 dari 5 lomba')).toBeInTheDocument()
 
     const baris = within(tabel()).getAllByRole('row')
-    // Satu baris header ditambah lima baris data.
+
     expect(baris).toHaveLength(6)
     expect(within(tabel()).getByText('GEMASTIK XIX Divisi Pemrograman')).toBeInTheDocument()
     expect(
@@ -104,8 +104,6 @@ describe('Halaman Lomba Saya', () => {
     const user = userEvent.setup()
     await renderLombaSaya()
 
-    // Header di-query ulang setiap kali karena node lama menjadi stale
-    // begitu tabel dirender kembali dengan data terurut.
     const headerNama = () => within(tabel()).getByRole('columnheader', { name: /Perlombaan/ })
 
     expect(headerNama()).toHaveAttribute('aria-sort', 'none')
@@ -122,7 +120,7 @@ describe('Halaman Lomba Saya', () => {
   })
 
   it('menampilkan empty state awal bila mahasiswa belum punya lomba', async () => {
-    // mhs-3 punya tiga lomba; kosongkan semuanya lebih dulu.
+
     for (const id of ['lomba-02', 'lomba-12', 'lomba-17']) {
       await hapusLomba(id, { acuan: ACUAN_UJI })
     }

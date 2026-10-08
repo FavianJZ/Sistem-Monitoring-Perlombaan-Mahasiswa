@@ -8,7 +8,6 @@ const STATUS_ICONS = {
   selesai: CircleCheck,
 }
 
-/** Badge status keikutsertaan lomba. */
 export function StatusBadge({ status, size = 'md', withIcon = true }) {
   const meta = STATUS_LOMBA[status]
   if (!meta) return <Badge size={size}>-</Badge>
@@ -20,7 +19,6 @@ export function StatusBadge({ status, size = 'md', withIcon = true }) {
   )
 }
 
-/** Badge capaian akhir (Juara 1 sampai Peserta). */
 export function CapaianBadge({ capaian, size = 'md', withIcon = true }) {
   const meta = CAPAIAN_LOMBA[capaian]
   if (!meta) return null
@@ -34,10 +32,6 @@ export function CapaianBadge({ capaian, size = 'md', withIcon = true }) {
   )
 }
 
-/**
- * Indikator kelengkapan berkas. Ini bukan status persetujuan:
- * revisi PRD menghapus seluruh alur verifikasi, dosen hanya memantau.
- */
 export function KelengkapanBadge({ lengkap, size = 'md' }) {
   return lengkap ? (
     <Badge tone="success" size={size} icon={CircleCheck}>

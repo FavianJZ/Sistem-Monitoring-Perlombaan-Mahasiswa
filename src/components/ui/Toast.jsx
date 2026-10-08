@@ -46,7 +46,6 @@ function ToastItem({ toast, onDismiss }) {
   )
 }
 
-/** Menyediakan fungsi `toast()` ke seluruh aplikasi. */
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([])
   const counter = useRef(0)

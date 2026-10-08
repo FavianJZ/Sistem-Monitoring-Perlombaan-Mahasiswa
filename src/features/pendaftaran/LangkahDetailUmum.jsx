@@ -6,7 +6,6 @@ import { BIDANG_LOMBA, JENIS_KEIKUTSERTAAN, TINGKAT_LOMBA } from '@/config/domai
 
 const IKON_JENIS = { individu: User, tim: Users }
 
-/** Langkah 1: identitas umum perlombaan. */
 export function LangkahDetailUmum({ draft, ubah, error = {}, dosen = [], memuatDosen }) {
   return (
     <div className="space-y-6">

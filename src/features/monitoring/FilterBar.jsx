@@ -10,11 +10,6 @@ import {
   TINGKAT_LOMBA,
 } from '@/config/domain'
 
-/**
- * Mode filter waktu sesuai PRD, disatukan sebagai pilihan tunggal.
- * Tiga kebutuhan di PRD (bulan ini, tanggal tertentu, rentang kustom)
- * lebih jelas sebagai satu kelompok pilihan ketimbang tiga kontrol terpisah.
- */
 const MODE_WAKTU = [
   { value: 'semua', label: 'Semua waktu', icon: Layers },
   { value: 'bulan-ini', label: 'Bulan ini', icon: CalendarDays },

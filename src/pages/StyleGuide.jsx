@@ -33,10 +33,6 @@ const BARIS_CONTOH = [
   { id: '3', nama: 'Hackathon BI', bidang: 'Programming', status: 'selesai' },
 ]
 
-/*
- * Kelas warna ditulis literal, bukan dirangkai dari variabel, karena Tailwind
- * memindai kode sumber sebagai teks dan tidak mengenali nama kelas dinamis.
- */
 const COLOR_GROUPS = [
   {
     name: 'primary',
@@ -180,7 +176,7 @@ export default function StyleGuide() {
         </div>
       </Section>
 
-      <Section title="Tipografi" description="Plus Jakarta Sans dengan skala 12 sampai 36 piksel.">
+      <Section title="Tipografi" description="Open Sans dengan skala 12 sampai 36 piksel.">
         <div className="space-y-2">
           {TEXT_SCALE.map((item) => (
             <p key={item.className} className={`${item.className} font-semibold text-slate-900`}>

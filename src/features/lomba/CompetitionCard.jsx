@@ -8,12 +8,6 @@ import { formatTanggal, jarakHari } from '@/lib/date'
 import { labelTahapan } from '@/config/domain'
 import { namaPengguna } from '@/services/userService'
 
-/**
- * Kartu ringkas satu perlombaan untuk area pemantauan.
- *
- * Menampilkan yang dicari dosen menurut PRD: nama tim atau individu,
- * dosen pembimbing, poster, tautan sumber, dan progres tahapan.
- */
 export function CompetitionCard({ lomba, to, acuan = new Date(), className }) {
   const tautan = to ?? `/monitoring/lomba/${lomba.id}`
   const IkonJenis = lomba.jenis === 'tim' ? Users : User

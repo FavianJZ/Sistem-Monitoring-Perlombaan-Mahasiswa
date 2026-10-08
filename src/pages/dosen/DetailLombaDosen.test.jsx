@@ -76,7 +76,6 @@ describe('Detail lomba untuk dosen - isi tab', () => {
   it('menampilkan rincian dan poster pada tab Info', async () => {
     await bukaDetail()
 
-    // Dicari di dalam panel karena nama dosen yang sama juga tampil di topbar.
     const panel = within(screen.getByRole('tabpanel'))
     expect(panel.getByText('Dosen pembimbing')).toBeInTheDocument()
     expect(panel.getByText('Pandu Wicaksono, S.Kom., M.Kom.')).toBeInTheDocument()

@@ -18,7 +18,7 @@ describe('Halaman Data Mock', () => {
 
     expect(await screen.findByText('Seluruh lomba (20)')).toBeInTheDocument()
     expect(screen.getByText('Total lomba')).toBeInTheDocument()
-    // Nama lomba muncul di tabel dan bisa juga muncul di panel agenda.
+
     expect(screen.getAllByText('GEMASTIK XIX Divisi Pemrograman').length).toBeGreaterThan(0)
     expect(screen.getByText('Agenda enam tahapan terdekat')).toBeInTheDocument()
   })

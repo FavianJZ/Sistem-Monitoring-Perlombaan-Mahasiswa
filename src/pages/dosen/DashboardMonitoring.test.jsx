@@ -30,14 +30,12 @@ describe('Dashboard Monitoring - statistik', () => {
   it('menghitung dokumen belum lengkap dari seluruh data', async () => {
     await bukaDashboard()
 
-    // Empat lomba pada data tiruan sengaja dibuat tidak lengkap.
     expect(within(kartu('Dokumen belum lengkap')).getByText('4')).toBeInTheDocument()
   })
 
   it('menghitung prestasi dari lomba yang sudah selesai', async () => {
     await bukaDashboard()
 
-    // Delapan lomba selesai, satu di antaranya berstatus peserta sebanyak dua kali.
     expect(within(kartu('Prestasi tercatat')).getByText('6')).toBeInTheDocument()
     expect(screen.getByText('Dari 8 lomba yang sudah selesai')).toBeInTheDocument()
   })
@@ -129,7 +127,6 @@ describe('Dashboard Monitoring - penyaringan bimbingan', () => {
 
     await user.click(tombol)
 
-    // dsn-1 membimbing empat lomba pada data tiruan.
     await waitFor(() =>
       expect(screen.getByRole('link', { name: 'Lihat semua 4 lomba' })).toBeInTheDocument(),
     )

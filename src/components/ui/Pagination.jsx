@@ -1,10 +1,6 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from './Button'
 
-/**
- * Navigasi halaman sederhana beserta keterangan jumlah data.
- * Disembunyikan bila hanya ada satu halaman.
- */
 export function Pagination({ page, pageSize, total, totalPages, onPageChange, label = 'data' }) {
   if (!total) return null
 
@@ -13,8 +9,7 @@ export function Pagination({ page, pageSize, total, totalPages, onPageChange, la
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-5 py-3">
-      {/* Teks biasa, bukan live region, supaya tidak berebut dengan notifikasi.
-          Pengumuman hasil filter ditangani terpisah di level halaman. */}
+
       <p className="text-sm text-slate-600">
         Menampilkan {dari}-{sampai} dari {total} {label}
       </p>

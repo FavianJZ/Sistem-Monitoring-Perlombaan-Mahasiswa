@@ -31,7 +31,7 @@ describe('Detail lomba - tampilan umum', () => {
       screen.getByRole('heading', { level: 1, name: 'GEMASTIK XIX Divisi Pemrograman' }),
     ).toBeInTheDocument()
     expect(screen.getByText('Berlangsung')).toBeInTheDocument()
-    // Bidang dan tingkat tampil sebagai badge sekaligus di daftar rincian.
+
     expect(screen.getAllByText('Programming').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Nasional').length).toBeGreaterThan(0)
   })
@@ -129,7 +129,7 @@ describe('Detail lomba - navigasi tab', () => {
 
     const timeline = screen.getByRole('list', { name: 'Timeline tahapan' })
     expect(within(timeline).getAllByRole('listitem')).toHaveLength(6)
-    // Penyisihan berjalan dari 5 hari lalu sampai 3 hari ke depan.
+
     expect(within(timeline).getByText('Sedang berlangsung')).toBeInTheDocument()
     expect(within(timeline).getAllByText('Sudah lewat').length).toBeGreaterThan(0)
   })
@@ -153,7 +153,7 @@ describe('Detail lomba - navigasi tab', () => {
 })
 
 describe('Detail lomba - pelaporan hasil', () => {
-  /** Menggeser seluruh tahapan ke masa lalu agar pelaporan terbuka. */
+
   async function bukaPelaporan(idLomba = 'lomba-01') {
     await perbaruiLomba(
       idLomba,
@@ -245,7 +245,6 @@ describe('Detail lomba - pelaporan hasil', () => {
       expect(screen.getByRole('status')).toHaveTextContent('Hasil lomba tersimpan'),
     )
 
-    // Panel hasil berganti menjadi ringkasan capaian.
     expect(await screen.findByText('Capaian akhir')).toBeInTheDocument()
     expect(screen.getAllByText('Juara 2').length).toBeGreaterThan(0)
     expect(screen.getByText('https://contoh.id/juara')).toBeInTheDocument()

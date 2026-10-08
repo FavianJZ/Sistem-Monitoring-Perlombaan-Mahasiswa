@@ -1,7 +1,4 @@
-/**
- * Menggabungkan className secara kondisional.
- * Menerima string, undefined/null/false, atau objek { kelas: boolean }.
- */
+
 export function cn(...inputs) {
   const classes = []
 

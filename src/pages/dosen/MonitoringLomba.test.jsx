@@ -71,7 +71,6 @@ describe('Monitoring Lomba - filter waktu', () => {
       'true',
     )
 
-    // Sebelas lomba punya tahapan yang menyentuh September 2026.
     await waitFor(() =>
       expect(screen.getByText('Menampilkan 1-9 dari 11 lomba')).toBeInTheDocument(),
     )
@@ -169,7 +168,6 @@ describe('Monitoring Lomba - filter kategori', () => {
 
     await user.selectOptions(screen.getByLabelText('Jenis tahapan'), 'semifinal')
 
-    // Tujuh lomba pada data tiruan mencantumkan tahapan semifinal.
     await waitFor(() =>
       expect(screen.getByText('Menampilkan 1-7 dari 7 lomba')).toBeInTheDocument(),
     )
@@ -253,7 +251,6 @@ describe('Monitoring Lomba - tabel', () => {
   })
 })
 
-/* Input bertipe date lebih andal diisi lewat change ketimbang simulasi ketik. */
 function isiTanggal(input, nilai) {
   fireEvent.change(input, { target: { value: nilai } })
 }

@@ -26,19 +26,12 @@ function judulTahapan(tahap) {
   return labelTahapan(tahap.jenis)
 }
 
-/**
- * Halaman pemantauan satu perlombaan untuk dosen dan admin program studi.
- *
- * Sepenuhnya baca saja. Revisi PRD menghapus seluruh alur verifikasi dan
- * persetujuan, jadi tidak ada tombol menyetujui, menolak, maupun mengubah
- * data milik mahasiswa di halaman ini.
- */
 export default function DetailLombaDosen() {
   const { id } = useParams()
   const [tab, setTab] = useState('info')
 
   const ambil = useCallback(() => detailLomba(id), [id])
-  const { data: lomba, loading, error } = useAsync(ambil, [ambil])
+  const { data: lomba, loading, error, jalankan } = useAsync(ambil, [ambil])
 
   if (loading) {
     return (
@@ -168,7 +161,7 @@ export default function DetailLombaDosen() {
         </TabPanel>
 
         <TabPanel id="dokumen" aktif={tab} idPrefix="detail-monitoring" className="px-5 py-4">
-          <DaftarBerkas lomba={lomba} />
+          <DaftarBerkas lomba={lomba} onPerbarui={jalankan} />
         </TabPanel>
 
         <TabPanel id="timeline" aktif={tab} idPrefix="detail-monitoring" className="px-5 py-4">

@@ -10,6 +10,7 @@ export function Input({
   required,
   leadingIcon: LeadingIcon,
   suffix,
+  trailingAction,
   className,
   wrapperClassName,
   ...props
@@ -44,14 +45,22 @@ export function Input({
           aria-describedby={describedBy({ hint, error, hintId, errorId })}
           className={controlClasses({
             error,
-            className: cn(LeadingIcon && 'pl-9', suffix && 'pr-12', className),
+            className: cn(
+              LeadingIcon && 'pl-9',
+              (suffix || trailingAction) && 'pr-12',
+              className,
+            ),
           })}
           {...props}
         />
-        {suffix && (
+        {suffix && !trailingAction && (
           <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500">
             {suffix}
           </span>
+        )}
+
+        {trailingAction && (
+          <span className="absolute inset-y-0 right-1 flex items-center">{trailingAction}</span>
         )}
       </div>
     </FieldShell>

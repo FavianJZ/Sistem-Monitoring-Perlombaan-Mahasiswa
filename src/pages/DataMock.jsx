@@ -20,12 +20,6 @@ import { namaPengguna } from '@/services/userService'
 import { formatTanggal, jarakHari } from '@/lib/date'
 import { labelTahapan } from '@/config/domain'
 
-/**
- * Halaman pemeriksaan layer data.
- *
- * Tujuannya membuktikan bahwa seluruh akses data sudah lewat service dan
- * siap ditukar ke REST API. Bukan bagian dari alur pengguna akhir.
- */
 export default function DataMock() {
   const [nonce, setNonce] = useState(0)
   const { toast } = useToast()
@@ -38,8 +32,7 @@ export default function DataMock() {
         agendaLomba({}, { limit: 6 }),
         opsiFilter(),
       ]).then(([halaman, statistik, agenda, opsi]) => ({ halaman, statistik, agenda, opsi })),
-    // nonce dipakai untuk memaksa pengambilan ulang setelah reset.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [nonce],
   )
 

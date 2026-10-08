@@ -55,7 +55,6 @@ export default function ArsipPrestasi() {
 
   const pencarian = useDebounce(filter.search, 300)
 
-  /* Arsip selalu dibatasi pada lomba yang sudah selesai. */
   const filterService = useMemo(
     () => ({
       status: 'selesai',

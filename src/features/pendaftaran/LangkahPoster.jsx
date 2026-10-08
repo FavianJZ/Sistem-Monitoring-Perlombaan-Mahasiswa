@@ -8,11 +8,6 @@ const MODE = [
   { value: 'tautan', label: 'Cantumkan tautan', icon: Link2 },
 ]
 
-/**
- * Langkah 4: poster atau publikasi lomba.
- * PRD memperbolehkan salah satu, jadi pengguna memilih cara yang tersedia
- * dan boleh mengisi keduanya bila punya.
- */
 export function LangkahPoster({ draft, ubah, setBerkas, error = {} }) {
   const mode = draft.posterMode ?? 'unggah'
 
@@ -81,7 +76,6 @@ export function LangkahPoster({ draft, ubah, setBerkas, error = {} }) {
         />
       )}
 
-      {/* Isian mode lain tetap ditampilkan sebagai ringkasan agar tidak terkesan hilang. */}
       {mode === 'unggah' && draft.linkPublikasi && (
         <p className="text-xs text-slate-500">
           Tautan tersimpan: <span className="font-medium text-slate-700">{draft.linkPublikasi}</span>

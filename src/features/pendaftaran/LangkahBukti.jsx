@@ -2,10 +2,6 @@ import { Info } from 'lucide-react'
 import { FileUpload } from '@/components/ui/FileUpload'
 import { UNGGAH_EKSTENSI_LABEL } from '@/config/domain'
 
-/**
- * Langkah 3: bukti pendaftaran resmi dan bukti pembayaran.
- * Keduanya wajib menurut PRD dan menjadi dasar indikator kelengkapan dokumen.
- */
 export function LangkahBukti({ draft, setBerkas, error = {} }) {
   return (
     <div className="space-y-6">

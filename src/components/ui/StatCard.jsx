@@ -10,10 +10,6 @@ const TONES = {
   danger: { ikon: 'bg-danger-50 text-danger-600', angka: 'text-danger-700' },
 }
 
-/**
- * Kartu angka ringkas untuk dashboard.
- * Bila `to` diberikan, seluruh kartu menjadi tautan.
- */
 export function StatCard({
   label,
   nilai,

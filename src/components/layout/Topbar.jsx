@@ -11,12 +11,9 @@ function initials(name = '') {
     .toUpperCase()
 }
 
-/**
- * Bar atas: tombol menu untuk layar kecil dan identitas pengguna aktif.
- */
 export function Topbar({ user, onMenuClick, onLogout }) {
   return (
-    <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-6">
+    <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-slate-200 bg-white px-4 sm:px-6">
       <button
         type="button"
         onClick={onMenuClick}

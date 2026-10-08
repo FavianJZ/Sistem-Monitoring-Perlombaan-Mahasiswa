@@ -45,14 +45,12 @@ export default function PendaftaranLomba() {
 
   const langkah = useMemo(() => langkahUntuk(draft.jenis), [draft.jenis])
 
-  // Indeks langkah disimpan di draft agar posisi tetap setelah halaman dimuat ulang.
   const indeks = Math.min(draft.langkah ?? 0, langkah.length - 1)
   const langkahSekarang = langkah[indeks]
 
   const ambilDosen = useCallback(() => daftarDosen(), [])
   const { data: dosen, loading: memuatDosen } = useAsync(ambilDosen, [ambilDosen])
 
-  // Pesan kesalahan dibersihkan begitu pengguna berpindah langkah.
   useEffect(() => {
     setError({})
     setErrorBaris([])
@@ -95,7 +93,6 @@ export default function PendaftaranLomba() {
   function keTinjauan() {
     if (!periksaLangkah(langkahSekarang.id)) return
 
-    // Semua langkah diperiksa ulang supaya tidak ada yang terlewat lewat stepper.
     const bermasalah = langkah.find((item) => !validasiLangkah(item.id, draft).valid)
     if (bermasalah) {
       keLangkah(langkah.indexOf(bermasalah))

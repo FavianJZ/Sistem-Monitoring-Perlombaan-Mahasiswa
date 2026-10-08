@@ -1,9 +1,4 @@
-/**
- * Validasi tiap langkah wizard pendaftaran lomba.
- *
- * Fungsi-fungsi di sini murni agar bisa diuji tanpa merender formulir.
- * Aturan yang sama harus diberlakukan ulang di backend.
- */
+
 
 export const NIM_POLA = /^\d{10}$/
 
@@ -11,7 +6,6 @@ function kosong(nilai) {
   return !String(nilai ?? '').trim()
 }
 
-/** Langkah 1: identitas umum perlombaan. */
 export function validasiDetailUmum(draft = {}) {
   const error = {}
 
@@ -26,7 +20,6 @@ export function validasiDetailUmum(draft = {}) {
   return { valid: Object.keys(error).length === 0, error }
 }
 
-/** Langkah 2: susunan anggota tim, hanya berlaku untuk lomba kelompok. */
 export function validasiAnggota(draft = {}) {
   if (draft.jenis !== 'tim') return { valid: true, error: {}, anggota: [] }
 
@@ -50,7 +43,6 @@ export function validasiAnggota(draft = {}) {
     if (kosong(item.prodi)) anggota[index].prodi = 'Program studi wajib dipilih.'
   })
 
-  // NIM ganda ditandai pada baris kedua dan seterusnya.
   const terlihat = new Map()
   daftar.forEach((item, index) => {
     const nim = String(item.nim ?? '').trim()
@@ -72,10 +64,6 @@ export function validasiAnggota(draft = {}) {
   }
 }
 
-/**
- * Langkah 3: bukti pendaftaran dan bukti pembayaran.
- * Kedua bukti wajib menurut PRD.
- */
 export function validasiBukti(draft = {}) {
   const error = {}
   const berkas = draft.berkas ?? {}
@@ -88,10 +76,6 @@ export function validasiBukti(draft = {}) {
   return { valid: Object.keys(error).length === 0, error }
 }
 
-/**
- * Langkah 4: poster atau tautan publikasi.
- * PRD memperbolehkan salah satu, jadi cukup satu yang terisi.
- */
 export function validasiPoster(draft = {}) {
   const error = {}
   const adaPoster = Boolean(draft.berkas?.poster)
@@ -108,11 +92,6 @@ export function validasiPoster(draft = {}) {
   return { valid: Object.keys(error).length === 0, error }
 }
 
-/**
- * Langkah 5: timeline tahapan.
- * Tahapan boleh dikosongkan, tetapi tanggal yang diisi harus masuk akal
- * dan minimal satu tahapan terisi agar lomba bisa dipantau.
- */
 export function validasiTimeline(draft = {}) {
   const daftar = draft.tahapan ?? []
   const tahapan = daftar.map(() => ({}))
@@ -124,7 +103,7 @@ export function validasiTimeline(draft = {}) {
   }
 
   daftar.forEach((tahap, index) => {
-    // Tahapan tambahan perlu nama sendiri supaya terbaca di jadwal.
+
     if (tahap.jenis === 'kustom' && tahap.tanggalMulai && kosong(tahap.label)) {
       tahapan[index].label = 'Beri nama tahapan tambahan ini.'
     }
@@ -160,7 +139,6 @@ const VALIDATOR = {
   timeline: validasiTimeline,
 }
 
-/** Menjalankan validasi satu langkah berdasarkan id langkahnya. */
 export function validasiLangkah(idLangkah, draft) {
   const validator = VALIDATOR[idLangkah]
   if (!validator) return { valid: true, error: {} }

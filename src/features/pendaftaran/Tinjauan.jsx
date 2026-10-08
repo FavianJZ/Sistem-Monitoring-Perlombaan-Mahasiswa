@@ -30,10 +30,6 @@ function Baris({ label, nilai }) {
   )
 }
 
-/**
- * Ringkasan seluruh isian sebelum disimpan.
- * Setiap bagian bisa dibuka kembali lewat tombol Ubah.
- */
 export function Tinjauan({ draft, namaDosen, onUbah }) {
   const tim = draft.jenis === 'tim'
   const labelJenis = JENIS_KEIKUTSERTAAN.find((item) => item.value === draft.jenis)?.label

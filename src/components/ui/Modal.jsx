@@ -13,10 +13,6 @@ const SIZES = {
   xl: 'max-w-4xl',
 }
 
-/**
- * Dialog dengan focus trap, tutup lewat Escape, dan pengembalian fokus
- * ke elemen pemicu setelah ditutup.
- */
 export function Modal({
   open,
   onClose,

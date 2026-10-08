@@ -15,8 +15,7 @@ export default defineConfig({
     globals: true,
     setupFiles: './src/test/setup.js',
     include: ['src/**/*.{test,spec}.{js,jsx}'],
-    // Merender aplikasi penuh di jsdom dan menirukan pengetikan cukup lambat,
-    // jadi batas bawaan 5 detik dinaikkan agar tidak salah dianggap gagal.
+
     testTimeout: 20000,
   },
 })

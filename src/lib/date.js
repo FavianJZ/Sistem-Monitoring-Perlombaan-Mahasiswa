@@ -1,8 +1,4 @@
-/**
- * Utilitas tanggal berbahasa Indonesia.
- * Seluruh tanggal disimpan sebagai string ISO 'YYYY-MM-DD' agar aman
- * dipindahkan ke backend tanpa urusan zona waktu.
- */
+
 
 const LOCALE = 'id-ID'
 
@@ -23,7 +19,6 @@ export const NAMA_BULAN = [
 
 export const NAMA_HARI_SINGKAT = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']
 
-/** Mengubah nilai apa pun menjadi Date pada tengah hari lokal, atau null. */
 export function toDate(value) {
   if (!value) return null
   if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value
@@ -40,7 +35,6 @@ export function toDate(value) {
   return Number.isNaN(hasil.getTime()) ? null : hasil
 }
 
-/** Format 'YYYY-MM-DD' berdasarkan waktu lokal, bukan UTC. */
 export function toISODate(value) {
   const date = toDate(value)
   if (!date) return null
@@ -50,7 +44,6 @@ export function toISODate(value) {
   return `${date.getFullYear()}-${bulan}-${hari}`
 }
 
-/** '24 Sep 2026', atau '24 September 2026' bila panjang. */
 export function formatTanggal(value, { panjang = false } = {}) {
   const date = toDate(value)
   if (!date) return '-'
@@ -62,7 +55,6 @@ export function formatTanggal(value, { panjang = false } = {}) {
   })
 }
 
-/** 'Kam, 24 Sep 2026' untuk agenda harian. */
 export function formatTanggalDenganHari(value) {
   const date = toDate(value)
   if (!date) return '-'
@@ -75,17 +67,12 @@ export function formatTanggalDenganHari(value) {
   })
 }
 
-/** 'September 2026' untuk judul kalender. */
 export function formatBulanTahun(value) {
   const date = toDate(value)
   if (!date) return '-'
   return `${NAMA_BULAN[date.getMonth()]} ${date.getFullYear()}`
 }
 
-/**
- * Menggabungkan tanggal mulai dan selesai menjadi satu teks ringkas.
- * Tanggal yang sama ditulis sekali, bulan yang sama tidak diulang.
- */
 export function formatRentangTanggal(mulai, selesai) {
   const awal = toDate(mulai)
   const akhir = toDate(selesai)
@@ -152,7 +139,6 @@ export function tambahBulan(value, jumlah) {
   return new Date(date.getFullYear(), date.getMonth() + jumlah, 1)
 }
 
-/** Selisih hari kalender, positif bila `akhir` setelah `awal`. */
 export function selisihHari(awal, akhir) {
   const kiri = awalHari(awal)
   const kanan = awalHari(akhir)
@@ -162,7 +148,6 @@ export function selisihHari(awal, akhir) {
   return Math.round((kanan - kiri) / MS_PER_HARI)
 }
 
-/** Benar bila `value` berada di dalam rentang, batas ikut dihitung. */
 export function dalamRentang(value, dari, sampai) {
   const target = awalHari(value)
   if (!target) return false
@@ -175,7 +160,6 @@ export function dalamRentang(value, dari, sampai) {
   return true
 }
 
-/** Teks relatif singkat: 'hari ini', 'besok', '3 hari lagi', '5 hari lalu'. */
 export function jarakHari(value, acuan = new Date()) {
   const selisih = selisihHari(acuan, value)
   if (selisih === null) return '-'
@@ -185,10 +169,6 @@ export function jarakHari(value, acuan = new Date()) {
   return selisih > 0 ? `${selisih} hari lagi` : `${Math.abs(selisih)} hari lalu`
 }
 
-/**
- * Matriks 6x7 tanggal untuk tampilan kalender bulanan, dimulai hari Senin.
- * Menyertakan tanggal bulan sebelumnya dan sesudahnya sebagai pengisi.
- */
 export function petakKalender(value) {
   const awal = awalBulan(value)
   if (!awal) return []
