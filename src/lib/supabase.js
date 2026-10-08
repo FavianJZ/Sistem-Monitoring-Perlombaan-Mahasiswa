@@ -46,6 +46,9 @@ export async function kirimOtpEmail({ email, password, metadata }) {
           },
         })
         if (error) throw error
+        if (data?.user && (!data.user.identities || data.user.identities.length === 0)) {
+          throw new Error('Email ini sudah terdaftar di sistem. Silakan Masuk (Login) atau gunakan Lupa Kata Sandi jika lupa kata sandi Anda.')
+        }
         return {
           sukses: true,
           metode: 'supabase_signup',
