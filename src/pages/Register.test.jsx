@@ -129,7 +129,7 @@ describe('Halaman daftar', () => {
     expect(window.localStorage.getItem(KUNCI_AKUN)).toBeNull()
   })
 
-  it('mendaftarkan mahasiswa lalu langsung masuk ke dashboardnya', async () => {
+  it('mendaftarkan mahasiswa dengan verifikasi kode OTP lalu langsung masuk ke dashboardnya', async () => {
     const user = userEvent.setup()
     renderApp('/daftar')
 
@@ -138,6 +138,10 @@ describe('Halaman daftar', () => {
     expect(screen.getByLabelText(/^NIM/)).toHaveValue('2502099999')
 
     await user.click(screen.getByRole('button', { name: 'Buat akun' }))
+
+    expect(await screen.findByRole('heading', { level: 2, name: 'Verifikasi Email Akun Mahasiswa' })).toBeInTheDocument()
+    await user.type(screen.getByLabelText(/Kode Verifikasi OTP/), '123456')
+    await user.click(screen.getByRole('button', { name: 'Verifikasi & Masuk' }))
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Dashboard' })).toBeInTheDocument()
     expect(screen.getByText('Akun berhasil dibuat')).toBeInTheDocument()
