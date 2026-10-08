@@ -28,10 +28,6 @@ export function TautanLuar({ href, children }) {
   )
 }
 
-/**
- * Rincian umum perlombaan beserta poster.
- * Dipakai bersama halaman detail mahasiswa dan halaman pemantauan dosen.
- */
 export function InfoLomba({ lomba }) {
   const labelJenis = JENIS_KEIKUTSERTAAN.find((item) => item.value === lomba.jenis)?.label
 

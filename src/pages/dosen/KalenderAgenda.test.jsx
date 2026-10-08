@@ -8,7 +8,6 @@ beforeEach(() => {
   resetDataMock(ACUAN_UJI)
 })
 
-/* Bulan acuan ditetapkan lewat alamat agar hasilnya tidak bergantung tanggal nyata. */
 async function bukaKalender(alamat = '/monitoring/kalender?bulan=2026-09') {
   renderApp(alamat, { sesi: SESI_DOSEN() })
   return screen.findByRole('table', { name: /Kalender tahapan lomba bulan/ })
@@ -31,7 +30,7 @@ describe('Kalender Agenda', () => {
     await bukaKalender()
 
     const baris = within(kalender()).getAllByRole('row')
-    // Satu baris header ditambah enam baris tanggal.
+
     expect(baris).toHaveLength(7)
   })
 
@@ -132,7 +131,7 @@ describe('Kalender Agenda', () => {
   })
 
   it('memberi tahu bila tanggal terpilih tidak punya agenda', async () => {
-    // Tahapan terjauh pada data tiruan berakhir Desember 2026, jadi Maret 2027 kosong.
+
     await bukaKalender('/monitoring/kalender?bulan=2027-03&tanggal=2027-03-15')
 
     expect(await screen.findByText('Tidak ada agenda')).toBeInTheDocument()

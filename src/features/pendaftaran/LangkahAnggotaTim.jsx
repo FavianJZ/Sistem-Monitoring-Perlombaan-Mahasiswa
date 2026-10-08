@@ -5,11 +5,6 @@ import { Select } from '@/components/ui/Select'
 import { Badge } from '@/components/ui/Badge'
 import { PROGRAM_STUDI } from '@/config/domain'
 
-/**
- * Langkah 2: susunan anggota tim.
- * Ketua tim terisi otomatis dari akun yang sedang masuk dan tidak bisa diubah
- * karena dialah pemilik data pendaftaran ini.
- */
 export function LangkahAnggotaTim({
   draft,
   ubahAnggota,

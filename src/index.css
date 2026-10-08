@@ -1,30 +1,23 @@
 @import 'tailwindcss';
 
-/* ============================================================
-   Design Tokens - SiMonLomba
-   Arah visual: akademik bersih untuk area dashboard,
-   sentuhan bold (gelap + aksen hangat) untuk login & hero.
-   ============================================================ */
 @theme {
-  /* Tipografi. Skala bawaan Tailwind sudah 12/14/16/18/20/24/30/36 px. */
+
   --font-sans:
-    'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
-    Roboto, sans-serif;
+    'Open Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    sans-serif;
 
-  /* Primary - biru akademik */
-  --color-primary-50: #eef4ff;
-  --color-primary-100: #dbe6fe;
-  --color-primary-200: #bfd3fe;
-  --color-primary-300: #93b4fd;
-  --color-primary-400: #608ffa;
-  --color-primary-500: #3b6bf6;
-  --color-primary-600: #254feb;
-  --color-primary-700: #1d3dd8;
-  --color-primary-800: #1e34af;
-  --color-primary-900: #1e328a;
-  --color-primary-950: #172054;
+  --color-primary-50: #eaf6fc;
+  --color-primary-100: #cdeaf8;
+  --color-primary-200: #9fd6f1;
+  --color-primary-300: #66bde8;
+  --color-primary-400: #2ea6de;
+  --color-primary-500: #0096d6;
+  --color-primary-600: #0077b3;
+  --color-primary-700: #00669a;
+  --color-primary-800: #00557f;
+  --color-primary-900: #004466;
+  --color-primary-950: #002a40;
 
-  /* Success - status selesai / lengkap */
   --color-success-50: #ecfdf5;
   --color-success-100: #d1fae5;
   --color-success-200: #a7f3d0;
@@ -36,7 +29,6 @@
   --color-success-800: #065f46;
   --color-success-900: #064e3b;
 
-  /* Warning - dokumen belum lengkap */
   --color-warning-50: #fffbeb;
   --color-warning-100: #fef3c7;
   --color-warning-200: #fde68a;
@@ -48,7 +40,6 @@
   --color-warning-800: #92400e;
   --color-warning-900: #78350f;
 
-  /* Danger - validasi gagal */
   --color-danger-50: #fef2f2;
   --color-danger-100: #fee2e2;
   --color-danger-200: #fecaca;
@@ -60,24 +51,19 @@
   --color-danger-800: #991b1b;
   --color-danger-900: #7f1d1d;
 
-  /* Accent hangat - dipakai di hero, login, dan penanda tahapan berjalan.
-     Nada 700 ke atas dipakai bila warnanya menjadi warna teks, karena
-     nada 500 tidak memenuhi rasio kontras AA di atas latar terang. */
-  --color-accent-50: #fff7ed;
-  --color-accent-200: #fed7aa;
-  --color-accent-300: #fdba74;
-  --color-accent-400: #fb923c;
-  --color-accent-500: #f97316;
-  --color-accent-600: #ea580c;
-  --color-accent-700: #c2410c;
-  --color-accent-800: #9a3412;
+  --color-accent-50: #fff6e8;
+  --color-accent-200: #fdd9a0;
+  --color-accent-300: #fbc06a;
+  --color-accent-400: #f7a733;
+  --color-accent-500: #f39200;
+  --color-accent-600: #d97f00;
+  --color-accent-700: #a85f00;
+  --color-accent-800: #824a00;
 
-  /* Radius sesuai design system: md 8px, lg 12px */
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
 
-  /* Shadow 2 tingkat */
   --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06);
   --shadow-pop: 0 10px 15px -3px rgb(15 23 42 / 0.1), 0 4px 6px -4px rgb(15 23 42 / 0.1);
 }
@@ -91,12 +77,10 @@
     @apply bg-slate-50 font-sans text-slate-900 antialiased;
   }
 
-  /* Focus ring global yang selalu terlihat, syarat aksesibilitas. */
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-primary-600;
   }
 
-  /* Hilangkan spinner number input agar NIM tidak salah ketik. */
   input[type='number']::-webkit-outer-spin-button,
   input[type='number']::-webkit-inner-spin-button {
     -webkit-appearance: none;
@@ -105,7 +89,7 @@
 }
 
 @layer utilities {
-  /* Dipakai link "lewati ke konten" pada app shell. */
+
   .skip-link {
     @apply absolute left-4 z-50 -translate-y-20 rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-white transition-transform focus:translate-y-4;
   }

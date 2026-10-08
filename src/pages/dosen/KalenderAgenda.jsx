@@ -29,7 +29,6 @@ const FILTER_BAWAAN = {
   tingkat: '',
 }
 
-/** 'YYYY-MM' menjadi Date pada tanggal pertama bulan tersebut. */
 function bulanDariParam(nilai) {
   const cocok = /^(\d{4})-(\d{2})$/.exec(nilai ?? '')
   if (!cocok) return new Date()
@@ -191,8 +190,7 @@ export default function KalenderAgenda() {
                                 !sehari.bulanIni && 'opacity-45',
                               )}
                             >
-                              {/* Penanda hari ini memakai latar gelap supaya
-                                  angkanya tetap terbaca jelas. */}
+
                               <span
                                 className={cn(
                                   'inline-grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold',

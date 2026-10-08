@@ -4,7 +4,6 @@ import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
 import { JENIS_TAHAPAN, labelTahapan } from '@/config/domain'
 
-/** Tahapan bawaan boleh berupa rentang tanggal; tahapan tambahan selalu boleh. */
 function pakaiRentang(tahap) {
   if (tahap.jenis === 'kustom') return true
   return JENIS_TAHAPAN.find((item) => item.value === tahap.jenis)?.rentang ?? false
@@ -15,12 +14,6 @@ function judulTahapan(tahap, indeks) {
   return labelTahapan(tahap.jenis)
 }
 
-/**
- * Langkah 5: jadwal tiap tahapan perlombaan.
- *
- * Enam tahapan bawaan mengikuti urutan pada PRD dan boleh dikosongkan,
- * karena tidak semua lomba punya semifinal atau technical meeting.
- */
 export function LangkahTimeline({
   draft,
   ubahTahapan,

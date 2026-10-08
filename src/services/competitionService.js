@@ -12,14 +12,6 @@ import {
 } from './competitionQuery'
 import { akhirBulan, awalBulan, toISODate } from '@/lib/date'
 
-/**
- * Service data perlombaan.
- *
- * Komponen hanya boleh memakai fungsi di modul ini, tidak pernah
- * menyentuh data mock langsung. Saat backend siap, isi fungsi diganti
- * pemanggilan fetch tanpa mengubah pemanggilnya.
- */
-
 class ServiceError extends Error {
   constructor(message, { status = 400, kode } = {}) {
     super(message)
@@ -35,7 +27,6 @@ function sekarang(opsi) {
   return opsi?.acuan ?? new Date()
 }
 
-/** Daftar lomba dengan filter, pengurutan, dan paginasi. */
 export async function daftarLomba(filter = {}, opsi = {}) {
   await jeda(opsi.jeda)
   const acuan = sekarang(opsi)
@@ -50,7 +41,6 @@ export async function daftarLomba(filter = {}, opsi = {}) {
   }
 }
 
-/** Seluruh lomba yang cocok filter tanpa paginasi, untuk ekspor dan kalender. */
 export async function semuaLombaTersaring(filter = {}, opsi = {}) {
   await jeda(opsi.jeda)
   const acuan = sekarang(opsi)
@@ -108,10 +98,13 @@ function bersihkanBerkas(berkas = [], lombaId) {
       size: item.size ?? null,
       url: item.url ?? null,
       diunggahPada: item.diunggahPada ?? toISODate(new Date()),
+      statusVerifikasi: item.statusVerifikasi ?? 'menunggu',
+      catatanPenolakan: item.catatanPenolakan ?? null,
+      diverifikasiPada: item.diverifikasiPada ?? null,
+      diverifikasiOleh: item.diverifikasiOleh ?? null,
     }))
 }
 
-/** Menyimpan pendaftaran lomba baru. */
 export async function buatLomba(payload, opsi = {}) {
   await jeda(opsi.jeda)
 
@@ -167,10 +160,6 @@ export async function perbaruiLomba(id, patch = {}, opsi = {}) {
   return ringkasLomba(hasil, sekarang(opsi))
 }
 
-/**
- * Menyimpan laporan hasil akhir dan menandai lomba selesai.
- * Berkas sertifikat atau foto yang disertakan akan ditambahkan.
- */
 export async function laporkanHasil(id, laporan = {}, opsi = {}) {
   await jeda(opsi.jeda)
 
@@ -206,6 +195,81 @@ export async function laporkanHasil(id, laporan = {}, opsi = {}) {
   return ringkasLomba(hasil, acuan)
 }
 
+export async function verifikasiBerkas(
+  idLomba,
+  idBerkas,
+  { statusVerifikasi, catatanPenolakan = null, diverifikasiOleh = null } = {},
+  opsi = {},
+) {
+  await jeda(opsi.jeda)
+  const acuan = sekarang(opsi)
+
+  const hasil = store.perbarui(idLomba, (lomba) => {
+    const berkasBaru = (lomba.berkas ?? []).map((item) => {
+      if (item.id === idBerkas || item.tipe === idBerkas) {
+        return {
+          ...item,
+          statusVerifikasi,
+          catatanPenolakan:
+            statusVerifikasi === 'ditolak'
+              ? catatanPenolakan?.trim() || 'Dokumen belum memenuhi persyaratan.'
+              : null,
+          diverifikasiPada: toISODate(acuan),
+          diverifikasiOleh,
+        }
+      }
+      return item
+    })
+
+    return {
+      ...lomba,
+      berkas: berkasBaru,
+    }
+  })
+
+  if (!hasil) {
+    throw new ServiceError(`Lomba ${idLomba} tidak ditemukan.`, { status: 404, kode: 'LOMBA_TIDAK_ADA' })
+  }
+
+  return ringkasLomba(hasil, acuan)
+}
+
+export async function unggahUlangBerkas(idLomba, idBerkas, berkasBaru = {}, opsi = {}) {
+  await jeda(opsi.jeda)
+  const acuan = sekarang(opsi)
+
+  const hasil = store.perbarui(idLomba, (lomba) => {
+    const listBerkas = (lomba.berkas ?? []).map((item) => {
+      if (item.id === idBerkas || item.tipe === idBerkas) {
+        return {
+          ...item,
+          namaFile: berkasBaru.namaFile ?? item.namaFile,
+          mimeType: berkasBaru.mimeType ?? item.mimeType,
+          size: berkasBaru.size ?? item.size,
+          url: berkasBaru.url ?? item.url,
+          diunggahPada: toISODate(acuan),
+          statusVerifikasi: 'menunggu',
+          catatanPenolakan: null,
+          diverifikasiPada: null,
+          diverifikasiOleh: null,
+        }
+      }
+      return item
+    })
+
+    return {
+      ...lomba,
+      berkas: listBerkas,
+    }
+  })
+
+  if (!hasil) {
+    throw new ServiceError(`Lomba ${idLomba} tidak ditemukan.`, { status: 404, kode: 'LOMBA_TIDAK_ADA' })
+  }
+
+  return ringkasLomba(hasil, acuan)
+}
+
 export async function hapusLomba(id, opsi = {}) {
   await jeda(opsi.jeda)
 
@@ -217,7 +281,6 @@ export async function hapusLomba(id, opsi = {}) {
   return { id }
 }
 
-/** Statistik agregat untuk kartu dashboard. */
 export async function statistikLomba(filter = {}, opsi = {}) {
   await jeda(opsi.jeda)
   const acuan = sekarang(opsi)
@@ -226,7 +289,6 @@ export async function statistikLomba(filter = {}, opsi = {}) {
   return hitungStatistik(tersaring, acuan)
 }
 
-/** Agenda tahapan terdekat lintas lomba. */
 export async function agendaLomba(filter = {}, opsi = {}) {
   await jeda(opsi.jeda)
   const acuan = sekarang(opsi)
@@ -235,10 +297,6 @@ export async function agendaLomba(filter = {}, opsi = {}) {
   return agendaTerdekat(tersaring, { limit: opsi.limit ?? 6, acuan })
 }
 
-/**
- * Peta tahapan per tanggal untuk satu bulan kalender.
- * Kunci peta berupa string ISO 'YYYY-MM-DD'.
- */
 export async function kalenderLomba({ bulan, filter = {} } = {}, opsi = {}) {
   await jeda(opsi.jeda)
   const acuan = sekarang(opsi)
@@ -253,7 +311,6 @@ export async function kalenderLomba({ bulan, filter = {} } = {}, opsi = {}) {
   return Object.fromEntries(peta)
 }
 
-/** Nilai unik yang tersedia di data, untuk mengisi dropdown filter. */
 export async function opsiFilter(opsi = {}) {
   await jeda(opsi.jeda)
   const semua = store.bacaSemua()
@@ -274,7 +331,6 @@ export async function opsiFilter(opsi = {}) {
   }
 }
 
-/** Dipakai pengujian dan halaman debug untuk menyetel ulang data mock. */
 export function resetDataMock(acuan) {
   return store.resetStore(acuan)
 }

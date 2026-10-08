@@ -1,10 +1,4 @@
-/**
- * Pengguna mock. Kata sandi disamakan untuk semua akun demo dan
- * ditampilkan di halaman login supaya mudah dicoba saat presentasi.
- *
- * Ini hanya data tiruan di sisi klien. Autentikasi sungguhan harus
- * ditangani backend Spring Boot.
- */
+
 export const SANDI_DEMO = 'demo1234'
 
 export const MAHASISWA = [
@@ -107,9 +101,8 @@ export const ADMIN = [
 
 export const SEMUA_PENGGUNA = [...MAHASISWA, ...DOSEN, ...ADMIN]
 
-/** Akun yang ditawarkan sebagai jalan cepat di halaman login. */
 export const AKUN_DEMO = [
-  { id: 'mhs-1', label: 'Masuk sebagai Mahasiswa', keterangan: 'Aulia Rahmawati - 2502019876' },
-  { id: 'dsn-1', label: 'Masuk sebagai Dosen', keterangan: 'Pandu Wicaksono, S.Kom., M.Kom.' },
-  { id: 'adm-1', label: 'Masuk sebagai Admin Prodi', keterangan: 'Yulia Hartanti' },
+  { id: 'mhs-1', label: 'Masuk sebagai Mahasiswa', keterangan: 'Mahasiswa - 2502019876' },
+  { id: 'dsn-1', label: 'Masuk sebagai Dosen', keterangan: 'Dosen' },
+  { id: 'adm-1', label: 'Masuk sebagai Admin Prodi', keterangan: 'Admin Prodi' },
 ]

@@ -9,19 +9,6 @@ import {
   ringkasanLaporan,
 } from './eksporData'
 
-/**
- * Pembuatan berkas laporan di sisi peramban.
- *
- * Pustaka penulis XLSX dan PDF diimpor secara dinamis supaya tidak ikut
- * membebani muatan awal aplikasi; keduanya hanya dipakai saat tombol
- * ekspor benar-benar ditekan.
- *
- * Catatan: untuk volume data besar, pembuatan berkas sebaiknya dipindah ke
- * backend agar tidak membebani peramban. Struktur kolomnya sudah dipisah di
- * eksporData.js sehingga logika yang sama bisa dipakai di sisi server.
- */
-
-/** Memicu unduhan sebuah Blob. Dipisah agar mudah diganti saat pengujian. */
 export function simpanBlob(blob, namaFile) {
   const url = URL.createObjectURL(blob)
   const tautan = document.createElement('a')
@@ -44,8 +31,7 @@ export function unduhCsv(items, { nama } = {}) {
 
 export async function unduhXlsx(items, { nama } = {}) {
   const berkas = nama ?? namaBerkasLaporan('xlsx')
-  // Paket ini hanya mengekspor subpath eksplisit; versi browser yang
-  // menghasilkan Blob adalah yang dipakai di aplikasi web.
+
   const { default: writeXlsxFile } = await import('write-excel-file/browser')
 
   const skema = KOLOM_EKSPOR.map((kolom) => ({

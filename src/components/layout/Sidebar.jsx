@@ -1,7 +1,9 @@
 import { NavLink } from 'react-router-dom'
-import { GraduationCap, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { cn } from '@/lib/cn'
+import { BinusLogo, BinusMotif } from '@/components/brand/BinusLogo'
 import { DEV_NAV_ITEMS, ROLE_LABELS } from '@/config/navigation'
+import { MODE_DEMO } from '@/config/mode'
 
 function NavItem({ item, onNavigate }) {
   const Icon = item.icon
@@ -13,10 +15,10 @@ function NavItem({ item, onNavigate }) {
       onClick={onNavigate}
       className={({ isActive }) =>
         cn(
-          'flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors',
+          'flex items-center gap-3 rounded-r-md border-l-[3px] px-3 py-2.5 text-sm font-medium transition-colors',
           isActive
-            ? 'bg-primary-50 text-primary-700'
-            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
+            ? 'border-accent-500 bg-primary-50 text-primary-800'
+            : 'border-transparent text-slate-600 hover:bg-slate-100 hover:text-accent-700',
         )
       }
     >
@@ -33,14 +35,10 @@ function NavItem({ item, onNavigate }) {
   )
 }
 
-/**
- * Sidebar navigasi. Di layar besar tampil permanen, di layar kecil
- * berubah menjadi drawer yang dikendalikan prop `open`.
- */
 export function Sidebar({ items, role = 'mahasiswa', open = false, onClose }) {
   return (
     <>
-      {/* Lapisan gelap di belakang drawer, hanya di layar kecil. */}
+
       {open && (
         <button
           type="button"
@@ -58,12 +56,13 @@ export function Sidebar({ items, role = 'mahasiswa', open = false, onClose }) {
           open ? 'translate-x-0' : '-translate-x-full',
         )}
       >
-        <div className="flex items-center gap-3 border-b border-slate-200 px-5 py-4">
-          <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary-600 text-white">
-            <GraduationCap className="size-6" aria-hidden="true" />
-          </span>
-          <div className="min-w-0">
-            <p className="truncate font-extrabold tracking-tight text-slate-900">SiMonLomba</p>
+        <div className="relative flex h-20 items-center gap-3 border-b border-slate-200 pl-12 pr-4">
+          <BinusMotif className="absolute left-0 top-0 h-full w-auto" />
+          <BinusLogo className="h-10 shrink-0" />
+          <div className="min-w-0 border-l border-slate-200 pl-3">
+            <p className="truncate text-sm font-bold uppercase tracking-wide text-slate-700">
+              SiMonLomba
+            </p>
             <p className="truncate text-xs text-slate-500">Monitoring Perlombaan</p>
           </div>
           <button
@@ -88,21 +87,27 @@ export function Sidebar({ items, role = 'mahasiswa', open = false, onClose }) {
             ))}
           </ul>
 
-          <p className="px-3 pb-2 pt-6 text-xs font-semibold uppercase tracking-wider text-slate-400">
-            Pengembangan
-          </p>
-          <ul className="space-y-1">
-            {DEV_NAV_ITEMS.map((item) => (
-              <li key={item.to}>
-                <NavItem item={item} onNavigate={onClose} />
-              </li>
-            ))}
-          </ul>
+          {MODE_DEMO && (
+            <>
+              <p className="px-3 pb-2 pt-6 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                Pengembangan
+              </p>
+              <ul className="space-y-1">
+                {DEV_NAV_ITEMS.map((item) => (
+                  <li key={item.to}>
+                    <NavItem item={item} onNavigate={onClose} />
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </nav>
 
-        <p className="border-t border-slate-200 px-5 py-3 text-xs text-slate-400">
-          Versi prototipe - data masih mock
-        </p>
+        {MODE_DEMO && (
+          <p className="border-t border-slate-200 px-5 py-3 text-xs text-slate-400">
+            Versi prototipe - data masih mock
+          </p>
+        )}
       </aside>
     </>
   )

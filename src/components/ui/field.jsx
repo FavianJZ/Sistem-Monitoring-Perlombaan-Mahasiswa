@@ -1,10 +1,6 @@
 import { CircleAlert } from 'lucide-react'
 import { cn } from '@/lib/cn'
 
-/**
- * Kelas dasar untuk kontrol form (input, select, textarea) agar
- * tampilan dan state error-nya konsisten.
- */
 export function controlClasses({ error, className } = {}) {
   return cn(
     'block w-full rounded-md border bg-white px-3 py-2.5 text-sm text-slate-900 shadow-xs transition-colors',
@@ -17,10 +13,6 @@ export function controlClasses({ error, className } = {}) {
   )
 }
 
-/**
- * Pembungkus label, teks bantuan, dan pesan error.
- * Menjaga hubungan aria antara kontrol dan deskripsinya.
- */
 export function FieldShell({
   id,
   label,
@@ -66,7 +58,6 @@ export function FieldShell({
   )
 }
 
-/** Menyusun nilai aria-describedby dari id bantuan dan id error yang aktif. */
 export function describedBy({ hint, error, hintId, errorId }) {
   const ids = []
   if (error) ids.push(errorId)

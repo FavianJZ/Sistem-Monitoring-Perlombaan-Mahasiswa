@@ -2,14 +2,6 @@ import { formatTanggal } from '@/lib/date'
 import { CAPAIAN_LOMBA, JENIS_KEIKUTSERTAAN } from '@/config/domain'
 import { namaPengguna } from '@/services/userService'
 
-/**
- * Penyusunan data rekapitulasi untuk diekspor.
- *
- * Seluruh fungsi di sini murni dan tidak menyentuh berkas, sehingga isi
- * laporan bisa diuji tanpa benar-benar mengunduh apa pun.
- */
-
-/** Definisi kolom laporan. Urutannya sama untuk CSV, XLSX, maupun PDF. */
 export const KOLOM_EKSPOR = [
   { kunci: 'nama', judul: 'Nama Perlombaan', lebar: 38, ambil: (lomba) => lomba.nama },
   {
@@ -94,7 +86,6 @@ export const KOLOM_EKSPOR = [
   },
 ]
 
-/** Kolom yang cukup ringkas untuk dimuat pada PDF berorientasi lanskap. */
 export const KOLOM_PDF = [
   'nama',
   'bidang',
@@ -110,7 +101,6 @@ export function judulKolom(kolom = KOLOM_EKSPOR) {
   return kolom.map((item) => item.judul)
 }
 
-/** Mengubah daftar lomba menjadi baris berisi teks siap tulis. */
 export function barisEkspor(items = [], kolom = KOLOM_EKSPOR) {
   return items.map((lomba) =>
     kolom.map((item) => {
@@ -120,7 +110,6 @@ export function barisEkspor(items = [], kolom = KOLOM_EKSPOR) {
   )
 }
 
-/** Baris berbentuk objek, dipakai penulisan XLSX. */
 export function objekEkspor(items = [], kolom = KOLOM_EKSPOR) {
   return items.map((lomba) =>
     Object.fromEntries(kolom.map((item) => [item.kunci, String(item.ambil(lomba) ?? '-')])),
@@ -133,23 +122,18 @@ export function kolomTerpilih(kunciKolom) {
 
 function bungkusSel(nilai) {
   const teks = String(nilai ?? '')
-  // Tanda kutip dilipatgandakan, lalu sel dikutip bila mengandung karakter khusus.
+
   const perlu = /[",\n\r]/.test(teks)
   const aman = teks.replace(/"/g, '""')
   return perlu ? `"${aman}"` : aman
 }
 
-/**
- * Menyusun teks CSV. Diawali BOM UTF-8 agar huruf beraksen tetap benar
- * saat dibuka di Excel.
- */
 export function keCsv(items = [], kolom = KOLOM_EKSPOR) {
   const baris = [judulKolom(kolom), ...barisEkspor(items, kolom)]
   const isi = baris.map((sel) => sel.map(bungkusSel).join(',')).join('\r\n')
   return `\uFEFF${isi}`
 }
 
-/** Nama berkas laporan, memuat tanggal agar mudah dibedakan. */
 export function namaBerkasLaporan(ekstensi, acuan = new Date()) {
   const tahun = acuan.getFullYear()
   const bulan = String(acuan.getMonth() + 1).padStart(2, '0')
@@ -157,7 +141,6 @@ export function namaBerkasLaporan(ekstensi, acuan = new Date()) {
   return `rekap-prestasi-${tahun}${bulan}${hari}.${ekstensi}`
 }
 
-/** Ringkasan yang dicetak sebagai keterangan pada PDF. */
 export function ringkasanLaporan(items = []) {
   const berprestasi = items.filter(
     (lomba) => lomba.hasil?.capaian && lomba.hasil.capaian !== 'peserta',

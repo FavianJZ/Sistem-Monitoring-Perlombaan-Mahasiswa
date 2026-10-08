@@ -2,18 +2,8 @@ import '@testing-library/jest-dom/vitest'
 import { cleanup, configure } from '@testing-library/react'
 import { afterEach, beforeEach } from 'vitest'
 
-/*
- * Berkas pengujian dijalankan paralel dan merender aplikasi penuh di jsdom,
- * jadi batas tunggu bawaan 1 detik terlalu pendek saat mesin sedang sibuk.
- */
 configure({ asyncUtilTimeout: 5000 })
 
-/*
- * Node 25 mendaftarkan global `localStorage` eksperimental yang menimpa milik
- * jsdom dan tidak punya method `clear`. Supaya pengujian tidak bergantung pada
- * versi Node, storage diganti implementasi in-memory sederhana.
- * Di browser, localStorage asli tetap dipakai.
- */
 class MemoryStorage {
   #entries = new Map()
 
@@ -50,9 +40,22 @@ function installStorage(name) {
   Object.defineProperty(globalThis, name, descriptor)
 }
 
+function clearCookies() {
+  if (typeof document === 'undefined' || !document.cookie) return
+  const cookies = document.cookie.split(';')
+  for (const cookie of cookies) {
+    const eqPos = cookie.indexOf('=')
+    const name = eqPos > -1 ? cookie.substring(0, eqPos).trim() : cookie.trim()
+    if (name) {
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`
+    }
+  }
+}
+
 beforeEach(() => {
   installStorage('localStorage')
   installStorage('sessionStorage')
+  clearCookies()
 })
 
 afterEach(() => {

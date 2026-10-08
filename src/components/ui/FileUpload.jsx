@@ -9,14 +9,6 @@ import {
   UNGGAH_TIPE_DIIZINKAN,
 } from '@/config/domain'
 
-/**
- * Memeriksa satu berkas terhadap batas PRD: PDF/JPG/PNG maksimal 5MB.
- * Dipisah sebagai fungsi murni supaya bisa diuji langsung.
- *
- * Catatan keamanan: pemeriksaan ini hanya membantu pengguna. Ukuran dan
- * tipe berkas wajib divalidasi ulang di server karena keduanya mudah
- * dimanipulasi dari sisi klien.
- */
 export function validasiBerkas(
   file,
   { maksByte = UNGGAH_MAKS_BYTE, tipeDiizinkan = UNGGAH_TIPE_DIIZINKAN } = {},
@@ -40,18 +32,18 @@ export function validasiBerkas(
   return { valid: true, pesan: null }
 }
 
-/** Metadata berkas yang disimpan pada draft. Isi binernya tidak ikut disimpan. */
-export function metadataBerkas(file) {
+export function metadataBerkas(file, url = null) {
   return {
     namaFile: file.name,
     mimeType: file.type,
     size: file.size,
+    url: url ?? file.url ?? null,
   }
 }
 
 function buatPratinjau(file) {
-  // jsdom dan sebagian peramban lama tidak menyediakan createObjectURL.
-  if (!file.type.startsWith('image/')) return null
+
+  if (!file?.type?.startsWith('image/')) return null
   if (typeof URL?.createObjectURL !== 'function') return null
 
   try {
@@ -61,12 +53,6 @@ function buatPratinjau(file) {
   }
 }
 
-/**
- * Unggah satu berkas dengan dropzone, pratinjau, dan validasi tipe serta ukuran.
- *
- * Pada prototipe ini hanya metadata berkas yang disimpan. Saat tersambung ke
- * backend, objek File dikirim sebagai multipart/form-data.
- */
 export function FileUpload({
   label,
   hint,
@@ -88,7 +74,6 @@ export function FileUpload({
   const [galatLokal, setGalatLokal] = useState(null)
   const [pratinjau, setPratinjau] = useState(null)
 
-  // Bebaskan URL pratinjau agar tidak menahan memori.
   useEffect(() => {
     return () => {
       if (pratinjau && typeof URL?.revokeObjectURL === 'function') {
@@ -108,14 +93,28 @@ export function FileUpload({
     }
 
     setGalatLokal(null)
-    setPratinjau(buatPratinjau(file))
-    onPilih(metadataBerkas(file), file)
+    const localUrl = buatPratinjau(file)
+    setPratinjau(localUrl)
+
+    if (typeof FileReader !== 'undefined' && file.size <= 3 * 1024 * 1024) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const dataUrl = e.target?.result
+        onPilih(metadataBerkas(file, dataUrl), file)
+      }
+      reader.onerror = () => {
+        onPilih(metadataBerkas(file, localUrl), file)
+      }
+      reader.readAsDataURL(file)
+    } else {
+      onPilih(metadataBerkas(file, localUrl), file)
+    }
   }
 
   function handleInput(event) {
     const file = event.target.files?.[0]
     if (file) terima(file)
-    // Direset agar memilih berkas yang sama dua kali tetap memicu perubahan.
+
     event.target.value = ''
   }
 

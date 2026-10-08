@@ -1,16 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
-/**
- * Menyimpan state filter di query string alamat halaman.
- *
- * Dengan begitu hasil filter bisa dibagikan lewat tautan dan tetap sama
- * setelah halaman dimuat ulang atau dibuka di tab lain.
- *
- * Kunci pendek dipakai di URL (`q` untuk pencarian, `tahap` untuk jenis
- * tahapan) supaya alamatnya tetap mudah dibaca.
- */
-
 const PETA_KUNCI = {
   search: 'q',
   jenisTahapan: 'tahap',
@@ -42,7 +32,7 @@ export function useFilterUrl(bawaan = {}) {
     }
 
     return hasil
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [params])
 
   const ubah = useCallback(
@@ -60,7 +50,6 @@ export function useFilterUrl(bawaan = {}) {
             else berikutnya.set(kunci, nilai === true ? '1' : String(nilai))
           }
 
-          // Perubahan kriteria selalu kembali ke halaman pertama.
           if (!('page' in patch)) berikutnya.delete('page')
 
           return berikutnya
@@ -68,7 +57,7 @@ export function useFilterUrl(bawaan = {}) {
         { replace: true },
       )
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [setParams],
   )
 
@@ -76,10 +65,9 @@ export function useFilterUrl(bawaan = {}) {
     setParams(new URLSearchParams(), { replace: true })
   }, [setParams])
 
-  /** Benar bila ada kriteria yang berbeda dari nilai bawaan. */
   const adaFilter = useMemo(
     () => Object.keys(bawaan).some((nama) => params.has(keKunciUrl(nama)) && nama !== 'page'),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [params],
   )
 

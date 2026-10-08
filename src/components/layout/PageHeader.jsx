@@ -1,9 +1,5 @@
 import { cn } from '@/lib/cn'
 
-/**
- * Judul halaman yang konsisten di seluruh aplikasi.
- * `actions` diisi tombol aksi utama halaman tersebut.
- */
 export function PageHeader({ title, description, actions, className }) {
   return (
     <div
@@ -13,7 +9,7 @@ export function PageHeader({ title, description, actions, className }) {
       )}
     >
       <div className="min-w-0">
-        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
+        <h1 className="text-2xl font-bold text-slate-800 sm:text-3xl">
           {title}
         </h1>
         {description && <p className="mt-1.5 max-w-2xl text-sm text-slate-600">{description}</p>}

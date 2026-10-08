@@ -6,7 +6,7 @@ const TONES = {
   success: 'bg-success-50 text-success-700 ring-success-200',
   warning: 'bg-warning-50 text-warning-800 ring-warning-200',
   danger: 'bg-danger-50 text-danger-700 ring-danger-200',
-  // Teks memakai nada 800 agar rasio kontras di atas latar terang lolos AA.
+
   accent: 'bg-accent-50 text-accent-800 ring-accent-200',
 }
 
@@ -15,7 +15,6 @@ const SIZES = {
   md: 'px-2.5 py-1 text-xs',
 }
 
-/** Label ringkas untuk status, kategori, atau tingkat lomba. */
 export function Badge({
   tone = 'neutral',
   size = 'md',

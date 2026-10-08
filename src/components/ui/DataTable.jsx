@@ -3,15 +3,6 @@ import { cn } from '@/lib/cn'
 import { SkeletonTable } from './Skeleton'
 import { Pagination } from './Pagination'
 
-/**
- * Tabel data dengan pengurutan lewat header, paginasi, dan state kosong.
- *
- * Pengurutan bersifat terkendali: komponen hanya melaporkan kolom yang
- * diklik, penyaringan dan pengurutan datanya dilakukan pemanggil lewat
- * service. Dengan begitu perilakunya tetap sama saat data pindah ke API.
- *
- * @param {Array} columns [{ key, header, sortable, render, align, className }]
- */
 export function DataTable({
   columns,
   rows,
@@ -131,10 +122,6 @@ export function DataTable({
   )
 }
 
-/**
- * Menghitung state pengurutan berikutnya saat sebuah kolom diklik.
- * Kolom yang sama berganti arah, kolom lain dimulai dari naik.
- */
 export function urutanBerikutnya(sort, key) {
   if (sort?.key !== key) return { key, order: 'asc' }
   return { key, order: sort.order === 'asc' ? 'desc' : 'asc' }

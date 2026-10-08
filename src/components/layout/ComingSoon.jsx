@@ -1,9 +1,5 @@
 import { Hammer } from 'lucide-react'
 
-/**
- * Penanda sementara untuk halaman yang dibangun pada task berikutnya.
- * Dihapus begitu halaman aslinya selesai.
- */
 export function ComingSoon({ task, children }) {
   return (
     <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center shadow-card">

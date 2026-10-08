@@ -7,7 +7,6 @@ describe('AppShell', () => {
   it('menampilkan menu mahasiswa pada halaman awal', () => {
     renderApp('/', { sesi: SESI_MAHASISWA() })
 
-    // Dicari di dalam sidebar karena label yang sama juga dipakai tombol halaman.
     const nav = screen.getByRole('navigation', { name: 'Navigasi utama' })
     expect(within(nav).getByRole('link', { name: 'Lomba Saya' })).toBeInTheDocument()
     expect(within(nav).getByRole('link', { name: 'Daftarkan Lomba' })).toBeInTheDocument()

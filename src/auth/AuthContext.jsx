@@ -1,18 +1,25 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
-import { login as loginService } from '@/services/userService'
+import {
+  login as loginService,
+  penggunaSinkron,
+  registrasi as registrasiService,
+} from '@/services/userService'
 import { SANDI_DEMO, penggunaSinkronDemo } from './akunDemo'
 import { bacaSesi, berandaRole, hapusSesi, simpanSesi } from './sesi'
 
 const AuthContext = createContext(null)
 
-/**
- * Menyimpan identitas pengguna yang sedang masuk.
- *
- * Seluruh pembatasan di sini murni tampilan. Backend tetap wajib
- * menegakkan autentikasi dan otorisasi per role pada setiap endpoint.
- */
+function sesiTersimpanYangValid() {
+  const sesi = bacaSesi()
+  if (!sesi) return null
+  if (penggunaSinkron(sesi.user.id)) return sesi
+
+  hapusSesi()
+  return null
+}
+
 export function AuthProvider({ children, sesiAwal }) {
-  const [sesi, setSesi] = useState(() => sesiAwal ?? bacaSesi())
+  const [sesi, setSesi] = useState(() => sesiAwal ?? sesiTersimpanYangValid())
   const [memproses, setMemproses] = useState(false)
 
   const masuk = useCallback(async ({ email, password }) => {
@@ -29,7 +36,20 @@ export function AuthProvider({ children, sesiAwal }) {
     }
   }, [])
 
-  /** Jalan cepat untuk demo: masuk lewat akun contoh tanpa mengetik. */
+  const daftar = useCallback(async (data) => {
+    setMemproses(true)
+    try {
+      const hasil = await registrasiService(data)
+      const sesiBaru = { user: hasil.user, token: hasil.token }
+
+      simpanSesi(sesiBaru)
+      setSesi(sesiBaru)
+      return sesiBaru.user
+    } finally {
+      setMemproses(false)
+    }
+  }, [])
+
   const masukCepat = useCallback(
     async (idPengguna) => {
       const pengguna = penggunaSinkronDemo(idPengguna)
@@ -55,9 +75,10 @@ export function AuthProvider({ children, sesiAwal }) {
       memproses,
       masuk,
       masukCepat,
+      daftar,
       keluar,
     }),
-    [sesi, memproses, masuk, masukCepat, keluar],
+    [sesi, memproses, masuk, masukCepat, daftar, keluar],
   )
 
   return <AuthContext.Provider value={nilai}>{children}</AuthContext.Provider>

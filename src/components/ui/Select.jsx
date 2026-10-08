@@ -3,10 +3,6 @@ import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { controlClasses, describedBy, FieldShell } from './field'
 
-/**
- * Select dengan opsi dari prop `options` ([{ value, label }] atau string)
- * maupun dari children bila butuh optgroup.
- */
 export function Select({
   id,
   label,

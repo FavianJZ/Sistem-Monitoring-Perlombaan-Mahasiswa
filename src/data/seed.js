@@ -2,14 +2,6 @@ import { toISODate, tambahHari } from '@/lib/date'
 import { posterDataUri } from '@/lib/posterPlaceholder'
 import { MAHASISWA } from './users'
 
-/**
- * Data mock perlombaan.
- *
- * Tanggal disusun relatif terhadap `acuan` (bawaannya hari ini) supaya
- * demo selalu punya lomba "bulan ini" kapan pun dibuka. Pengujian
- * memanggil `buatSeed` dengan acuan tetap agar hasilnya deterministik.
- */
-
 const REKAN_TIM = [
   { nim: '2502021111', nama: 'Gilang Ramadhan', prodi: 'Teknik Informatika' },
   { nim: '2502022222', nama: 'Hana Puspita', prodi: 'Sistem Informasi' },
@@ -33,10 +25,6 @@ const BERKAS_CONTOH = {
   foto: { namaFile: 'dokumentasi-penghargaan.jpg', mimeType: 'image/jpeg', size: 1_904_222 },
 }
 
-/*
- * Offset tahapan dihitung dalam hari dari tanggal acuan.
- * Negatif berarti sudah lewat, positif berarti akan datang.
- */
 const SPEC_LOMBA = [
   {
     nama: 'GEMASTIK XIX Divisi Pemrograman',
@@ -222,7 +210,7 @@ const SPEC_LOMBA = [
     dosenPembimbingId: 'dsn-1',
     linkPublikasi: 'https://developers.google.com/community/gdsc-solution-challenge',
     status: 'berlangsung',
-    // Bukti pembayaran belum diunggah: dipakai menguji indikator kelengkapan.
+
     berkas: ['bukti_daftar', 'poster'],
     tahapan: [
       { jenis: 'pendaftaran', mulai: -70, selesai: -40 },
@@ -244,7 +232,7 @@ const SPEC_LOMBA = [
     dosenPembimbingId: 'dsn-4',
     linkPublikasi: 'https://kemdikbud.go.id/ffpm',
     status: 'terdaftar',
-    // Bukti pembayaran belum diunggah.
+
     berkas: ['bukti_daftar', 'poster'],
     tahapan: [
       { jenis: 'pendaftaran', mulai: 5, selesai: 35 },
@@ -324,7 +312,7 @@ const SPEC_LOMBA = [
     dosenPembimbingId: 'dsn-1',
     linkPublikasi: 'https://cyberjawara.id',
     status: 'terdaftar',
-    // Bukti pendaftaran resmi belum diunggah.
+
     berkas: ['bukti_bayar'],
     tahapan: [
       { jenis: 'pendaftaran', mulai: -3, selesai: 20 },
@@ -444,7 +432,7 @@ const SPEC_LOMBA = [
     dosenPembimbingId: 'dsn-2',
     linkPublikasi: 'https://unpad.ac.id/nmcc',
     status: 'terdaftar',
-    // Kedua bukti wajib belum diunggah.
+
     berkas: [],
     tahapan: [
       { jenis: 'pendaftaran', mulai: 1, selesai: 18 },
@@ -563,7 +551,6 @@ function buatSatuLomba(spec, index, acuan) {
   }
 }
 
-/** Menghasilkan salinan data awal yang baru setiap kali dipanggil. */
 export function buatSeed(acuan = new Date()) {
   return SPEC_LOMBA.map((spec, index) => buatSatuLomba(spec, index, acuan))
 }

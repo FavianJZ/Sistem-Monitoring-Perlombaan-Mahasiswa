@@ -1,7 +1,4 @@
-/**
- * Definisi langkah wizard pendaftaran lomba.
- * Langkah anggota tim dilewati bila keikutsertaan bersifat perorangan.
- */
+
 export const SEMUA_LANGKAH = [
   {
     id: 'detail',

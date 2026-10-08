@@ -4,10 +4,6 @@ import { DaftarBerkas } from './DaftarBerkas'
 import { BarisInfo, TautanLuar } from './InfoLomba'
 import { formatTanggal } from '@/lib/date'
 
-/**
- * Ringkasan capaian akhir beserta bukti prestasinya.
- * Tampilannya sama untuk mahasiswa maupun dosen karena keduanya hanya membaca.
- */
 export function RingkasanHasil({ lomba }) {
   const buktiPrestasi = (lomba.berkas ?? []).filter((berkas) =>
     ['sertifikat', 'foto'].includes(berkas.tipe),

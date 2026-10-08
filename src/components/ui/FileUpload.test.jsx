@@ -7,7 +7,7 @@ import { UNGGAH_MAKS_BYTE } from '@/config/domain'
 
 function buatFile({ nama = 'bukti.pdf', tipe = 'application/pdf', ukuran = 1024 } = {}) {
   const file = new File(['x'], nama, { type: tipe })
-  // Ukuran File tidak bisa diatur lewat konstruktor, jadi ditimpa langsung.
+
   Object.defineProperty(file, 'size', { value: ukuran })
   return file
 }
@@ -116,12 +116,6 @@ describe('FileUpload', () => {
     const onPilih = vi.fn()
     render(<Harness onPilih={onPilih} />)
 
-    /*
-     * Dipicu lewat drop, bukan userEvent.upload, karena userEvent menyaring
-     * berkas berdasarkan atribut accept sehingga handler tidak pernah terpanggil.
-     * Lewat drag and drop, berkas apa pun bisa masuk seperti di peramban asli,
-     * jadi jalur inilah yang perlu diuji.
-     */
     const dropzone = screen.getByText('Tarik berkas ke sini atau pilih dari perangkat')
       .parentElement
     fireEvent.drop(dropzone, {

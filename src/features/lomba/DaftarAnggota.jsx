@@ -2,7 +2,6 @@ import { Badge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Users } from 'lucide-react'
 
-/** Tabel susunan anggota tim, dipakai halaman detail mahasiswa dan dosen. */
 export function DaftarAnggota({ lomba }) {
   const anggota = lomba.anggota ?? []
 

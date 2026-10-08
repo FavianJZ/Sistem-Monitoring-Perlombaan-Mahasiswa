@@ -44,7 +44,6 @@ const FILTER_BAWAAN = {
 export default function MonitoringLomba() {
   const { filter, ubah, reset, adaFilter } = useFilterUrl(FILTER_BAWAAN)
 
-  // Pencarian ditunda agar pengetikan tidak memanggil service pada tiap huruf.
   const pencarian = useDebounce(filter.search, 300)
 
   const filterService = useMemo(

@@ -1,7 +1,6 @@
 import { Inbox } from 'lucide-react'
 import { cn } from '@/lib/cn'
 
-/** Tampilan saat tidak ada data, termasuk saat filter tidak menemukan hasil. */
 export function EmptyState({
   icon: Icon = Inbox,
   title,

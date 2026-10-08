@@ -5,10 +5,6 @@ import { ACUAN_UJI, SESI_DOSEN, alamatSekarang, renderApp } from '@/test/utils'
 import { resetDataMock } from '@/services/competitionService'
 import { keCsv } from '@/features/arsip/eksporData'
 
-/*
- * Pembuatan berkas dipalsukan agar pengujian fokus pada data apa yang
- * dikirim ke pengekspor, bukan pada isi biner XLSX maupun PDF.
- */
 vi.mock('@/features/arsip/eksporBerkas', () => ({
   unduhCsv: vi.fn(() => 'rekap-prestasi-20260924.csv'),
   unduhXlsx: vi.fn(async () => 'rekap-prestasi-20260924.xlsx'),
@@ -36,7 +32,6 @@ describe('Arsip Prestasi - tampilan', () => {
   it('hanya menampilkan lomba yang sudah selesai', async () => {
     await bukaArsip()
 
-    // Delapan lomba berstatus selesai pada data tiruan.
     expect(screen.getByText('Menampilkan 1-8 dari 8 prestasi')).toBeInTheDocument()
     expect(within(tabel()).queryByText('Berlangsung')).not.toBeInTheDocument()
   })
@@ -61,7 +56,7 @@ describe('Arsip Prestasi - tampilan', () => {
     await bukaArsip()
 
     const isi = within(tabel())
-    // Elvira punya dua lomba selesai, jadi namanya muncul lebih dari sekali.
+
     expect(isi.getAllByText('Elvira Nuraini').length).toBeGreaterThan(0)
     expect(isi.getAllByText('Juara 1').length).toBeGreaterThan(0)
     expect(isi.getAllByText('Ada').length).toBeGreaterThan(0)
@@ -216,7 +211,6 @@ describe('Arsip Prestasi - ekspor', () => {
 
     await user.click(screen.getByRole('button', { name: 'CSV' }))
 
-    // Pengekspor dipalsukan, jadi isi berkas diperiksa langsung dari data yang dikirim.
     const [items] = unduhCsv.mock.calls[0]
     const csv = keCsv(items)
 

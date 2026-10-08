@@ -19,8 +19,7 @@ import {
   urutkanLomba,
 } from './competitionQuery'
 
-/* Acuan tetap supaya seluruh tanggal turunan bisa diprediksi. */
-const ACUAN = new Date(2026, 8, 24) // 24 September 2026
+const ACUAN = new Date(2026, 8, 24)
 const DATA = buatSeed(ACUAN)
 
 describe('hitungKelengkapan', () => {
@@ -70,8 +69,6 @@ describe('tahapan', () => {
     const lomba = DATA.find((item) => item.id === 'lomba-01')
     const berikutnya = tahapanBerikutnya(lomba, ACUAN)
 
-    // Penyisihan berlangsung dari 5 hari lalu sampai 3 hari ke depan,
-    // jadi tahapan itulah yang masih relevan hari ini.
     expect(berikutnya.jenis).toBe('penyisihan')
   })
 
@@ -227,7 +224,7 @@ describe('filterLomba', () => {
   })
 
   it('mode tanggal menemukan lomba yang punya tahapan pada hari itu', () => {
-    // Tahapan penyisihan lomba-18 berjalan dari hari acuan sampai dua hari sesudahnya.
+
     const hasil = filterLomba(DATA, { mode: 'tanggal', tanggal: '2026-09-24' }, ACUAN)
     expect(hasil.some((lomba) => lomba.id === 'lomba-18')).toBe(true)
   })
@@ -479,7 +476,6 @@ describe('progresTahapan', () => {
     const lomba = DATA.find((item) => item.id === 'lomba-01')
     const progres = progresTahapan(lomba, ACUAN)
 
-    // Pendaftaran dan technical meeting sudah lewat, penyisihan masih berjalan.
     expect(progres.total).toBe(6)
     expect(progres.lewat).toBe(2)
     expect(progres.persen).toBe(33)

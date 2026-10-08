@@ -13,6 +13,8 @@ import {
   resetDataMock,
   semuaLombaTersaring,
   statistikLomba,
+  unggahUlangBerkas,
+  verifikasiBerkas,
 } from './competitionService'
 import { login, daftarDosen, namaPengguna } from './userService'
 import { SANDI_DEMO } from '@/data/users'
@@ -369,5 +371,53 @@ describe('userService', () => {
   it('mencari nama pengguna secara sinkron', () => {
     expect(namaPengguna('dsn-1')).toContain('Pandu')
     expect(namaPengguna('tidak-ada')).toBe('-')
+  })
+
+  it('dosen atau admin dapat menolak dan menyetujui berkas', async () => {
+    const awal = await detailLomba('lomba-01', OPSI)
+    const berkasId = awal.berkas[0].id
+
+    const ditolak = await verifikasiBerkas(
+      'lomba-01',
+      berkasId,
+      {
+        statusVerifikasi: 'ditolak',
+        catatanPenolakan: 'Bukti pendaftaran buram, mohon unggah ulang.',
+        diverifikasiOleh: 'Dosen Pandu',
+      },
+      OPSI,
+    )
+
+    const berkasDitolak = ditolak.berkas.find((b) => b.id === berkasId)
+    expect(berkasDitolak.statusVerifikasi).toBe('ditolak')
+    expect(berkasDitolak.catatanPenolakan).toBe('Bukti pendaftaran buram, mohon unggah ulang.')
+    expect(ditolak.kelengkapan.adaDitolak).toBe(true)
+
+    const diunggahUlang = await unggahUlangBerkas(
+      'lomba-01',
+      berkasId,
+      {
+        namaFile: 'bukti_pendaftaran_baru_jelas.pdf',
+        mimeType: 'application/pdf',
+        size: 102400,
+        url: 'data:application/pdf;base64,mock',
+      },
+      OPSI,
+    )
+
+    const berkasBaru = diunggahUlang.berkas.find((b) => b.id === berkasId)
+    expect(berkasBaru.namaFile).toBe('bukti_pendaftaran_baru_jelas.pdf')
+    expect(berkasBaru.statusVerifikasi).toBe('menunggu')
+    expect(berkasBaru.catatanPenolakan).toBeNull()
+
+    const disetujui = await verifikasiBerkas(
+      'lomba-01',
+      berkasId,
+      { statusVerifikasi: 'diterima', diverifikasiOleh: 'Dosen Pandu' },
+      OPSI,
+    )
+
+    const berkasValid = disetujui.berkas.find((b) => b.id === berkasId)
+    expect(berkasValid.statusVerifikasi).toBe('diterima')
   })
 })

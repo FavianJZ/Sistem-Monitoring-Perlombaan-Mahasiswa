@@ -12,12 +12,6 @@ const OPSI_CAPAIAN = Object.entries(CAPAIAN_LOMBA).map(([value, meta]) => ({
   label: meta.label,
 }))
 
-/**
- * Formulir pelaporan hasil akhir perlombaan.
- *
- * Sertifikat diwajibkan karena menjadi bukti utama capaian untuk arsip
- * prestasi. Foto dokumentasi dan tautan berita bersifat pelengkap.
- */
 export function FormLaporHasil({ lomba, onTersimpan }) {
   const [capaian, setCapaian] = useState('')
   const [linkBerita, setLinkBerita] = useState('')

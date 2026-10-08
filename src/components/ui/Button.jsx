@@ -22,10 +22,6 @@ const SIZES = {
   icon: 'size-10',
 }
 
-/**
- * Tombol serbaguna. Pakai prop `as={Link}` untuk merender tautan
- * dengan tampilan tombol.
- */
 export function Button({
   as: Component = 'button',
   variant = 'primary',

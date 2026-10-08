@@ -9,40 +9,30 @@ import {
 } from '@/lib/date'
 import { CAPAIAN_LOMBA, JENIS_BERKAS, JENIS_TAHAPAN, STATUS_LOMBA } from '@/config/domain'
 
-/**
- * Logika query untuk data perlombaan.
- *
- * Semua fungsi di sini murni: tidak menyentuh jaringan maupun penyimpanan,
- * sehingga bisa diuji langsung dan dipakai ulang oleh backend bila perlu.
- */
-
-/** Berkas yang wajib ada menurut PRD: bukti pendaftaran dan bukti pembayaran. */
 export const BERKAS_WAJIB = Object.entries(JENIS_BERKAS)
   .filter(([, meta]) => meta.wajib)
   .map(([tipe]) => tipe)
 
 const URUTAN_TAHAPAN = JENIS_TAHAPAN.map((item) => item.value)
 
-/**
- * Menghitung kelengkapan berkas wajib.
- * Ini indikator kelengkapan, bukan status persetujuan: revisi PRD
- * menghapus seluruh alur verifikasi dan approval.
- */
 export function hitungKelengkapan(lomba) {
-  const tersedia = new Set((lomba?.berkas ?? []).map((berkas) => berkas.tipe))
+  const berkas = lomba?.berkas ?? []
+  const tersedia = new Set(berkas.map((item) => item.tipe))
   const kurang = BERKAS_WAJIB.filter((tipe) => !tersedia.has(tipe))
+  const ditolak = berkas.filter((item) => item.statusVerifikasi === 'ditolak')
 
   return {
     wajib: BERKAS_WAJIB.length,
     terunggah: BERKAS_WAJIB.length - kurang.length,
-    lengkap: kurang.length === 0,
+    lengkap: kurang.length === 0 && ditolak.length === 0,
+    adaDitolak: ditolak.length > 0,
+    ditolak,
     kurang,
     kurangLabel: kurang.map((tipe) => JENIS_BERKAS[tipe]?.label ?? tipe),
     persen: Math.round(((BERKAS_WAJIB.length - kurang.length) / BERKAS_WAJIB.length) * 100),
   }
 }
 
-/** Tahapan diurutkan menurut tanggal mulai, lalu urutan bawaan PRD. */
 export function tahapanTerurut(lomba) {
   return [...(lomba?.tahapan ?? [])]
     .filter((tahap) => tahap.tanggalMulai)
@@ -53,7 +43,6 @@ export function tahapanTerurut(lomba) {
     })
 }
 
-/** Tahapan yang sedang berjalan hari ini, bila ada. */
 export function tahapanAktif(lomba, acuan = new Date()) {
   return (
     tahapanTerurut(lomba).find((tahap) =>
@@ -62,7 +51,6 @@ export function tahapanAktif(lomba, acuan = new Date()) {
   )
 }
 
-/** Tahapan terdekat yang belum lewat, dipakai untuk agenda dan kartu lomba. */
 export function tahapanBerikutnya(lomba, acuan = new Date()) {
   const batas = awalHari(acuan)
 
@@ -74,10 +62,6 @@ export function tahapanBerikutnya(lomba, acuan = new Date()) {
   )
 }
 
-/**
- * Progres perjalanan lomba berdasarkan tahapan yang sudah terlewati.
- * Dipakai kartu pemantauan agar dosen tahu sejauh mana kompetisi berjalan.
- */
 export function progresTahapan(lomba, acuan = new Date()) {
   const daftar = tahapanTerurut(lomba)
   const batas = awalHari(acuan)
@@ -94,13 +78,11 @@ export function progresTahapan(lomba, acuan = new Date()) {
   }
 }
 
-/** Tahapan terakhir, dipakai menentukan kapan lomba dianggap tuntas. */
 export function tahapanTerakhir(lomba) {
   const daftar = tahapanTerurut(lomba)
   return daftar.length ? daftar[daftar.length - 1] : null
 }
 
-/** Benar bila ada minimal satu tahapan yang bersinggungan dengan rentang. */
 export function adaTahapanDiRentang(lomba, dari, sampai, jenisTahapan) {
   const batasAwal = dari ? awalHari(dari) : null
   const batasAkhir = sampai ? akhirHari(sampai) : null
@@ -118,10 +100,6 @@ export function adaTahapanDiRentang(lomba, dari, sampai, jenisTahapan) {
   })
 }
 
-/**
- * Menerjemahkan mode filter waktu menjadi rentang tanggal konkret.
- * Mode 'semua' menghasilkan rentang kosong sehingga filter dilewati.
- */
 export function rentangDariMode(filter = {}, acuan = new Date()) {
   const { mode = 'semua' } = filter
 
@@ -152,7 +130,6 @@ function normalkan(text) {
   return String(text ?? '').toLowerCase()
 }
 
-/** Pencarian teks pada nama lomba, penyelenggara, nama tim, dan anggota. */
 export function cocokPencarian(lomba, kataKunci) {
   const kunci = normalkan(kataKunci).trim()
   if (!kunci) return true
@@ -169,7 +146,6 @@ export function cocokPencarian(lomba, kataKunci) {
   return sumber.some((nilai) => normalkan(nilai).includes(kunci))
 }
 
-/** Menyaring daftar lomba berdasarkan seluruh kriteria filter. */
 export function filterLomba(items = [], filter = {}, acuan = new Date()) {
   const { dari, sampai } = rentangDariMode(filter, acuan)
 
@@ -226,10 +202,6 @@ const PEMBANDING = {
   },
 }
 
-/**
- * Mengurutkan daftar lomba. Kunci 'tahapanTerdekat' butuh acuan waktu,
- * jadi dihitung terpisah dari tabel pembanding statis.
- */
 export function urutkanLomba(items = [], { sort = 'terbaru', order = 'asc' } = {}, acuan = new Date()) {
   const arah = order === 'desc' ? -1 : 1
   const salinan = [...items]
@@ -248,7 +220,6 @@ export function urutkanLomba(items = [], { sort = 'terbaru', order = 'asc' } = {
   return salinan
 }
 
-/** Memotong daftar menjadi satu halaman, halaman dimulai dari 1. */
 export function paginasi(items = [], { page = 1, pageSize = 10 } = {}) {
   const total = items.length
   const totalHalaman = Math.max(1, Math.ceil(total / pageSize))
@@ -264,13 +235,6 @@ export function paginasi(items = [], { page = 1, pageSize = 10 } = {}) {
   }
 }
 
-/**
- * Menentukan apakah hasil lomba sudah boleh dilaporkan.
- *
- * Aturannya mengikuti timeline: pelaporan dibuka setelah tanggal pengumuman
- * pemenang terlewati. Bila lomba tidak mencantumkan tahapan pengumuman,
- * pelaporan dibuka setelah seluruh tahapan selesai.
- */
 export function bolehLaporHasil(lomba, acuan = new Date()) {
   if (lomba?.hasil) {
     return { boleh: false, alasan: 'Hasil lomba ini sudah dilaporkan.', kode: 'SUDAH_LAPOR' }
@@ -304,7 +268,6 @@ export function bolehLaporHasil(lomba, acuan = new Date()) {
   return { boleh: true, alasan: null, kode: 'SIAP' }
 }
 
-/** Data ringkas turunan yang dipakai kartu dan tabel. */
 export function ringkasLomba(lomba, acuan = new Date()) {
   const kelengkapan = hitungKelengkapan(lomba)
   const berikutnya = tahapanBerikutnya(lomba, acuan)
@@ -326,7 +289,6 @@ function tambahHitungan(peta, kunci) {
   peta[kunci] = (peta[kunci] ?? 0) + 1
 }
 
-/** Agregasi untuk kartu statistik dashboard. */
 export function hitungStatistik(items = [], acuan = new Date()) {
   const awal = awalBulan(acuan)
   const akhir = akhirBulan(acuan)
@@ -375,10 +337,6 @@ export function hitungStatistik(items = [], acuan = new Date()) {
   }
 }
 
-/**
- * Daftar tahapan yang akan datang dari seluruh lomba, terurut dari
- * yang paling dekat. Dipakai panel agenda dosen.
- */
 export function agendaTerdekat(items = [], { limit = 6, acuan = new Date() } = {}) {
   const batas = awalHari(acuan)
   const agenda = []
@@ -404,10 +362,6 @@ export function agendaTerdekat(items = [], { limit = 6, acuan = new Date() } = {
   return limit ? agenda.slice(0, limit) : agenda
 }
 
-/**
- * Mengelompokkan tahapan per tanggal ISO untuk tampilan kalender bulanan.
- * Tahapan berentang tanggal muncul di setiap hari yang dilaluinya.
- */
 export function tahapanPerTanggal(items = [], { dari, sampai } = {}) {
   const peta = new Map()
   const batasAwal = dari ? awalHari(dari) : null

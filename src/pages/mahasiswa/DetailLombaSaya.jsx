@@ -1,6 +1,15 @@
 import { useCallback, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, CalendarClock, CircleAlert } from 'lucide-react'
+import {
+  AlertCircle,
+  ArrowLeft,
+  CalendarClock,
+  CalendarDays,
+  CircleAlert,
+  FileEdit,
+  Pencil,
+  Users,
+} from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
@@ -20,14 +29,22 @@ import { DaftarBerkas } from '@/features/lomba/DaftarBerkas'
 import { FormLaporHasil } from '@/features/lomba/FormLaporHasil'
 import { InfoLomba } from '@/features/lomba/InfoLomba'
 import { RingkasanHasil } from '@/features/lomba/RingkasanHasil'
+import { ModalEditLomba } from '@/features/lomba/ModalEditLomba'
 
 export default function DetailLombaSaya() {
   const { id } = useParams()
   const { toast } = useToast()
   const [tab, setTab] = useState('info')
+  const [editModalBuka, setEditModalBuka] = useState(false)
+  const [tabEditAwal, setTabEditAwal] = useState('info')
 
   const ambil = useCallback(() => detailLomba(id), [id])
   const { data: lomba, loading, error, jalankan } = useAsync(ambil, [ambil])
+
+  function bukaEdit(bagian = 'info') {
+    setTabEditAwal(bagian)
+    setEditModalBuka(true)
+  }
 
   if (loading) {
     return (
@@ -84,9 +101,18 @@ export default function DetailLombaSaya() {
         title={lomba.nama}
         description={lomba.penyelenggara}
         actions={
-          <Button as={Link} to="/lomba-saya" variant="ghost" leadingIcon={ArrowLeft}>
-            Kembali ke daftar
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              leadingIcon={Pencil}
+              onClick={() => bukaEdit('info')}
+            >
+              Edit Lomba
+            </Button>
+            <Button as={Link} to="/lomba-saya" variant="ghost" leadingIcon={ArrowLeft}>
+              Kembali ke daftar
+            </Button>
+          </div>
         }
       />
 
@@ -99,6 +125,24 @@ export default function DetailLombaSaya() {
         {lomba.hasil && <CapaianBadge capaian={lomba.hasil.capaian} />}
         <KelengkapanBadge lengkap={lomba.kelengkapan.lengkap} />
       </div>
+
+      {lomba.kelengkapan?.adaDitolak && (
+        <div className="mb-6 flex items-start justify-between gap-3 rounded-lg border border-danger-200 bg-danger-50 p-4 text-danger-900">
+          <div className="flex items-start gap-2.5">
+            <AlertCircle className="mt-0.5 size-5 shrink-0 text-danger-600" aria-hidden="true" />
+            <div>
+              <p className="font-semibold text-sm">Dokumen Perlu Diperbaiki</p>
+              <p className="mt-0.5 text-xs text-danger-800">
+                Ada dokumen keikutsertaan yang ditolak oleh verifikator kampus. Silakan buka tab{' '}
+                <strong>Dokumen</strong> untuk membaca catatan dan mengunggah berkas pengganti.
+              </p>
+            </div>
+          </div>
+          <Button size="sm" variant="danger" onClick={() => setTab('dokumen')}>
+            Buka Dokumen
+          </Button>
+        </div>
+      )}
 
       <Card className="mb-6">
         <CardContent>
@@ -126,23 +170,61 @@ export default function DetailLombaSaya() {
         <Tabs tabs={tabs} aktif={tab} onGanti={setTab} idPrefix="detail-lomba" />
 
         <TabPanel id="info" aktif={tab} idPrefix="detail-lomba" className="px-5 py-4">
+          <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 className="text-sm font-semibold text-slate-800">Rincian Informasi Perlombaan</h3>
+            <Button
+              size="sm"
+              variant="outline"
+              leadingIcon={FileEdit}
+              onClick={() => bukaEdit('info')}
+            >
+              Edit Info
+            </Button>
+          </div>
           <InfoLomba lomba={lomba} />
         </TabPanel>
 
-        <TabPanel id="tim" aktif={tab} idPrefix="detail-lomba">
+        <TabPanel id="tim" aktif={tab} idPrefix="detail-lomba" className="px-5 py-4">
+          <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 className="text-sm font-semibold text-slate-800">Susunan Anggota Tim</h3>
+            <Button
+              size="sm"
+              variant="outline"
+              leadingIcon={Users}
+              onClick={() => bukaEdit('tim')}
+            >
+              Kelola Tim
+            </Button>
+          </div>
           <DaftarAnggota lomba={lomba} />
         </TabPanel>
 
         <TabPanel id="dokumen" aktif={tab} idPrefix="detail-lomba" className="px-5 py-4">
-          <DaftarBerkas lomba={lomba} />
+          <DaftarBerkas lomba={lomba} onPerbarui={jalankan} />
         </TabPanel>
 
         <TabPanel id="timeline" aktif={tab} idPrefix="detail-lomba" className="px-5 py-4">
+          <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 className="text-sm font-semibold text-slate-800">Rangkaian Tahapan Perlombaan</h3>
+            <Button
+              size="sm"
+              variant="outline"
+              leadingIcon={CalendarDays}
+              onClick={() => bukaEdit('timeline')}
+            >
+              Kelola Tahapan
+            </Button>
+          </div>
           {tahapan.length === 0 ? (
             <EmptyState
               icon={CalendarClock}
               title="Belum ada tahapan"
               description="Timeline lomba ini belum diisi."
+              action={
+                <Button size="sm" variant="outline" onClick={() => bukaEdit('timeline')}>
+                  Tambah Tahapan Sekarang
+                </Button>
+              }
             />
           ) : (
             <TimelineVertical tahapan={tahapan} />
@@ -163,6 +245,14 @@ export default function DetailLombaSaya() {
           )}
         </TabPanel>
       </Card>
+
+      <ModalEditLomba
+        open={editModalBuka}
+        onClose={() => setEditModalBuka(false)}
+        lomba={lomba}
+        tabAwal={tabEditAwal}
+        onTersimpan={jalankan}
+      />
     </div>
   )
 }

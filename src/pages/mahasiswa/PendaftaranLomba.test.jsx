@@ -18,7 +18,6 @@ function draftTersimpan() {
   return mentah ? JSON.parse(mentah) : null
 }
 
-/* Ukuran File tidak bisa diatur dari konstruktor, jadi ditimpa langsung. */
 function buatBerkas(nama, tipe, ukuran) {
   const file = new File(['x'], nama, { type: tipe })
   Object.defineProperty(file, 'size', { value: ukuran })
@@ -133,7 +132,6 @@ describe('Wizard pendaftaran - langkah 2 anggota tim', () => {
     await user.click(screen.getByRole('button', { name: /Lanjut/ }))
   }
 
-  // Daftar anggota diberi label sendiri agar tidak tertukar dengan daftar menu sidebar.
   function barisAnggota() {
     return within(screen.getByRole('list', { name: 'Susunan anggota tim' })).getAllByRole(
       'listitem',
@@ -453,7 +451,6 @@ describe('Wizard pendaftaran - langkah 4 poster', () => {
   })
 })
 
-/* Input bertipe date lebih andal diisi lewat change ketimbang simulasi ketik. */
 function isiTanggal(input, nilai) {
   fireEvent.change(input, { target: { value: nilai } })
 }
@@ -581,7 +578,6 @@ describe('Tinjauan dan penyimpanan', () => {
     const user = userEvent.setup()
     await keTinjauan(user)
 
-    // Judul bagian dicari sebagai heading karena label yang sama juga ada di stepper.
     for (const judul of ['Detail Umum', 'Bukti dan Publikasi', 'Timeline']) {
       expect(screen.getByRole('heading', { level: 3, name: judul })).toBeInTheDocument()
     }

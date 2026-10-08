@@ -10,10 +10,6 @@ import {
   UserRound,
 } from 'lucide-react'
 
-/**
- * Menu sidebar per role. Struktur ini dipakai AppShell dan diuji
- * di Task 4 saat role sudah berasal dari sesi login.
- */
 export const NAV_ITEMS = {
   mahasiswa: [
     { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -30,10 +26,8 @@ export const NAV_ITEMS = {
   ],
 }
 
-/** Admin memakai menu yang sama dengan dosen pada fase ini. */
 NAV_ITEMS.admin = NAV_ITEMS.dosen
 
-/** Menu bantuan pengembangan, tidak terikat role. */
 export const DEV_NAV_ITEMS = [
   { to: '/styleguide', label: 'Style Guide', icon: Palette },
   { to: '/data-mock', label: 'Data Mock', icon: Database },

@@ -1,7 +1,4 @@
-/**
- * Kosakata domain sesuai PRD. Dipakai bersama oleh komponen tampilan,
- * data mock, dan nantinya jadi acuan enum di backend.
- */
+
 
 export const BIDANG_LOMBA = [
   'Programming',
@@ -22,14 +19,12 @@ export const JENIS_KEIKUTSERTAAN = [
   { value: 'tim', label: 'Tim / Kelompok' },
 ]
 
-/** Status keikutsertaan. Bukan status persetujuan: PRD menghapus alur approval. */
 export const STATUS_LOMBA = {
   terdaftar: { label: 'Terdaftar', tone: 'primary' },
   berlangsung: { label: 'Berlangsung', tone: 'accent' },
   selesai: { label: 'Selesai', tone: 'success' },
 }
 
-/** Capaian akhir sesuai daftar di PRD. */
 export const CAPAIAN_LOMBA = {
   juara_1: { label: 'Juara 1', tone: 'success', peringkat: 1 },
   juara_2: { label: 'Juara 2', tone: 'success', peringkat: 2 },
@@ -39,7 +34,6 @@ export const CAPAIAN_LOMBA = {
   peserta: { label: 'Peserta', tone: 'neutral', peringkat: 6 },
 }
 
-/** Tahapan timeline bawaan sesuai PRD, urutan ini juga urutan tampilnya. */
 export const JENIS_TAHAPAN = [
   { value: 'pendaftaran', label: 'Pendaftaran', rentang: true },
   { value: 'tm', label: 'Technical Meeting', rentang: false },
@@ -49,7 +43,6 @@ export const JENIS_TAHAPAN = [
   { value: 'pengumuman', label: 'Pengumuman Pemenang', rentang: false },
 ]
 
-/** Jenis berkas yang diunggah mahasiswa. */
 export const JENIS_BERKAS = {
   bukti_daftar: { label: 'Bukti Pendaftaran', wajib: true },
   bukti_bayar: { label: 'Bukti Pembayaran', wajib: true },
@@ -58,7 +51,6 @@ export const JENIS_BERKAS = {
   foto: { label: 'Foto Dokumentasi', wajib: false },
 }
 
-/** Batas unggah sesuai PRD: PDF/JPG/PNG maksimal 5MB. */
 export const UNGGAH_MAKS_BYTE = 5 * 1024 * 1024
 export const UNGGAH_TIPE_DIIZINKAN = ['application/pdf', 'image/jpeg', 'image/png']
 export const UNGGAH_EKSTENSI_LABEL = 'PDF, JPG, atau PNG maksimal 5MB'

@@ -26,7 +26,6 @@ describe('Dashboard Mahasiswa', () => {
     renderApp('/', { sesi: SESI_MAHASISWA() })
     await screen.findByText('Lomba aktif')
 
-    // mhs-1 punya 5 lomba: 2 berlangsung dan 3 terdaftar, belum ada yang selesai.
     expect(within(kartu('Lomba aktif')).getByText('5')).toBeInTheDocument()
     expect(
       screen.getByText('2 sedang berlangsung, 3 baru terdaftar'),
@@ -37,7 +36,6 @@ describe('Dashboard Mahasiswa', () => {
     renderApp('/', { sesi: SESI_MAHASISWA() })
     await screen.findByText('Dokumen belum lengkap')
 
-    // lomba-09, lomba-14, dan lomba-20 milik mhs-1 dokumennya belum lengkap.
     expect(within(kartu('Dokumen belum lengkap')).getByText('3')).toBeInTheDocument()
   })
 
@@ -81,7 +79,6 @@ describe('Dashboard Mahasiswa', () => {
     renderApp('/', { sesi: buatSesi('mhs-5') })
     await screen.findByText('Prestasi tercatat')
 
-    // mhs-5 punya juara_2 dan harapan, ditambah satu capaian peserta yang tidak dihitung.
     expect(within(kartu('Prestasi tercatat')).getByText('2')).toBeInTheDocument()
   })
 

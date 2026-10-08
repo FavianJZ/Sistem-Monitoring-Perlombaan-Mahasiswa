@@ -1,12 +1,6 @@
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/cn'
 
-/**
- * Penunjuk langkah untuk formulir bertahap.
- *
- * Langkah yang sudah dilewati bisa diklik kembali, langkah di depan
- * dinonaktifkan agar pengguna tidak melompati validasi.
- */
 export function Stepper({ steps, current, onStepClick, className }) {
   return (
     <nav aria-label="Langkah pendaftaran" className={className}>

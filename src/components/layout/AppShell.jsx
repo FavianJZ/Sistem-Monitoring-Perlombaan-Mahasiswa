@@ -5,11 +5,6 @@ import { Topbar } from './Topbar'
 import { getNavItems } from '@/config/navigation'
 import { useAuth } from '@/auth/AuthContext'
 
-/**
- * Kerangka aplikasi: sidebar + topbar + area konten.
- * Menu yang tampil mengikuti role pada sesi yang aktif.
- * Drawer sidebar tertutup otomatis saat pindah halaman atau menekan Escape.
- */
 export function AppShell() {
   const { user, keluar } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)

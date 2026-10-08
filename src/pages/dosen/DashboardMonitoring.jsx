@@ -25,7 +25,6 @@ import { labelTahapan } from '@/config/domain'
 
 const JUMLAH_KARTU = 6
 
-/** Daftar sebaran sederhana, misalnya jumlah lomba per tingkat atau per bidang. */
 function Sebaran({ judul, data, total }) {
   const baris = Object.entries(data).sort((a, b) => b[1] - a[1])
 

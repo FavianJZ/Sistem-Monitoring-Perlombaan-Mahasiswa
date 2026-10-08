@@ -1,8 +1,4 @@
-/**
- * Membuat poster tiruan berupa data URI SVG.
- * Dipakai agar pratinjau gambar pada data mock tetap tampil tanpa
- * perlu berkas asli maupun koneksi internet.
- */
+
 
 const PALET = [
   ['#1d3dd8', '#3b6bf6'],
