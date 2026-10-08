@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { SESI_MAHASISWA, renderApp } from '@/test/utils'
 import { KUNCI_SESI } from '@/auth/sesi'
 import { kekuatanSandi, validasiRegistrasi } from '@/auth/validasiRegistrasi'
-import { KODE_ADMIN_DEMO, KUNCI_AKUN, login, registrasi } from '@/services/userService'
+import { KUNCI_AKUN, login, registrasi } from '@/services/userService'
 
 const SANDI_KUAT = 'Rahasia123'
 
@@ -108,6 +108,13 @@ describe('Halaman daftar', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'Buat akun' })).toBeInTheDocument()
   })
 
+  it('tidak menampilkan pilihan peran dosen atau admin prodi dan tidak ada link portal staf di halaman daftar', () => {
+    renderApp('/daftar')
+    expect(screen.queryByRole('radio', { name: /Dosen/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('radio', { name: /Admin Prodi/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /Portal Staf/ })).not.toBeInTheDocument()
+  })
+
   it('menampilkan pesan validasi saat dikirim kosong dan tidak membuat akun', async () => {
     const user = userEvent.setup()
     renderApp('/daftar')
@@ -120,20 +127,6 @@ describe('Halaman daftar', () => {
     expect(screen.getByText('Anda perlu menyetujui ketentuan penggunaan.')).toBeInTheDocument()
     expect(screen.getByLabelText(/Nama lengkap/)).toHaveFocus()
     expect(window.localStorage.getItem(KUNCI_AKUN)).toBeNull()
-  })
-
-  it('menyesuaikan isian dengan peran yang dipilih', async () => {
-    const user = userEvent.setup()
-    renderApp('/daftar')
-
-    expect(screen.getByLabelText(/^NIM/)).toBeInTheDocument()
-
-    await user.click(screen.getByRole('radio', { name: /Dosen/ }))
-    expect(screen.queryByLabelText(/^NIM/)).not.toBeInTheDocument()
-    expect(screen.queryByLabelText(/Kode verifikasi/)).not.toBeInTheDocument()
-
-    await user.click(screen.getByRole('radio', { name: /Admin Prodi/ }))
-    expect(screen.getByLabelText(/Kode verifikasi/)).toBeInTheDocument()
   })
 
   it('mendaftarkan mahasiswa lalu langsung masuk ke dashboardnya', async () => {
@@ -153,26 +146,12 @@ describe('Halaman daftar', () => {
     expect(sesi.user).toMatchObject({ nama: 'Nadia Putri', nim: '2502099999', role: 'mahasiswa' })
   })
 
-  it('mendaftarkan admin dengan kode verifikasi ke area monitoring', async () => {
-    const user = userEvent.setup()
-    renderApp('/daftar')
-
-    await user.click(screen.getByRole('radio', { name: /Admin Prodi/ }))
-    await isiDataUmum(user, { nama: 'Rina Admin', email: 'rina.admin@binus.ac.id' })
-    await user.type(screen.getByLabelText(/Kode verifikasi/), KODE_ADMIN_DEMO)
-    await user.click(screen.getByRole('button', { name: 'Buat akun' }))
-
-    expect(
-      await screen.findByRole('heading', { level: 1, name: 'Dashboard Monitoring' }),
-    ).toBeInTheDocument()
-  })
-
   it('memberi tahu bila email sudah terdaftar', async () => {
     const user = userEvent.setup()
     renderApp('/daftar')
 
-    await user.click(screen.getByRole('radio', { name: /Dosen/ }))
     await isiDataUmum(user, { email: 'pandu.wicaksono@binus.ac.id' })
+    await user.type(screen.getByLabelText(/^NIM/), '2502099999')
     await user.click(screen.getByRole('button', { name: 'Buat akun' }))
 
     expect(screen.getByText(/sudah terdaftar/)).toBeInTheDocument()

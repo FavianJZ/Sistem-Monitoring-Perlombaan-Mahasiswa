@@ -162,7 +162,7 @@ export default function Login() {
             </Button>
           </form>
 
-          <div className="mt-5 border-t border-slate-100 pt-4 text-center text-sm text-slate-600 space-y-1.5">
+          <div className="mt-5 border-t border-slate-100 pt-4 text-center text-sm text-slate-600">
             <p>
               Belum punya akun?{' '}
               <Link
@@ -171,16 +171,6 @@ export default function Login() {
                 className="font-semibold text-primary-700 hover:text-primary-800 hover:underline"
               >
                 Daftar sekarang
-              </Link>
-            </p>
-            <p className="text-xs text-slate-500">
-              Dosen atau Admin Prodi?{' '}
-              <Link
-                to="/daftar-staf"
-                state={lokasi.state}
-                className="font-semibold text-accent-700 hover:text-accent-800 hover:underline"
-              >
-                Portal Pendaftaran Staf →
               </Link>
             </p>
           </div>
