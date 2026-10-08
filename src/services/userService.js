@@ -124,7 +124,7 @@ export async function registrasi(data = {}, opsi = {}) {
 
   if (apakahSupabaseAktif()) {
     try {
-      await supabase.auth.signUp({
+      const { data: signUpData } = await supabase.auth.signUp({
         email: user.email,
         password: data.password,
         options: {
@@ -137,6 +137,19 @@ export async function registrasi(data = {}, opsi = {}) {
           },
         },
       })
+
+      const sbUserId = signUpData?.user?.id
+      if (sbUserId) {
+        await supabase.from('profiles').upsert({
+          id: sbUserId,
+          nama: user.nama,
+          email: user.email,
+          role: user.role,
+          nim: user.nim ?? null,
+          angkatan: user.angkatan ?? null,
+          prodi: user.prodi,
+        })
+      }
     } catch {
     }
   }
