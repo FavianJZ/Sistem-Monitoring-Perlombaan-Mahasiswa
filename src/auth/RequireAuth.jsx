@@ -6,6 +6,13 @@ export function RequireAuth({ roles }) {
   const { user } = useAuth()
   const lokasi = useLocation()
 
+  if (typeof window !== 'undefined') {
+    const hash = window.location.hash
+    if (hash && (hash.includes('type=recovery') || hash.includes('access_token'))) {
+      return <Navigate to={`/reset-password${hash}`} replace />
+    }
+  }
+
   if (!user) {
     return <Navigate to="/login" replace state={{ dari: lokasi.pathname + lokasi.search }} />
   }
