@@ -40,6 +40,10 @@ export default function ResetPassword() {
     }
 
     if (apakahSupabaseAktif()) {
+      if (window.location.hash.includes('access_token')) {
+        setTokenError(null)
+      }
+
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (session?.user) {
           setDataToken({ email: session.user.email, tipe: 'supabase' })
