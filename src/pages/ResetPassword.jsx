@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/Input'
 import { kekuatanSandi } from '@/auth/validasiRegistrasi'
 import { konsumsiTokenReset, verifikasiTokenReset } from '@/services/otpService'
 import { perbaruiSandiPengguna } from '@/services/userService'
+import { supabase, apakahSupabaseAktif } from '@/lib/supabase'
 import { cn } from '@/lib/cn'
 
 const LABEL_KEKUATAN = ['Belum diisi', 'Lemah', 'Cukup', 'Kuat']
@@ -27,17 +28,39 @@ export default function ResetPassword() {
   const [sukses, setSukses] = useState(false)
 
   useEffect(() => {
-    if (!token) {
-      setTokenError('Tautan reset kata sandi tidak valid atau tidak memiliki token pengenal.')
+    if (token) {
+      try {
+        const data = verifikasiTokenReset(token)
+        setDataToken(data)
+        setTokenError(null)
+      } catch (e) {
+        setTokenError(e.message)
+      }
       return
     }
 
-    try {
-      const data = verifikasiTokenReset(token)
-      setDataToken(data)
-      setTokenError(null)
-    } catch (e) {
-      setTokenError(e.message)
+    if (apakahSupabaseAktif()) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) {
+          setDataToken({ email: session.user.email, tipe: 'supabase' })
+          setTokenError(null)
+        } else if (!window.location.hash.includes('access_token')) {
+          setTokenError('Tautan reset kata sandi tidak valid atau telah kedaluwarsa.')
+        }
+      })
+
+      const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+        if ((event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') && session?.user) {
+          setDataToken({ email: session.user.email, tipe: 'supabase' })
+          setTokenError(null)
+        }
+      })
+
+      return () => {
+        authListener?.subscription?.unsubscribe()
+      }
+    } else {
+      setTokenError('Tautan reset kata sandi tidak valid atau telah kedaluwarsa.')
     }
   }, [token])
 
@@ -59,11 +82,19 @@ export default function ResetPassword() {
 
     setMemproses(true)
     try {
-      await perbaruiSandiPengguna({
-        email: dataToken.email,
-        passwordBaru: password,
-      })
-      konsumsiTokenReset(token)
+      if (dataToken?.tipe === 'supabase' && apakahSupabaseAktif()) {
+        const { error } = await supabase.auth.updateUser({ password })
+        if (error) throw error
+      }
+      if (dataToken?.email) {
+        await perbaruiSandiPengguna({
+          email: dataToken.email,
+          passwordBaru: password,
+        })
+      }
+      if (token) {
+        konsumsiTokenReset(token)
+      }
       setSukses(true)
     } catch (e) {
       setGalatForm(e.message)
