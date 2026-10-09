@@ -124,21 +124,10 @@ export async function registrasi(data = {}, opsi = {}) {
 
   if (apakahSupabaseAktif()) {
     try {
-      const { data: signUpData } = await supabase.auth.signUp({
-        email: user.email,
-        password: data.password,
-        options: {
-          data: {
-            nama: user.nama,
-            role: user.role,
-            prodi: user.prodi,
-            nim: user.nim,
-            angkatan: user.angkatan,
-          },
-        },
-      })
-
-      const sbUserId = signUpData?.user?.id
+      // Akun Supabase sudah dibuat oleh signUp di modal OTP dan sesi aktif
+      // setelah verifyOtp. Memanggil signUp lagi hanya mengirim email ganda.
+      const { data: sesiData } = await supabase.auth.getUser()
+      const sbUserId = sesiData?.user?.id
       if (sbUserId) {
         await supabase.from('profiles').upsert({
           id: sbUserId,
@@ -163,13 +152,8 @@ export async function perbaruiSandiPengguna({ email, passwordBaru }, opsi = {}) 
   if (!target) throw new ServiceError('Email wajib diisi.', { kode: 'EMAIL_KOSONG' })
   if (!passwordBaru) throw new ServiceError('Kata sandi baru wajib diisi.', { kode: 'SANDI_KOSONG' })
 
-  if (apakahSupabaseAktif()) {
-    try {
-      await supabase.auth.updateUser({ password: passwordBaru })
-    } catch {
-    }
-  }
-
+  // Saat Supabase aktif, sandi diganti lewat supabase.auth.updateUser di
+  // halaman ResetPassword. Fungsi ini hanya mengurus akun mock lokal.
   const daftar = bacaAkun()
   const indeks = daftar.findIndex((item) => item.user.email.toLowerCase() === target)
 

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/Input'
 import { kekuatanSandi } from '@/auth/validasiRegistrasi'
 import { konsumsiTokenReset, verifikasiTokenReset } from '@/services/otpService'
 import { perbaruiSandiPengguna } from '@/services/userService'
-import { supabase, apakahSupabaseAktif } from '@/lib/supabase'
+import { supabase, tukarTautanReset } from '@/lib/supabase'
 import { cn } from '@/lib/cn'
 
 const LABEL_KEKUATAN = ['Belum diisi', 'Lemah', 'Cukup', 'Kuat']
@@ -26,45 +26,36 @@ export default function ResetPassword() {
   const [memproses, setMemproses] = useState(false)
   const [galatForm, setGalatForm] = useState(null)
   const [sukses, setSukses] = useState(false)
+  const [memuatTautan, setMemuatTautan] = useState(true)
 
   useEffect(() => {
+    // Mode lokal/demo: token buatan otpService di query ?token=.
     if (token) {
       try {
-        const data = verifikasiTokenReset(token)
-        setDataToken(data)
+        setDataToken(verifikasiTokenReset(token))
         setTokenError(null)
       } catch (e) {
         setTokenError(e.message)
+      } finally {
+        setMemuatTautan(false)
       }
       return
     }
 
-    if (apakahSupabaseAktif()) {
-      if (window.location.hash.includes('access_token')) {
+    let aktif = true
+    tukarTautanReset(window.location.href)
+      .then(({ email }) => {
+        if (!aktif) return
+        setDataToken({ email, tipe: 'supabase' })
         setTokenError(null)
-      }
-
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session?.user) {
-          setDataToken({ email: session.user.email, tipe: 'supabase' })
-          setTokenError(null)
-        } else if (!window.location.hash.includes('access_token')) {
-          setTokenError('Tautan reset kata sandi tidak valid atau telah kedaluwarsa.')
-        }
+        // Buang token dari address bar agar tidak bisa dipakai ulang atau bocor lewat riwayat.
+        window.history.replaceState(null, '', '/reset-password')
       })
+      .catch((e) => aktif && setTokenError(e.message))
+      .finally(() => aktif && setMemuatTautan(false))
 
-      const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-        if ((event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') && session?.user) {
-          setDataToken({ email: session.user.email, tipe: 'supabase' })
-          setTokenError(null)
-        }
-      })
-
-      return () => {
-        authListener?.subscription?.unsubscribe()
-      }
-    } else {
-      setTokenError('Tautan reset kata sandi tidak valid atau telah kedaluwarsa.')
+    return () => {
+      aktif = false
     }
   }, [token])
 
@@ -86,18 +77,14 @@ export default function ResetPassword() {
 
     setMemproses(true)
     try {
-      if (dataToken?.tipe === 'supabase' && apakahSupabaseAktif()) {
+      if (dataToken?.tipe === 'supabase') {
         const { error } = await supabase.auth.updateUser({ password })
         if (error) throw error
-      }
-      if (dataToken?.email) {
-        await perbaruiSandiPengguna({
-          email: dataToken.email,
-          passwordBaru: password,
-        })
-      }
-      if (token) {
-        konsumsiTokenReset(token)
+        // Sesi pemulihan hanya untuk ganti sandi; pengguna masuk ulang dengan sandi baru.
+        await supabase.auth.signOut()
+      } else if (dataToken?.email) {
+        await perbaruiSandiPengguna({ email: dataToken.email, passwordBaru: password })
+        if (token) konsumsiTokenReset(token)
       }
       setSukses(true)
     } catch (e) {
@@ -179,6 +166,10 @@ export default function ResetPassword() {
             </Button>
           </div>
         </div>
+      ) : memuatTautan ? (
+        <p role="status" className="mt-6 text-sm text-slate-500">
+          Memeriksa tautan reset...
+        </p>
       ) : (
         !tokenError && (
           <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
@@ -201,7 +192,7 @@ export default function ResetPassword() {
                 placeholder="Buat kata sandi baru"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                suffix={tombolLihat}
+                trailingAction={tombolLihat}
                 required
               />
 

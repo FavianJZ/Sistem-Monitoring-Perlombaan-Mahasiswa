@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Check, CircleAlert, Mail, RefreshCw, ShieldCheck } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
-import { kirimOtpEmail, verifikasiOtpEmail } from '@/lib/supabase'
+import { kirimOtpEmail, kirimUlangOtpEmail, verifikasiOtpEmail } from '@/lib/supabase'
 
 export function ModalVerifikasiOtp({ terbuka, onClose, email, password, metadata, onSukses }) {
   const [kodeOtp, setKodeOtp] = useState('')
@@ -11,21 +11,32 @@ export function ModalVerifikasiOtp({ terbuka, onClose, email, password, metadata
   const [hitungMundur, setHitungMundur] = useState(60)
   const inputRef = useRef(null)
 
-  useEffect(() => {
-    if (terbuka && email) {
-      setKodeOtp('')
-      setGalat(null)
-      setHitungMundur(60)
+  // password & metadata dibaca lewat ref: objek metadata dibuat ulang tiap
+  // render Register, dan bila jadi dependensi efek akan memicu signUp berulang.
+  const dataDaftarRef = useRef({ password, metadata })
+  dataDaftarRef.current = { password, metadata }
 
-      kirimOtpEmail({ email, password, metadata })
-        .then(() => {
-          setTimeout(() => inputRef.current?.focus(), 150)
-        })
-        .catch((e) => {
-          setGalat(e.message)
-        })
-    }
-  }, [terbuka, email, password, metadata])
+  // Kirim sekali per email per pembukaan modal (StrictMode menjalankan efek dua kali).
+  const sudahDikirimRef = useRef(null)
+  useEffect(() => {
+    if (!terbuka) sudahDikirimRef.current = null
+  }, [terbuka])
+
+  useEffect(() => {
+    if (!terbuka || !email || sudahDikirimRef.current === email) return
+    sudahDikirimRef.current = email
+    setKodeOtp('')
+    setGalat(null)
+    setHitungMundur(60)
+
+    kirimOtpEmail({ email, ...dataDaftarRef.current })
+      .then(() => {
+        setTimeout(() => inputRef.current?.focus(), 150)
+      })
+      .catch((e) => {
+        setGalat(e.message)
+      })
+  }, [terbuka, email])
 
   useEffect(() => {
     if (!terbuka || hitungMundur <= 0) return
@@ -38,7 +49,7 @@ export function ModalVerifikasiOtp({ terbuka, onClose, email, password, metadata
   async function handleKirimUlang() {
     try {
       setGalat(null)
-      await kirimOtpEmail({ email, password, metadata })
+      await kirimUlangOtpEmail({ email })
       setHitungMundur(60)
     } catch (e) {
       setGalat(e.message)

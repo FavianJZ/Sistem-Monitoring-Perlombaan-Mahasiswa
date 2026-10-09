@@ -8,6 +8,7 @@ import { useAuth } from '@/auth/AuthContext'
 import { AKUN_DEMO, SANDI_DEMO } from '@/auth/akunDemo'
 import { berandaRole } from '@/auth/sesi'
 import { MODE_DEMO } from '@/config/mode'
+import { adalahTautanPemulihan } from '@/lib/supabase'
 
 const SOROTAN = [
   {
@@ -40,9 +41,8 @@ export default function Login() {
   const tujuan = lokasi.state?.dari
 
   useEffect(() => {
-    const hash = window.location.hash
-    if (hash && (hash.includes('type=recovery') || hash.includes('access_token'))) {
-      navigate(`/reset-password${hash}`, { replace: true })
+    if (adalahTautanPemulihan(window.location)) {
+      navigate(`/reset-password${window.location.search}${window.location.hash}`, { replace: true })
     }
   }, [navigate])
 

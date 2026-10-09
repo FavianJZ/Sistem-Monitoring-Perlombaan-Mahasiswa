@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { DOMAIN_KAMPUS } from '@/auth/validasiRegistrasi'
 import { emailTerpakai } from '@/services/userService'
-import { kirimPermintaanResetPassword } from '@/lib/supabase'
+import { apakahSupabaseAktif, kirimPermintaanResetPassword } from '@/lib/supabase'
 
 export default function LupaPassword() {
   const [email, setEmail] = useState('')
@@ -29,7 +29,9 @@ export default function LupaPassword() {
       return
     }
 
-    if (!emailTerpakai(alamat)) {
+    // Daftar akun lokal hanya ada di peramban ini; saat Supabase aktif,
+    // pengguna yang mendaftar di perangkat lain tidak boleh ditolak di sini.
+    if (!apakahSupabaseAktif() && !emailTerpakai(alamat)) {
       setGalat('Email belum terdaftar di sistem SiMonLomba. Silakan daftar terlebih dahulu.')
       return
     }
