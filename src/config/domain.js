@@ -55,13 +55,24 @@ export const UNGGAH_MAKS_BYTE = 5 * 1024 * 1024
 export const UNGGAH_TIPE_DIIZINKAN = ['application/pdf', 'image/jpeg', 'image/png']
 export const UNGGAH_EKSTENSI_LABEL = 'PDF, JPG, atau PNG maksimal 5MB'
 
+/**
+ * Program studi bidang IT di BINUS (School of Computer Science,
+ * School of Information Systems, dan Computer Engineering).
+ * Nilai 'Teknik Informatika' & 'Sistem Informasi' dipertahankan apa adanya
+ * karena sudah tersimpan di data lomba dan profil yang ada.
+ */
 export const PROGRAM_STUDI = [
   'Teknik Informatika',
+  'Software Engineering',
+  'Data Science',
+  'Cyber Security',
+  'Game Application and Technology',
+  'Mobile Application and Technology',
+  'Artificial Intelligence',
   'Sistem Informasi',
-  'Desain Komunikasi Visual',
-  'Manajemen',
-  'Akuntansi',
-  'Ilmu Komunikasi',
+  'Business Information Systems',
+  'Business Analytics',
+  'Teknik Komputer',
 ]
 
 export function labelBidang(value) {

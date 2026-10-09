@@ -73,6 +73,13 @@ export async function kirimOtpEmail({ email, password, metadata }) {
       }
     } catch (err) {
       console.warn('Supabase auth gagal:', err.message)
+      // Trigger pembuat profil gagal; penyebab paling umum NIM/email sudah dipakai profil lain.
+      if (/database error saving new user/i.test(err.message)) {
+        throw new Error('NIM atau email ini sudah terdaftar pada akun lain.')
+      }
+      if (/rate limit|security purposes/i.test(err.message)) {
+        throw new Error('Terlalu sering meminta kode. Tunggu sekitar 1 menit lalu coba lagi.')
+      }
       throw new Error(`Gagal mengirim kode via Supabase: ${err.message}`)
     }
   }
