@@ -4,12 +4,18 @@ import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { kirimOtpEmail, kirimUlangOtpEmail, verifikasiOtpEmail } from '@/lib/supabase'
 
+// Panjang OTP ditentukan setelan "Email OTP Length" di Supabase (6-10, proyek baru 8).
+// Diterima 6-8 agar tidak rusak bila setelan dashboard berubah.
+const MIN_DIGIT = 6
+const MAKS_DIGIT = 8
+
 export function ModalVerifikasiOtp({ terbuka, onClose, email, password, metadata, onSukses }) {
   const [kodeOtp, setKodeOtp] = useState('')
   const [memproses, setMemproses] = useState(false)
   const [galat, setGalat] = useState(null)
   const [hitungMundur, setHitungMundur] = useState(60)
   const inputRef = useRef(null)
+  const kodeValid = kodeOtp.length >= MIN_DIGIT && kodeOtp.length <= MAKS_DIGIT
 
   // password & metadata dibaca lewat ref: objek metadata dibuat ulang tiap
   // render Register, dan bila jadi dependensi efek akan memicu signUp berulang.
@@ -60,8 +66,8 @@ export function ModalVerifikasiOtp({ terbuka, onClose, email, password, metadata
     event?.preventDefault()
     setGalat(null)
 
-    if (kodeOtp.trim().length !== 6) {
-      setGalat('Masukkan 6 digit kode verifikasi yang terkirim.')
+    if (!kodeValid) {
+      setGalat(`Masukkan ${MIN_DIGIT}-${MAKS_DIGIT} digit kode verifikasi yang terkirim.`)
       return
     }
 
@@ -81,7 +87,7 @@ export function ModalVerifikasiOtp({ terbuka, onClose, email, password, metadata
       open={terbuka}
       onClose={onClose}
       title="Verifikasi Email Akun Mahasiswa"
-      description={`Kode verifikasi 6-digit telah dikirimkan ke ${email}`}
+      description={`Kode verifikasi telah dikirimkan ke ${email}`}
       size="sm"
     >
       <form onSubmit={handleVerifikasi} className="space-y-4">
@@ -109,18 +115,18 @@ export function ModalVerifikasiOtp({ terbuka, onClose, email, password, metadata
 
         <div>
           <label htmlFor="input-otp" className="block text-xs font-semibold text-slate-700 mb-1.5">
-            Kode Verifikasi OTP (6 Digit)
+            Kode Verifikasi OTP (sesuai email)
           </label>
           <input
             id="input-otp"
             ref={inputRef}
             type="text"
             inputMode="numeric"
-            maxLength={6}
+            maxLength={MAKS_DIGIT}
             autoComplete="one-time-code"
-            placeholder="Contoh: 849201"
+            placeholder="Contoh: 84920135"
             value={kodeOtp}
-            onChange={(e) => setKodeOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            onChange={(e) => setKodeOtp(e.target.value.replace(/\D/g, '').slice(0, MAKS_DIGIT))}
             className="w-full text-center font-mono text-2xl tracking-[0.35em] font-bold rounded-lg border border-slate-300 py-2.5 px-3 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
           />
         </div>
@@ -148,7 +154,7 @@ export function ModalVerifikasiOtp({ terbuka, onClose, email, password, metadata
             type="submit"
             loading={memproses}
             leadingIcon={ShieldCheck}
-            disabled={kodeOtp.length !== 6}
+            disabled={!kodeValid}
           >
             Verifikasi & Masuk
           </Button>
