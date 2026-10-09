@@ -22,8 +22,11 @@ import { DOMAIN_KAMPUS, kekuatanSandi } from '@/auth/validasiRegistrasi'
 import {
   KODE_ADMIN_DEMO,
   KODE_DOSEN_DEMO,
+  cekKetersediaanAkun,
+  cekKodePeran,
   emailTerpakai,
 } from '@/services/userService'
+import { ModalVerifikasiOtp } from '@/components/auth/ModalVerifikasiOtp'
 import { MODE_DEMO } from '@/config/mode'
 import { PROGRAM_STUDI } from '@/config/domain'
 import { cn } from '@/lib/cn'
@@ -56,7 +59,9 @@ const LABEL_KEKUATAN = ['Belum diisi', 'Lemah', 'Cukup', 'Kuat']
 const WARNA_KEKUATAN = ['bg-slate-200', 'bg-danger-500', 'bg-warning-500', 'bg-success-500']
 
 export default function RegisterStaf() {
-  const { user, daftar, memproses } = useAuth()
+  const { user, daftar, memproses, modeSupabase } = useAuth()
+  const [mengecek, setMengecek] = useState(false)
+  const [modalOtpTerbuka, setModalOtpTerbuka] = useState(false)
   const { toast } = useToast()
   const navigate = useNavigate()
   const lokasi = useLocation()
@@ -103,7 +108,7 @@ export default function RegisterStaf() {
       return
     }
 
-    if (emailTerpakai(email)) {
+    if (!modeSupabase && emailTerpakai(email)) {
       setGalatServer('Email ini sudah terdaftar. Silakan masuk.')
       return
     }
@@ -113,24 +118,24 @@ export default function RegisterStaf() {
       return
     }
 
-    if (role === 'dosen') {
-      if (!form.kodeOtorisasi.trim()) {
-        setGalatServer('Kode otorisasi Dosen Pembimbing wajib diisi.')
-        return
-      }
-      if (form.kodeOtorisasi.trim() !== KODE_DOSEN_DEMO) {
-        setGalatServer('Kode otorisasi Dosen tidak valid. Hubungi admin fakultas.')
-        return
-      }
+    if (!form.kodeOtorisasi.trim()) {
+      setGalatServer(
+        role === 'dosen'
+          ? 'Kode otorisasi Dosen Pembimbing wajib diisi.'
+          : 'Kode verifikasi Admin Prodi wajib diisi.',
+      )
+      return
     }
 
-    if (role === 'admin') {
-      if (!form.kodeOtorisasi.trim()) {
-        setGalatServer('Kode verifikasi Admin Prodi wajib diisi.')
-        return
-      }
-      if (form.kodeOtorisasi.trim() !== KODE_ADMIN_DEMO) {
-        setGalatServer('Kode verifikasi Admin Prodi tidak valid.')
+    // Mode lokal membandingkan dengan kode demo; mode Supabase dicek di server.
+    if (!modeSupabase) {
+      const kodeBenar = role === 'dosen' ? KODE_DOSEN_DEMO : KODE_ADMIN_DEMO
+      if (form.kodeOtorisasi.trim() !== kodeBenar) {
+        setGalatServer(
+          role === 'dosen'
+            ? 'Kode otorisasi Dosen tidak valid. Hubungi admin fakultas.'
+            : 'Kode verifikasi Admin Prodi tidak valid.',
+        )
         return
       }
     }
@@ -147,6 +152,29 @@ export default function RegisterStaf() {
 
     if (!setuju) {
       setGalatServer('Anda perlu menyetujui ketentuan penggunaan.')
+      return
+    }
+
+    if (modeSupabase) {
+      setMengecek(true)
+      try {
+        const [kodeValid, cek] = await Promise.all([
+          cekKodePeran(role, form.kodeOtorisasi),
+          cekKetersediaanAkun({ email }),
+        ])
+        if (cek.emailTerpakai) {
+          setGalatServer('Email ini sudah terdaftar. Silakan masuk atau gunakan Lupa Kata Sandi.')
+          return
+        }
+        if (!kodeValid) {
+          setGalatServer('Kode otorisasi tidak valid. Hubungi Ketua Jurusan atau Dekanat.')
+          return
+        }
+      } finally {
+        setMengecek(false)
+      }
+      // Akun dibuat lewat signUp + OTP; trigger database memberi peran sesuai kode.
+      setModalOtpTerbuka(true)
       return
     }
 
@@ -342,7 +370,7 @@ export default function RegisterStaf() {
             placeholder="Buat kata sandi minimal 8 karakter"
             value={form.password}
             onChange={ubah('password')}
-            suffix={tombolLihat}
+            trailingAction={tombolLihat}
             required
           />
 
@@ -410,7 +438,7 @@ export default function RegisterStaf() {
           type="submit"
           size="lg"
           fullWidth
-          loading={memproses}
+          loading={memproses || mengecek}
           leadingIcon={UserPlus}
           className="bg-accent-600 hover:bg-accent-700 text-white"
         >
@@ -424,6 +452,37 @@ export default function RegisterStaf() {
           </Link>
         </p>
       </form>
+
+      {modeSupabase && (
+        <ModalVerifikasiOtp
+          terbuka={modalOtpTerbuka}
+          judul="Verifikasi Email Akun Staf"
+          email={form.email.trim().toLowerCase()}
+          password={form.password}
+          metadata={{
+            nama: form.nama.trim(),
+            role,
+            prodi: form.prodi,
+            // Diperiksa & dihapus oleh trigger database; tidak pernah dipercaya di klien.
+            kode_peran: form.kodeOtorisasi.trim(),
+          }}
+          onClose={() => setModalOtpTerbuka(false)}
+          onSukses={async () => {
+            setModalOtpTerbuka(false)
+            try {
+              const pengguna = await daftar({ role })
+              toast({
+                variant: 'success',
+                title: 'Akun staf berhasil dibuat',
+                description: `Selamat datang, ${pengguna.nama}.`,
+              })
+              navigate(tujuan ?? berandaRole(pengguna.role), { replace: true })
+            } catch (error) {
+              setGalatServer(error.message)
+            }
+          }}
+        />
+      )}
     </AuthLayout>
   )
 }

@@ -4,7 +4,7 @@ import { berandaRole } from './sesi'
 import { adalahTautanPemulihan } from '@/lib/supabase'
 
 export function RequireAuth({ roles }) {
-  const { user } = useAuth()
+  const { user, siap } = useAuth()
   const lokasi = useLocation()
 
   // Harus dicek sebelum redirect ke /login, karena tautan reset sering
@@ -12,6 +12,15 @@ export function RequireAuth({ roles }) {
   if (typeof window !== 'undefined' && adalahTautanPemulihan(window.location)) {
     return (
       <Navigate to={`/reset-password${window.location.search}${window.location.hash}`} replace />
+    )
+  }
+
+  // Sesi Supabase sedang dipulihkan: jangan buru-buru melempar ke /login saat refresh.
+  if (!siap) {
+    return (
+      <p role="status" className="p-8 text-center text-sm text-slate-500">
+        Memuat sesi...
+      </p>
     )
   }
 

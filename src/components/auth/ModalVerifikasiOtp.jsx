@@ -9,7 +9,15 @@ import { kirimOtpEmail, kirimUlangOtpEmail, verifikasiOtpEmail } from '@/lib/sup
 const MIN_DIGIT = 6
 const MAKS_DIGIT = 8
 
-export function ModalVerifikasiOtp({ terbuka, onClose, email, password, metadata, onSukses }) {
+export function ModalVerifikasiOtp({
+  terbuka,
+  onClose,
+  email,
+  password,
+  metadata,
+  onSukses,
+  judul = 'Verifikasi Email Akun Mahasiswa',
+}) {
   const [kodeOtp, setKodeOtp] = useState('')
   const [memproses, setMemproses] = useState(false)
   const [galat, setGalat] = useState(null)
@@ -86,7 +94,7 @@ export function ModalVerifikasiOtp({ terbuka, onClose, email, password, metadata
     <Modal
       open={terbuka}
       onClose={onClose}
-      title="Verifikasi Email Akun Mahasiswa"
+      title={judul}
       description={`Kode verifikasi telah dikirimkan ke ${email}`}
       size="sm"
     >

@@ -21,12 +21,19 @@ import {
   kekuatanSandi,
   validasiRegistrasi,
 } from '@/auth/validasiRegistrasi'
-import { emailTerpakai, nimTerpakai } from '@/services/userService'
+import { cekKetersediaanAkun, emailTerpakai, nimTerpakai } from '@/services/userService'
 import { PROGRAM_STUDI } from '@/config/domain'
 import { cn } from '@/lib/cn'
 
 const TAHUN_INI = new Date().getFullYear()
-const PILIHAN_ANGKATAN = Array.from({ length: 8 }, (_, i) => String(TAHUN_INI - i))
+// Angkatan 2015 s.d. 2031 (atau 5 tahun ke depan bila tahun berjalan sudah lewat 2026),
+// diurutkan dari yang terbaru.
+const ANGKATAN_TERAKHIR = Math.max(2031, TAHUN_INI + 5)
+const ANGKATAN_PERTAMA = 2015
+const PILIHAN_ANGKATAN = Array.from(
+  { length: ANGKATAN_TERAKHIR - ANGKATAN_PERTAMA + 1 },
+  (_, i) => String(ANGKATAN_TERAKHIR - i),
+)
 
 const FORM_AWAL = {
   nama: '',
@@ -154,6 +161,7 @@ export default function Register() {
   const [galatServer, setGalatServer] = useState(null)
   const [modalOtpTerbuka, setModalOtpTerbuka] = useState(false)
   const [emailTerverifikasi, setEmailTerverifikasi] = useState(false)
+  const [mengecek, setMengecek] = useState(false)
 
   const tujuan = lokasi.state?.dari
 
@@ -195,6 +203,21 @@ export default function Register() {
     }
 
     if (!emailTerverifikasi) {
+      // Cek ke database sebelum mengirim OTP, supaya email/NIM ganda ketahuan lebih awal.
+      setMengecek(true)
+      try {
+        const cek = await cekKetersediaanAkun({ email: form.email, nim: form.nim })
+        if (cek.emailTerpakai || cek.nimTerpakai) {
+          setGalatServer(
+            cek.emailTerpakai
+              ? 'Email ini sudah terdaftar. Silakan masuk atau gunakan Lupa Kata Sandi.'
+              : 'NIM ini sudah terdaftar pada akun lain.',
+          )
+          return
+        }
+      } finally {
+        setMengecek(false)
+      }
       setModalOtpTerbuka(true)
       return
     }
@@ -421,7 +444,13 @@ export default function Register() {
           )}
         </div>
 
-        <Button type="submit" size="lg" fullWidth loading={memproses} leadingIcon={UserPlus}>
+        <Button
+          type="submit"
+          size="lg"
+          fullWidth
+          loading={memproses || mengecek}
+          leadingIcon={UserPlus}
+        >
           {memproses ? 'Membuat akun...' : 'Buat akun'}
         </Button>
       </form>
