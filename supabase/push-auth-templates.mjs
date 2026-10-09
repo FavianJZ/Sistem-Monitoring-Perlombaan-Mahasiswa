@@ -26,8 +26,8 @@ const dir = path.join(import.meta.dirname, 'templates')
 const baca = (nama) => readFile(path.join(dir, nama), 'utf8')
 
 const body = {
-  // Harus sama dengan input 6 digit di ModalVerifikasiOtp.jsx.
-  mailer_otp_length: 6,
+  // Modal menerima 6-8 digit; disamakan dengan bawaan proyek hosted.
+  mailer_otp_length: 8,
   mailer_subjects_confirmation: 'Kode verifikasi akun SiMonLomba',
   mailer_templates_confirmation_content: await baca('confirmation.html'),
   mailer_subjects_magic_link: 'Kode verifikasi SiMonLomba',
