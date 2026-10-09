@@ -15,6 +15,9 @@ export const supabase =
           persistSession: true,
           autoRefreshToken: true,
           detectSessionInUrl: true,
+          // Implicit dipertahankan supaya tautan lama (#access_token) tetap jalan;
+          // tautan baru memakai token_hash yang tidak bergantung pada flow ini.
+          flowType: 'implicit',
         },
       })
     : null
@@ -102,14 +105,96 @@ export async function verifikasiOtpEmail({ email, kode }) {
       }
       return true
     } catch (err) {
-      if (kodeInput === '123456') {
-        return verifikasiOtpLokal({ email: target, kode: kodeInput })
-      }
+      // Tidak ada kode cadangan: saat Supabase aktif, hanya kode dari email yang sah.
       throw new Error(`Verifikasi gagal: ${err.message}`)
     }
   }
 
   return verifikasiOtpLokal({ email: target, kode: kodeInput })
+}
+
+/**
+ * Kirim ulang kode OTP pendaftaran tanpa membuat akun baru.
+ * Memanggil signUp lagi bisa memicu rate limit dan email ganda.
+ */
+export async function kirimUlangOtpEmail({ email }) {
+  const target = String(email ?? '').trim().toLowerCase()
+  if (!target) throw new Error('Email wajib diisi.')
+
+  if (apakahSupabaseAktif()) {
+    const { error } = await supabase.auth.resend({ type: 'signup', email: target })
+    if (error) throw new Error(`Gagal mengirim ulang kode: ${error.message}`)
+    return { sukses: true, metode: 'supabase_resend' }
+  }
+
+  return kirimOtpLokal(target)
+}
+
+const PESAN_TAUTAN_KEDALUWARSA =
+  'Tautan reset kata sandi tidak valid atau telah kedaluwarsa. Silakan minta tautan baru.'
+
+/**
+ * Menukar tautan reset dari email menjadi sesi pemulihan Supabase.
+ * Mendukung tiga format tautan:
+ *   1. ?token_hash=...&type=recovery  (template email yang disarankan)
+ *   2. ?code=...                      (alur PKCE)
+ *   3. #access_token=...&type=recovery (tautan bawaan / implicit)
+ * Mengembalikan { email } atau melempar Error yang siap ditampilkan.
+ */
+const tukarBerjalan = new Map()
+
+export function tukarTautanReset(url = window.location.href) {
+  // token_hash hanya sekali pakai; StrictMode memanggil efek dua kali,
+  // jadi hasil penukaran untuk URL yang sama dipakai bersama.
+  if (!tukarBerjalan.has(url)) tukarBerjalan.set(url, prosesTautanReset(url))
+  return tukarBerjalan.get(url)
+}
+
+async function prosesTautanReset(url) {
+  if (!apakahSupabaseAktif()) throw new Error(PESAN_TAUTAN_KEDALUWARSA)
+
+  const alamat = new URL(url)
+  const query = alamat.searchParams
+  const hash = new URLSearchParams(alamat.hash.replace(/^#/, ''))
+
+  // Supabase menaruh error di hash/query, misalnya otp_expired.
+  const galat = hash.get('error_description') || query.get('error_description')
+  if (galat) throw new Error(`${galat.replace(/\+/g, ' ')}. Silakan minta tautan baru.`)
+
+  const tokenHash = query.get('token_hash')
+  const kode = query.get('code')
+
+  if (tokenHash) {
+    const { data, error } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: 'recovery',
+    })
+    if (error) throw new Error(PESAN_TAUTAN_KEDALUWARSA)
+    return { email: data.user?.email }
+  }
+
+  if (kode) {
+    const { data, error } = await supabase.auth.exchangeCodeForSession(kode)
+    if (error) throw new Error(PESAN_TAUTAN_KEDALUWARSA)
+    return { email: data.user?.email }
+  }
+
+  // Tautan implicit: supabase-js sudah memproses hash saat inisialisasi.
+  const { data } = await supabase.auth.getSession()
+  if (data.session?.user) return { email: data.session.user.email }
+
+  throw new Error(PESAN_TAUTAN_KEDALUWARSA)
+}
+
+/** True bila alamat saat ini membawa parameter tautan pemulihan Supabase. */
+export function adalahTautanPemulihan(loc = window.location) {
+  const teks = `${loc.search}${loc.hash}`
+  return (
+    teks.includes('type=recovery') ||
+    teks.includes('access_token=') ||
+    teks.includes('token_hash=') ||
+    (loc.pathname === '/' && new URLSearchParams(loc.search).has('code'))
+  )
 }
 
 export async function kirimPermintaanResetPassword({ email }) {

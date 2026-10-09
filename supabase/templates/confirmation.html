@@ -1,0 +1,21 @@
+<!-- Template "Confirm signup". Dipakai oleh supabase.auth.signUp & resend({ type: 'signup' }). -->
+<div style="font-family: 'Open Sans', Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #334155;">
+  <div style="border-top: 4px solid #0096d6; padding: 24px; background: #ffffff;">
+    <p style="margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #a85f00;">
+      SIMONLOMBA - BINUS UNIVERSITY
+    </p>
+    <h2 style="margin: 12px 0 8px; font-size: 20px; color: #1e293b;">Kode verifikasi akun Anda</h2>
+    <p style="margin: 0 0 20px; font-size: 14px; line-height: 1.6;">
+      Masukkan kode berikut di halaman pendaftaran SiMonLomba untuk mengaktifkan akun
+      <strong>{{ .Email }}</strong>.
+    </p>
+    <p style="margin: 0 0 20px; padding: 16px; text-align: center; font-size: 32px; font-weight: 700;
+              letter-spacing: 8px; font-family: 'Courier New', monospace; background: #eaf6fc;
+              color: #00557f; border-radius: 6px;">
+      {{ .Token }}
+    </p>
+    <p style="margin: 0; font-size: 12px; color: #64748b; line-height: 1.6;">
+      Kode berlaku 1 jam. Jika Anda tidak merasa mendaftar, abaikan email ini.
+    </p>
+  </div>
+</div>

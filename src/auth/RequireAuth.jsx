@@ -1,16 +1,18 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from './AuthContext'
 import { berandaRole } from './sesi'
+import { adalahTautanPemulihan } from '@/lib/supabase'
 
 export function RequireAuth({ roles }) {
   const { user } = useAuth()
   const lokasi = useLocation()
 
-  if (typeof window !== 'undefined') {
-    const hash = window.location.hash
-    if (hash && (hash.includes('type=recovery') || hash.includes('access_token'))) {
-      return <Navigate to={`/reset-password${hash}`} replace />
-    }
+  // Harus dicek sebelum redirect ke /login, karena tautan reset sering
+  // mendarat di "/" (Site URL) yang dijaga RequireAuth.
+  if (typeof window !== 'undefined' && adalahTautanPemulihan(window.location)) {
+    return (
+      <Navigate to={`/reset-password${window.location.search}${window.location.hash}`} replace />
+    )
   }
 
   if (!user) {
