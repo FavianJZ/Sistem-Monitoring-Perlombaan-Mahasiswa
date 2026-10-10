@@ -28,20 +28,5 @@ enable_signup = true
 
 [auth.email]
 enable_signup = true
-enable_confirmations = true
-# Disamakan dengan proyek hosted (8). Modal menerima 6-8 digit.
-otp_length = 8
-otp_expiry = 3600
-max_frequency = "60s"
-
-[auth.email.template.confirmation]
-subject = "Kode pendaftaran SiMonLomba"
-content_path = "./supabase/templates/confirmation.html"
-
-[auth.email.template.magic_link]
-subject = "Kode masuk SiMonLomba"
-content_path = "./supabase/templates/magic_link.html"
-
-[auth.email.template.recovery]
-subject = "Permintaan ganti kata sandi SiMonLomba"
-content_path = "./supabase/templates/recovery.html"
+# Tanpa verifikasi email: signUp langsung mengembalikan sesi.
+enable_confirmations = false

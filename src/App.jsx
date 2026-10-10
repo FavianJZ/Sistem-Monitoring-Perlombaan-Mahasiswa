@@ -1,5 +1,4 @@
-import { useEffect } from 'react'
-import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 import { AppShell } from '@/components/layout/AppShell'
 import { ToastProvider } from '@/components/ui/Toast'
 import { AuthProvider } from '@/auth/AuthContext'
@@ -19,51 +18,19 @@ import DataMock from '@/pages/DataMock'
 import Login from '@/pages/Login'
 import Register from '@/pages/Register'
 import RegisterStaf from '@/pages/RegisterStaf'
-import LupaPassword from '@/pages/LupaPassword'
-import ResetPassword from '@/pages/ResetPassword'
 import NotFound from '@/pages/NotFound'
-import { supabase, apakahSupabaseAktif, adalahTautanPemulihan } from '@/lib/supabase'
 import { MODE_DEMO } from '@/config/mode'
 
 const ROLE_PEMANTAU = ['dosen', 'admin']
-
-function DeteksiRedirectRecovery() {
-  const navigate = useNavigate()
-  const lokasi = useLocation()
-
-  // Tautan reset yang jatuh ke Site URL ("/") atau halaman lain dipindahkan
-  // ke /reset-password dengan query dan hash utuh.
-  useEffect(() => {
-    if (lokasi.pathname !== '/reset-password' && adalahTautanPemulihan(window.location)) {
-      navigate(`/reset-password${window.location.search}${window.location.hash}`, { replace: true })
-    }
-  }, [navigate, lokasi.pathname])
-
-  // Cukup didaftarkan sekali; tidak perlu dipasang ulang setiap pindah halaman.
-  useEffect(() => {
-    if (!apakahSupabaseAktif()) return
-    const { data } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY' && window.location.pathname !== '/reset-password') {
-        navigate('/reset-password', { replace: true })
-      }
-    })
-    return () => data?.subscription?.unsubscribe()
-  }, [navigate])
-
-  return null
-}
 
 export default function App({ sesiAwal }) {
   return (
     <AuthProvider sesiAwal={sesiAwal}>
       <ToastProvider>
-        <DeteksiRedirectRecovery />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/daftar" element={<Register />} />
           <Route path="/daftar-staf" element={<RegisterStaf />} />
-          <Route path="/lupa-password" element={<LupaPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
 
           <Route element={<RequireAuth />}>
             <Route element={<AppShell />}>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { CalendarClock, CircleAlert, FolderCheck, LogIn, Trophy } from 'lucide-react'
 import { AuthLayout } from '@/components/layout/AuthLayout'
@@ -8,7 +8,6 @@ import { useAuth } from '@/auth/AuthContext'
 import { AKUN_DEMO, SANDI_DEMO } from '@/auth/akunDemo'
 import { berandaRole } from '@/auth/sesi'
 import { MODE_DEMO } from '@/config/mode'
-import { adalahTautanPemulihan } from '@/lib/supabase'
 
 const SOROTAN = [
   {
@@ -39,12 +38,6 @@ export default function Login() {
   const [galatField, setGalatField] = useState({})
 
   const tujuan = lokasi.state?.dari
-
-  useEffect(() => {
-    if (adalahTautanPemulihan(window.location)) {
-      navigate(`/reset-password${window.location.search}${window.location.hash}`, { replace: true })
-    }
-  }, [navigate])
 
   if (user) {
     return <Navigate to={tujuan ?? berandaRole(user.role)} replace />
@@ -155,14 +148,9 @@ export default function Login() {
               required
             />
 
-            <div className="flex justify-end -mt-2">
-              <Link
-                to="/lupa-password"
-                className="text-xs font-semibold text-primary-700 hover:text-primary-800 hover:underline"
-              >
-                Lupa kata sandi?
-              </Link>
-            </div>
+            <p className="-mt-2 text-right text-xs text-slate-500">
+              Lupa kata sandi? Hubungi admin program studi.
+            </p>
 
             <Button type="submit" size="lg" fullWidth loading={memproses} leadingIcon={LogIn}>
               Masuk
