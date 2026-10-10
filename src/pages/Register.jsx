@@ -5,10 +5,8 @@ import {
   CircleAlert,
   Eye,
   EyeOff,
-  Mail,
   UserPlus,
 } from 'lucide-react'
-import { ModalVerifikasiOtp } from '@/components/auth/ModalVerifikasiOtp'
 import { AuthLayout } from '@/components/layout/AuthLayout'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -159,8 +157,6 @@ export default function Register() {
   const [disentuh, setDisentuh] = useState({})
   const [percobaan, setPercobaan] = useState(0)
   const [galatServer, setGalatServer] = useState(null)
-  const [modalOtpTerbuka, setModalOtpTerbuka] = useState(false)
-  const [emailTerverifikasi, setEmailTerverifikasi] = useState(false)
   const [mengecek, setMengecek] = useState(false)
 
   const tujuan = lokasi.state?.dari
@@ -202,24 +198,20 @@ export default function Register() {
       return
     }
 
-    if (!emailTerverifikasi) {
-      // Cek ke database sebelum mengirim OTP, supaya email/NIM ganda ketahuan lebih awal.
-      setMengecek(true)
-      try {
-        const cek = await cekKetersediaanAkun({ email: form.email, nim: form.nim })
-        if (cek.emailTerpakai || cek.nimTerpakai) {
-          setGalatServer(
-            cek.emailTerpakai
-              ? 'Email ini sudah terdaftar. Silakan masuk atau gunakan Lupa Kata Sandi.'
-              : 'NIM ini sudah terdaftar pada akun lain.',
-          )
-          return
-        }
-      } finally {
-        setMengecek(false)
+    // Cek ke database lebih dulu, supaya email/NIM ganda ketahuan sebelum akun dibuat.
+    setMengecek(true)
+    try {
+      const cek = await cekKetersediaanAkun({ email: form.email, nim: form.nim })
+      if (cek.emailTerpakai || cek.nimTerpakai) {
+        setGalatServer(
+          cek.emailTerpakai
+            ? 'Email ini sudah terdaftar. Silakan masuk.'
+            : 'NIM ini sudah terdaftar pada akun lain.',
+        )
+        return
       }
-      setModalOtpTerbuka(true)
-      return
+    } finally {
+      setMengecek(false)
     }
 
     try {
@@ -313,40 +305,19 @@ export default function Register() {
           required
         />
 
-        <div>
-          <Input
-            label="Email kampus"
-            type="email"
-            name="email"
-            autoComplete="email"
-            placeholder={`nama${DOMAIN_KAMPUS}`}
-            hint={`Gunakan email berakhiran ${DOMAIN_KAMPUS}.`}
-            value={form.email}
-            onChange={ubah('email')}
-            onBlur={sentuh('email')}
-            error={tampilkan('email')}
-            required
-          />
-
-          {form.email.endsWith(DOMAIN_KAMPUS) && (
-            <div className="mt-2 flex items-center justify-between gap-2">
-              {emailTerverifikasi ? (
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-success-700 bg-success-50 border border-success-200 px-2.5 py-1 rounded-md">
-                  <Check className="size-3.5" /> Email Terverifikasi (Kode OTP Valid)
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setModalOtpTerbuka(true)}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-700 hover:text-primary-800 hover:underline"
-                >
-                  <Mail className="size-3.5" />
-                  Verifikasi Email dengan Kode OTP (Aktivasi Bot)
-                </button>
-              )}
-            </div>
-          )}
-        </div>
+        <Input
+          label="Email kampus"
+          type="email"
+          name="email"
+          autoComplete="email"
+          placeholder={`nama${DOMAIN_KAMPUS}`}
+          hint={`Gunakan email berakhiran ${DOMAIN_KAMPUS}.`}
+          value={form.email}
+          onChange={ubah('email')}
+          onBlur={sentuh('email')}
+          error={tampilkan('email')}
+          required
+        />
 
         <div className="grid gap-5 sm:grid-cols-[1.4fr_1fr]">
           <Input
@@ -454,35 +425,6 @@ export default function Register() {
           {memproses ? 'Membuat akun...' : 'Buat akun'}
         </Button>
       </form>
-
-      <ModalVerifikasiOtp
-        terbuka={modalOtpTerbuka}
-        email={form.email}
-        password={form.password}
-        metadata={{
-          nama: form.nama,
-          role: 'mahasiswa',
-          prodi: form.prodi,
-          nim: form.nim,
-          angkatan: Number(form.angkatan),
-        }}
-        onClose={() => setModalOtpTerbuka(false)}
-        onSukses={async () => {
-          setEmailTerverifikasi(true)
-          setModalOtpTerbuka(false)
-          try {
-            const pengguna = await daftar({ ...form, role })
-            toast({
-              variant: 'success',
-              title: 'Akun berhasil dibuat',
-              description: `Email terverifikasi. Selamat datang, ${pengguna.nama}.`,
-            })
-            navigate(tujuan ?? berandaRole(pengguna.role), { replace: true })
-          } catch (error) {
-            setGalatServer(error.message)
-          }
-        }}
-      />
     </AuthLayout>
   )
 }

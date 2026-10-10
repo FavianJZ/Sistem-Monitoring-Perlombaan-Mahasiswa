@@ -28,10 +28,30 @@ function terjemahkanGalatAuth(error) {
   const pesan = error?.message ?? ''
   if (/invalid login credentials/i.test(pesan)) return 'Email atau kata sandi tidak cocok.'
   if (/email not confirmed/i.test(pesan)) {
-    return 'Email belum diverifikasi. Selesaikan verifikasi kode OTP saat mendaftar.'
+    return 'Akun belum aktif karena konfirmasi email Supabase masih menyala. Hubungi admin prodi.'
   }
-  if (/rate limit|too many/i.test(pesan)) return 'Terlalu banyak percobaan. Coba lagi beberapa saat.'
+  if (/already registered/i.test(pesan)) return 'Email ini sudah terdaftar. Silakan masuk.'
+  // Trigger pembuat profil gagal; penyebab paling umum NIM/email sudah dipakai profil lain.
+  if (/database error saving new user/i.test(pesan)) {
+    return 'NIM atau email ini sudah terdaftar pada akun lain.'
+  }
+  if (/rate limit|too many|security purposes/i.test(pesan)) {
+    return 'Terlalu banyak percobaan. Coba lagi beberapa saat.'
+  }
   return pesan || 'Terjadi kesalahan saat masuk.'
+}
+
+/** Data yang dibaca trigger handle_new_user untuk mengisi public.profiles. */
+function metadataPendaftaran(data) {
+  const metadata = { nama: data.nama?.trim(), role: data.role, prodi: data.prodi }
+  if (data.role === 'mahasiswa') {
+    metadata.nim = data.nim
+    metadata.angkatan = Number(data.angkatan)
+  }
+  const kodePeran = data.role === 'admin' ? data.kodeAdmin : data.kodeDosen
+  // Diperiksa & dihapus oleh trigger database; tidak pernah dipercaya di klien.
+  if (kodePeran) metadata.kode_peran = kodePeran.trim()
+  return metadata
 }
 
 /*
@@ -140,19 +160,30 @@ export function AuthProvider({ children, sesiAwal }) {
   )
 
   /**
-   * Mode Supabase: akun sudah dibuat oleh signUp di modal OTP dan sesi aktif
-   * setelah verifyOtp; di sini cukup memuat profil hasil trigger database.
+   * Mode Supabase: signUp langsung mengembalikan sesi karena konfirmasi email
+   * dimatikan; profil dibuat oleh trigger database dari metadata.
    */
   const daftar = useCallback(
     async (data) => {
       setMemproses(true)
       try {
         if (modeSupabase) {
-          const { data: sesiData } = await supabase.auth.getSession()
-          if (!sesiData.session) {
-            throw new Error('Sesi verifikasi tidak ditemukan. Ulangi verifikasi kode OTP.')
+          const { data: hasil, error } = await supabase.auth.signUp({
+            email: String(data.email ?? '').trim().toLowerCase(),
+            password: data.password,
+            options: { data: metadataPendaftaran(data) },
+          })
+          if (error) throw new Error(terjemahkanGalatAuth(error))
+          // Supabase menyamarkan email ganda sebagai sukses tanpa identitas.
+          if (hasil.user && hasil.user.identities?.length === 0) {
+            throw new Error('Email ini sudah terdaftar. Silakan masuk.')
           }
-          const profil = await pakaiSesiSupabase(sesiData.session)
+          if (!hasil.session) {
+            throw new Error(
+              'Akun dibuat, tetapi belum bisa masuk karena konfirmasi email Supabase masih menyala.',
+            )
+          }
+          const profil = await pakaiSesiSupabase(hasil.session)
           if (!profil) throw new Error('Profil gagal dibuat. Coba lagi atau hubungi admin prodi.')
           if (data?.role && profil.role !== data.role) {
             throw new Error(

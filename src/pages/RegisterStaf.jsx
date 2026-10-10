@@ -26,7 +26,6 @@ import {
   cekKodePeran,
   emailTerpakai,
 } from '@/services/userService'
-import { ModalVerifikasiOtp } from '@/components/auth/ModalVerifikasiOtp'
 import { MODE_DEMO } from '@/config/mode'
 import { PROGRAM_STUDI } from '@/config/domain'
 import { cn } from '@/lib/cn'
@@ -61,7 +60,6 @@ const WARNA_KEKUATAN = ['bg-slate-200', 'bg-danger-500', 'bg-warning-500', 'bg-s
 export default function RegisterStaf() {
   const { user, daftar, memproses, modeSupabase } = useAuth()
   const [mengecek, setMengecek] = useState(false)
-  const [modalOtpTerbuka, setModalOtpTerbuka] = useState(false)
   const { toast } = useToast()
   const navigate = useNavigate()
   const lokasi = useLocation()
@@ -163,7 +161,7 @@ export default function RegisterStaf() {
           cekKetersediaanAkun({ email }),
         ])
         if (cek.emailTerpakai) {
-          setGalatServer('Email ini sudah terdaftar. Silakan masuk atau gunakan Lupa Kata Sandi.')
+          setGalatServer('Email ini sudah terdaftar. Silakan masuk.')
           return
         }
         if (!kodeValid) {
@@ -173,9 +171,6 @@ export default function RegisterStaf() {
       } finally {
         setMengecek(false)
       }
-      // Akun dibuat lewat signUp + OTP; trigger database memberi peran sesuai kode.
-      setModalOtpTerbuka(true)
-      return
     }
 
     try {
@@ -452,37 +447,6 @@ export default function RegisterStaf() {
           </Link>
         </p>
       </form>
-
-      {modeSupabase && (
-        <ModalVerifikasiOtp
-          terbuka={modalOtpTerbuka}
-          judul="Verifikasi Email Akun Staf"
-          email={form.email.trim().toLowerCase()}
-          password={form.password}
-          metadata={{
-            nama: form.nama.trim(),
-            role,
-            prodi: form.prodi,
-            // Diperiksa & dihapus oleh trigger database; tidak pernah dipercaya di klien.
-            kode_peran: form.kodeOtorisasi.trim(),
-          }}
-          onClose={() => setModalOtpTerbuka(false)}
-          onSukses={async () => {
-            setModalOtpTerbuka(false)
-            try {
-              const pengguna = await daftar({ role })
-              toast({
-                variant: 'success',
-                title: 'Akun staf berhasil dibuat',
-                description: `Selamat datang, ${pengguna.nama}.`,
-              })
-              navigate(tujuan ?? berandaRole(pengguna.role), { replace: true })
-            } catch (error) {
-              setGalatServer(error.message)
-            }
-          }}
-        />
-      )}
     </AuthLayout>
   )
 }

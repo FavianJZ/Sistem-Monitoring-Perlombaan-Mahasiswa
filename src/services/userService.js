@@ -253,57 +253,7 @@ export async function registrasi(data = {}, opsi = {}) {
   )
   simpanAkun([...sisa, { user, password: data.password }])
 
-  if (apakahSupabaseAktif()) {
-    try {
-      // Akun Supabase sudah dibuat oleh signUp di modal OTP dan sesi aktif
-      // setelah verifyOtp. Memanggil signUp lagi hanya mengirim email ganda.
-      const { data: sesiData } = await supabase.auth.getUser()
-      const sbUserId = sesiData?.user?.id
-      if (sbUserId) {
-        await supabase.from('profiles').upsert({
-          id: sbUserId,
-          nama: user.nama,
-          email: user.email,
-          role: user.role,
-          nim: user.nim ?? null,
-          angkatan: user.angkatan ?? null,
-          prodi: user.prodi,
-        })
-      }
-    } catch {
-    }
-  }
-
   return { user: { ...user }, token: buatToken(user) }
-}
-
-export async function perbaruiSandiPengguna({ email, passwordBaru }, opsi = {}) {
-  await jeda(opsi.jeda ?? 300)
-  const target = String(email ?? '').trim().toLowerCase()
-  if (!target) throw new ServiceError('Email wajib diisi.', { kode: 'EMAIL_KOSONG' })
-  if (!passwordBaru) throw new ServiceError('Kata sandi baru wajib diisi.', { kode: 'SANDI_KOSONG' })
-
-  // Saat Supabase aktif, sandi diganti lewat supabase.auth.updateUser di
-  // halaman ResetPassword. Fungsi ini hanya mengurus akun mock lokal.
-  const daftar = bacaAkun()
-  const indeks = daftar.findIndex((item) => item.user.email.toLowerCase() === target)
-
-  if (indeks !== -1) {
-    daftar[indeks].password = passwordBaru
-    simpanAkun(daftar)
-    return { ok: true, email: target }
-  }
-
-  const demo = PENGGUNA_BAWAAN.find((item) => item.email.toLowerCase() === target)
-  if (demo) {
-    simpanAkun([...daftar, { user: { ...demo }, password: passwordBaru }])
-    return { ok: true, email: target }
-  }
-
-  throw new ServiceError('Akun dengan email tersebut tidak ditemukan.', {
-    status: 404,
-    kode: 'PENGGUNA_TIDAK_ADA',
-  })
 }
 
 export async function penggunaBerdasarkanId(id, opsi = {}) {
