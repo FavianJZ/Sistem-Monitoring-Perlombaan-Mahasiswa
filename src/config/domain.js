@@ -35,12 +35,12 @@ export const CAPAIAN_LOMBA = {
 }
 
 export const JENIS_TAHAPAN = [
-  { value: 'pendaftaran', label: 'Pendaftaran', rentang: true },
-  { value: 'tm', label: 'Technical Meeting', rentang: false },
-  { value: 'penyisihan', label: 'Penyisihan / Pengumpulan Karya', rentang: true },
-  { value: 'semifinal', label: 'Semifinal', rentang: false },
-  { value: 'final', label: 'Final', rentang: false },
-  { value: 'pengumuman', label: 'Pengumuman Pemenang', rentang: false },
+  { value: 'pendaftaran', label: 'Pendaftaran', pendek: 'Daftar', rentang: true },
+  { value: 'tm', label: 'Technical Meeting', pendek: 'TM', rentang: false },
+  { value: 'penyisihan', label: 'Penyisihan / Pengumpulan Karya', pendek: 'Penyisihan', rentang: true },
+  { value: 'semifinal', label: 'Semifinal', pendek: 'Semifinal', rentang: false },
+  { value: 'final', label: 'Final', pendek: 'Final', rentang: false },
+  { value: 'pengumuman', label: 'Pengumuman Pemenang', pendek: 'Pengumuman', rentang: false },
 ]
 
 export const JENIS_BERKAS = {
@@ -89,4 +89,9 @@ export function labelCapaian(value) {
 
 export function labelTahapan(value) {
   return JENIS_TAHAPAN.find((item) => item.value === value)?.label ?? value ?? '-'
+}
+
+/** Label ringkas untuk ruang sempit seperti sel kalender. */
+export function labelTahapanPendek(value) {
+  return JENIS_TAHAPAN.find((item) => item.value === value)?.pendek ?? labelTahapan(value)
 }

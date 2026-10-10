@@ -1,13 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import {
-  Archive,
-  FileSpreadsheet,
-  FileText,
-  Medal,
-  Search,
-  Table,
-} from 'lucide-react'
+import { Archive, FileSpreadsheet, FileText, Search, Table } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
@@ -273,27 +266,22 @@ export default function ArsipPrestasi() {
           <StatCard
             label="Lomba selesai"
             nilai={statistik.total}
-            keterangan="Seluruh riwayat keikutsertaan yang sudah tuntas"
-            icon={Archive}
           />
           <StatCard
             label="Prestasi tercatat"
             nilai={statistik.totalPrestasi}
-            keterangan="Juara 1 sampai Finalis, tidak termasuk peserta"
-            icon={Medal}
+            keterangan="Juara 1 sampai finalis"
             tone="success"
           />
           <StatCard
             label="Tingkat internasional"
             nilai={statistik.perTingkat.Internasional ?? 0}
-            icon={Medal}
             tone="primary"
           />
           <StatCard
             label="Hasil terfilter"
             nilai={semua.length}
-            keterangan="Jumlah baris yang akan ikut terekspor"
-            icon={Search}
+            keterangan="Baris yang ikut diekspor"
           />
         </div>
       )}

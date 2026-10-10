@@ -17,7 +17,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { useFilterUrl } from '@/hooks/useFilterUrl'
 import { daftarLomba, opsiFilter } from '@/services/competitionService'
 import { namaPengguna } from '@/services/userService'
-import { formatTanggal, jarakHari } from '@/lib/date'
+import { formatTanggal, waktuTahap } from '@/lib/date'
 import { labelTahapan } from '@/config/domain'
 
 const UKURAN_HALAMAN = 9
@@ -165,7 +165,7 @@ export default function MonitoringLomba() {
               {formatTanggal(lomba.tahapanBerikutnya.tanggalMulai)}
             </p>
             <p className="mt-1 text-xs font-medium text-primary-700">
-              {jarakHari(lomba.tahapanBerikutnya.tanggalMulai)}
+              {waktuTahap(lomba.tahapanBerikutnya)}
             </p>
           </div>
         ) : (

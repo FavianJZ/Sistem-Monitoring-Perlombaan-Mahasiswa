@@ -16,7 +16,7 @@ import { useAuth } from '@/auth/AuthContext'
 import { useAsync } from '@/hooks/useAsync'
 import { useDebounce } from '@/hooks/useDebounce'
 import { daftarLomba } from '@/services/competitionService'
-import { formatTanggal, jarakHari } from '@/lib/date'
+import { formatTanggal, waktuTahap } from '@/lib/date'
 import { STATUS_LOMBA, labelTahapan } from '@/config/domain'
 
 const UKURAN_HALAMAN = 8
@@ -119,7 +119,7 @@ export default function LombaSaya() {
               {formatTanggal(lomba.tahapanBerikutnya.tanggalMulai)}
             </p>
             <p className="mt-1 text-xs font-medium text-primary-700">
-              {jarakHari(lomba.tahapanBerikutnya.tanggalMulai)}
+              {waktuTahap(lomba.tahapanBerikutnya)}
             </p>
           </div>
         ) : (

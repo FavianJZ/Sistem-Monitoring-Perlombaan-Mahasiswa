@@ -47,8 +47,8 @@ export default function Profil() {
       <div className="mt-6 flex items-start gap-3 rounded-lg border border-slate-200 bg-white p-4">
         <ShieldCheck className="mt-0.5 size-5 shrink-0 text-slate-400" aria-hidden="true" />
         <p className="text-sm text-slate-600">
-          Data profil berasal dari akun kampus dan tidak bisa diubah dari halaman ini. Pada tahap
-          prototipe, identitas diambil dari data yang diisi saat registrasi akun.
+          Data profil diambil dari isian saat pendaftaran akun. NIM, email, dan peran tidak bisa
+          diubah sendiri; hubungi admin program studi bila ada yang keliru.
         </p>
       </div>
     </div>

@@ -3,7 +3,7 @@ import { draftKePayload } from './payload'
 
 const PENGGUNA = {
   id: 'mhs-1',
-  nama: 'Aulia Rahmawati',
+  nama: 'User-Mahasiswa(1)',
   nim: '2502019876',
   prodi: 'Teknik Informatika',
 }
@@ -18,8 +18,8 @@ const DRAFT = {
   dosenPembimbingId: 'dsn-3',
   linkPublikasi: '  https://itb.ac.id/osn  ',
   anggota: [
-    { nim: '2502019876', nama: 'Aulia Rahmawati', prodi: 'Teknik Informatika', peran: 'ketua' },
-    { nim: ' 2502021111 ', nama: ' Gilang Ramadhan ', prodi: 'Sistem Informasi' },
+    { nim: '2502019876', nama: 'User-Mahasiswa(1)', prodi: 'Teknik Informatika', peran: 'ketua' },
+    { nim: ' 2502021111 ', nama: ' User-Mahasiswa(7) ', prodi: 'Sistem Informasi' },
   ],
   berkas: {
     bukti_daftar: { namaFile: 'daftar.pdf', mimeType: 'application/pdf', size: 1000 },
@@ -90,7 +90,7 @@ describe('draftKePayload', () => {
     expect(payload.anggota[0].peran).toBe('ketua')
     expect(payload.anggota[1].peran).toBe('anggota')
     expect(payload.anggota[1].nim).toBe('2502021111')
-    expect(payload.anggota[1].nama).toBe('Gilang Ramadhan')
+    expect(payload.anggota[1].nama).toBe('User-Mahasiswa(7)')
   })
 
   it('hanya menyertakan ketua dan mengosongkan nama tim untuk lomba perorangan', () => {

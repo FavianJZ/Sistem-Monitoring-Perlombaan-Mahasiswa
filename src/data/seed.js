@@ -3,18 +3,18 @@ import { posterDataUri } from '@/lib/posterPlaceholder'
 import { MAHASISWA } from './users'
 
 const REKAN_TIM = [
-  { nim: '2502021111', nama: 'Gilang Ramadhan', prodi: 'Teknik Informatika' },
-  { nim: '2502022222', nama: 'Hana Puspita', prodi: 'Sistem Informasi' },
-  { nim: '2502023333', nama: 'Ivan Kurniawan', prodi: 'Teknik Informatika' },
-  { nim: '2502024444', nama: 'Jihan Salsabila', prodi: 'Desain Komunikasi Visual' },
-  { nim: '2502025555', nama: 'Kevin Wijaya', prodi: 'Sistem Informasi' },
-  { nim: '2502026666', nama: 'Laras Ayu Pertiwi', prodi: 'Manajemen' },
-  { nim: '2502027777', nama: 'Miko Ardiansyah', prodi: 'Ilmu Komunikasi' },
-  { nim: '2502028888', nama: 'Nadia Oktaviani', prodi: 'Akuntansi' },
-  { nim: '2502029999', nama: 'Oscar Pratama', prodi: 'Teknik Informatika' },
-  { nim: '2502020101', nama: 'Prita Anjani', prodi: 'Desain Komunikasi Visual' },
-  { nim: '2502020202', nama: 'Rizky Hidayat', prodi: 'Manajemen' },
-  { nim: '2502020303', nama: 'Salma Maulida', prodi: 'Ilmu Komunikasi' },
+  { nim: '2502021111', nama: 'User-Mahasiswa(7)', prodi: 'Teknik Informatika' },
+  { nim: '2502022222', nama: 'User-Mahasiswa(8)', prodi: 'Sistem Informasi' },
+  { nim: '2502023333', nama: 'User-Mahasiswa(9)', prodi: 'Teknik Informatika' },
+  { nim: '2502024444', nama: 'User-Mahasiswa(10)', prodi: 'Desain Komunikasi Visual' },
+  { nim: '2502025555', nama: 'User-Mahasiswa(11)', prodi: 'Sistem Informasi' },
+  { nim: '2502026666', nama: 'User-Mahasiswa(12)', prodi: 'Manajemen' },
+  { nim: '2502027777', nama: 'User-Mahasiswa(13)', prodi: 'Ilmu Komunikasi' },
+  { nim: '2502028888', nama: 'User-Mahasiswa(14)', prodi: 'Akuntansi' },
+  { nim: '2502029999', nama: 'User-Mahasiswa(15)', prodi: 'Teknik Informatika' },
+  { nim: '2502020101', nama: 'User-Mahasiswa(16)', prodi: 'Desain Komunikasi Visual' },
+  { nim: '2502020202', nama: 'User-Mahasiswa(17)', prodi: 'Manajemen' },
+  { nim: '2502020303', nama: 'User-Mahasiswa(18)', prodi: 'Ilmu Komunikasi' },
 ]
 
 const BERKAS_CONTOH = {

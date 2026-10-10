@@ -17,7 +17,7 @@ import {
   statistikLomba,
 } from '@/services/competitionService'
 import { namaPengguna } from '@/services/userService'
-import { formatTanggal, jarakHari } from '@/lib/date'
+import { formatTanggal, waktuTahap } from '@/lib/date'
 import { labelTahapan } from '@/config/domain'
 
 export default function DataMock() {
@@ -138,7 +138,7 @@ export default function DataMock() {
                       </p>
                     </div>
                     <Badge tone={item.sisaHari <= 3 ? 'warning' : 'neutral'}>
-                      {jarakHari(item.tahap.tanggalMulai)}
+                      {waktuTahap(item.tahap)}
                     </Badge>
                   </div>
                 ))}

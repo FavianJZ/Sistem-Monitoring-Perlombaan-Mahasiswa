@@ -19,8 +19,8 @@ import { bacaSesi, simpanSesi, hapusSesi, KUNCI_SESI } from './sesi'
 describe('JWT & Cookie Authentication System', () => {
   const penggunaDummy = {
     id: 'mhs-1',
-    nama: 'Budi Santoso',
-    email: 'budi.santoso@binus.ac.id',
+    nama: 'User-Mahasiswa(21)',
+    email: 'user.mahasiswa21@binus.ac.id',
     role: 'mahasiswa',
     prodi: 'Teknik Informatika',
     nim: '2501982736',
@@ -48,7 +48,7 @@ describe('JWT & Cookie Authentication System', () => {
       expect(hasil).not.toBeNull()
       expect(hasil.header).toEqual({ alg: 'HS256', typ: 'JWT' })
       expect(hasil.payload.sub).toBe('mhs-1')
-      expect(hasil.payload.nama).toBe('Budi Santoso')
+      expect(hasil.payload.nama).toBe('User-Mahasiswa(21)')
       expect(hasil.payload.role).toBe('mahasiswa')
       expect(hasil.payload.exp).toBeGreaterThan(hasil.payload.iat)
     })
@@ -58,7 +58,7 @@ describe('JWT & Cookie Authentication System', () => {
       const payload = verifikasiJwt(token)
 
       expect(payload.id).toBe('mhs-1')
-      expect(payload.email).toBe('budi.santoso@binus.ac.id')
+      expect(payload.email).toBe('user.mahasiswa21@binus.ac.id')
       expect(apakahJwtValid(token)).toBe(true)
     })
 

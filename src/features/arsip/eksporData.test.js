@@ -21,9 +21,9 @@ const LOMBA = {
   namaTim: 'Nusantara Venture',
   dosenPembimbingId: 'dsn-2',
   anggota: [
-    { nim: '2502017890', nama: 'Elvira Nuraini', prodi: 'Manajemen', peran: 'ketua' },
-    { nim: '2502026666', nama: 'Laras Ayu Pertiwi', prodi: 'Manajemen' },
-    { nim: '2502020202', nama: 'Rizky Hidayat', prodi: 'Manajemen' },
+    { nim: '2502017890', nama: 'User-Mahasiswa(5)', prodi: 'Manajemen', peran: 'ketua' },
+    { nim: '2502026666', nama: 'User-Mahasiswa(12)', prodi: 'Manajemen' },
+    { nim: '2502020202', nama: 'User-Mahasiswa(17)', prodi: 'Manajemen' },
   ],
   berkas: [
     { tipe: 'bukti_daftar', namaFile: 'daftar.pdf' },
@@ -90,13 +90,13 @@ describe('barisEkspor', () => {
   })
 
   it('mengambil ketua tim beserta NIM dan program studinya', () => {
-    expect(baris[indeks('ketua')]).toBe('Elvira Nuraini')
+    expect(baris[indeks('ketua')]).toBe('User-Mahasiswa(5)')
     expect(baris[indeks('nim')]).toBe('2502017890')
     expect(baris[indeks('prodi')]).toBe('Manajemen')
   })
 
   it('menggabungkan anggota lain dengan koma', () => {
-    expect(baris[indeks('anggota')]).toBe('Laras Ayu Pertiwi, Rizky Hidayat')
+    expect(baris[indeks('anggota')]).toBe('User-Mahasiswa(12), User-Mahasiswa(17)')
     expect(barisEkspor([TANPA_HASIL])[0][indeks('anggota')]).toBe('-')
   })
 
@@ -116,7 +116,7 @@ describe('barisEkspor', () => {
   })
 
   it('menulis nama dosen pembimbing atau tanda hubung', () => {
-    expect(baris[indeks('pembimbing')]).toContain('Ratna Kusumawati')
+    expect(baris[indeks('pembimbing')]).toContain('User-Dosen(2)')
     expect(barisEkspor([TANPA_HASIL])[0][indeks('pembimbing')]).toBe('-')
   })
 
@@ -165,7 +165,7 @@ describe('keCsv', () => {
 
   it('mengutip sel yang memuat koma', () => {
     const isi = keCsv([LOMBA])
-    expect(isi).toContain('"Laras Ayu Pertiwi, Rizky Hidayat"')
+    expect(isi).toContain('"User-Mahasiswa(12), User-Mahasiswa(17)"')
   })
 
   it('melipatgandakan tanda kutip di dalam sel', () => {

@@ -165,7 +165,7 @@ export default function RegisterStaf() {
           return
         }
         if (!kodeValid) {
-          setGalatServer('Kode otorisasi tidak valid. Hubungi Ketua Jurusan atau Dekanat.')
+          setGalatServer('Kode otorisasi tidak valid. Minta kode yang benar ke program studi.')
           return
         }
       } finally {
@@ -218,7 +218,6 @@ export default function RegisterStaf() {
     <AuthLayout
       judul="Portal Pendaftaran Dosen & Staf Akademik"
       deskripsi="Akses pemantauan perlombaan mahasiswa khusus untuk Dosen Pembimbing dan Pengelola Program Studi."
-      catatan="Pendaftaran staf dilindungi oleh kode otorisasi institusi resmi."
       lebarForm="lg:w-[34rem]"
     >
       <div className="flex items-center justify-between gap-2 mb-2">
@@ -306,7 +305,7 @@ export default function RegisterStaf() {
         <Input
           label="Nama lengkap beserta gelar"
           name="nama"
-          placeholder="Contoh: Dr. Budi Wicaksono, S.Kom., M.T."
+          placeholder="Contoh: Nama Lengkap, S.Kom., M.T."
           value={form.nama}
           onChange={ubah('nama')}
           required
@@ -335,17 +334,15 @@ export default function RegisterStaf() {
 
         <Input
           label={
-            role === 'dosen'
-              ? 'Kode Otorisasi Dosen (NIDN / Akses Dekanat)'
-              : 'Kode Verifikasi Admin Program Studi'
+            role === 'dosen' ? 'Kode otorisasi dosen' : 'Kode otorisasi admin prodi'
           }
           name="kodeOtorisasi"
           autoComplete="off"
-          placeholder={role === 'dosen' ? 'Contoh: DOSEN2026' : 'Contoh: PRODI2026'}
+          placeholder="Masukkan kode dari program studi"
           hint={
             MODE_DEMO
               ? `Kode khusus otorisasi staf. Untuk demo: ${role === 'dosen' ? KODE_DOSEN_DEMO : KODE_ADMIN_DEMO}.`
-              : 'Dapatkan kode resmi dari Ketua Jurusan atau Dekanat.'
+              : 'Kode ini dibagikan oleh program studi kepada dosen dan staf.'
           }
           value={form.kodeOtorisasi}
           onChange={ubah('kodeOtorisasi')}

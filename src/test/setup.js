@@ -1,8 +1,12 @@
 import '@testing-library/jest-dom/vitest'
 import { cleanup, configure } from '@testing-library/react'
-import { afterEach, beforeEach } from 'vitest'
+import { afterEach, beforeEach, vi } from 'vitest'
 
 configure({ asyncUtilTimeout: 5000 })
+
+// Data demo dibuat relatif terhadap hari ini; tanggal dibekukan supaya hasil
+// uji (mis. "lomba bulan ini") tidak berubah mengikuti kalender.
+export const TANGGAL_UJI = new Date(2026, 8, 24, 9, 0, 0)
 
 class MemoryStorage {
   #entries = new Map()
@@ -53,6 +57,7 @@ function clearCookies() {
 }
 
 beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'], now: TANGGAL_UJI })
   installStorage('localStorage')
   installStorage('sessionStorage')
   clearCookies()
@@ -60,4 +65,5 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup()
+  vi.useRealTimers()
 })

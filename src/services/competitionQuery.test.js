@@ -145,7 +145,7 @@ describe('cocokPencarian', () => {
 
   it('cocok pada nama tim dan nama anggota', () => {
     expect(cocokPencarian(lomba, 'Sanca')).toBe(true)
-    expect(cocokPencarian(lomba, 'Aulia')).toBe(true)
+    expect(cocokPencarian(lomba, 'User-Mahasiswa(1)')).toBe(true)
   })
 
   it('cocok pada NIM anggota', () => {

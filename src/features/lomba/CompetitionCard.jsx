@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/Badge'
 import { CapaianBadge, KelengkapanBadge, StatusBadge } from '@/components/ui/StatusBadge'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { cn } from '@/lib/cn'
-import { formatTanggal, jarakHari } from '@/lib/date'
+import { formatTanggal, waktuTahap } from '@/lib/date'
 import { labelTahapan } from '@/config/domain'
 import { namaPengguna } from '@/services/userService'
 
@@ -84,7 +84,7 @@ export function CompetitionCard({ lomba, to, acuan = new Date(), className }) {
                     <span className="text-slate-500">
                       {' '}
                       - {formatTanggal(lomba.tahapanBerikutnya.tanggalMulai)} (
-                      {jarakHari(lomba.tahapanBerikutnya.tanggalMulai, acuan)})
+                      {waktuTahap(lomba.tahapanBerikutnya, acuan)})
                     </span>
                   </>
                 ) : (
