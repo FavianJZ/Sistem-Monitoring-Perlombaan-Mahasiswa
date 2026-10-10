@@ -2,9 +2,15 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "functions": {
+    "api/send-email.js": {
+      "maxDuration": 60,
+      "includeFiles": "supabase/templates/**"
+    }
+  },
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ],

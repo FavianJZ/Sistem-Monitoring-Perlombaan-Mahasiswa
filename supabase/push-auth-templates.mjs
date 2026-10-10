@@ -28,11 +28,11 @@ const baca = (nama) => readFile(path.join(dir, nama), 'utf8')
 const body = {
   // Modal menerima 6-8 digit; disamakan dengan bawaan proyek hosted.
   mailer_otp_length: 8,
-  mailer_subjects_confirmation: 'Kode verifikasi akun SiMonLomba',
+  mailer_subjects_confirmation: 'Kode pendaftaran SiMonLomba',
   mailer_templates_confirmation_content: await baca('confirmation.html'),
-  mailer_subjects_magic_link: 'Kode verifikasi SiMonLomba',
+  mailer_subjects_magic_link: 'Kode masuk SiMonLomba',
   mailer_templates_magic_link_content: await baca('magic_link.html'),
-  mailer_subjects_recovery: 'Atur ulang kata sandi SiMonLomba',
+  mailer_subjects_recovery: 'Permintaan ganti kata sandi SiMonLomba',
   mailer_templates_recovery_content: await baca('recovery.html'),
 }
 
