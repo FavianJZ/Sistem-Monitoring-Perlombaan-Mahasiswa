@@ -46,53 +46,6 @@ const FORM_AWAL = {
 const LABEL_KEKUATAN = ['Belum diisi', 'Lemah', 'Cukup', 'Kuat']
 const WARNA_KEKUATAN = ['bg-slate-200', 'bg-danger-500', 'bg-warning-500', 'bg-success-500']
 
-function DaftarLangkah({ langkah }) {
-  const aktif = langkah.findIndex((item) => !item.selesai)
-
-  return (
-    <ol
-      className="divide-y divide-slate-200 rounded-md border border-slate-200 bg-white"
-      aria-label="Progres pendaftaran"
-    >
-      {langkah.map((item, indeks) => {
-        const sedangAktif = indeks === aktif
-        return (
-          <li
-            key={item.judul}
-            className={cn(
-              'flex items-center gap-3.5 border-l-[3px] px-4 py-3 transition-colors',
-              sedangAktif ? 'border-l-accent-500' : 'border-l-transparent',
-            )}
-          >
-            <span
-              className={cn(
-                'grid size-8 shrink-0 place-items-center rounded-full text-xs font-bold transition-colors',
-                item.selesai && 'bg-success-600 text-white',
-                sedangAktif && 'bg-primary-600 text-white',
-                !item.selesai && !sedangAktif && 'bg-slate-100 text-slate-500',
-              )}
-            >
-              {item.selesai ? <Check className="size-4" aria-hidden="true" /> : indeks + 1}
-            </span>
-            <div className="min-w-0">
-              <p
-                className={cn(
-                  'text-sm font-semibold',
-                  item.selesai || sedangAktif ? 'text-slate-800' : 'text-slate-500',
-                )}
-              >
-                {item.judul}
-                <span className="sr-only">{item.selesai ? ' (selesai)' : ''}</span>
-              </p>
-              <p className="truncate text-xs text-slate-500">{item.keterangan}</p>
-            </div>
-          </li>
-        )
-      })}
-    </ol>
-  )
-}
-
 function MeteranSandi({ sandi }) {
   const { syarat, skor } = kekuatanSandi(sandi)
 
@@ -227,23 +180,6 @@ export default function Register() {
     }
   }
 
-  const isian = ['nama', 'email', 'nim', 'angkatan', 'prodi']
-  const isianLengkap = isian.filter((field) => !galat[field]).length
-  const skorSandi = kekuatanSandi(form.password).skor
-
-  const langkah = [
-    {
-      judul: 'Lengkapi data diri',
-      keterangan: `${isianLengkap} dari ${isian.length} isian lengkap`,
-      selesai: isianLengkap === isian.length,
-    },
-    {
-      judul: 'Buat kata sandi',
-      keterangan: form.password ? `Kekuatan: ${LABEL_KEKUATAN[skorSandi]}` : 'Belum diisi',
-      selesai: !galat.password && !galat.konfirmasi,
-    },
-  ]
-
   const tombolLihat = (
     <button
       type="button"
@@ -264,8 +200,6 @@ export default function Register() {
     <AuthLayout
       judul="Mulai catat dan pantau perlombaan dari satu akun."
       deskripsi="Lengkapi data diri akun mahasiswa Anda, lalu langsung mulai mencatat keikutsertaan lomba."
-      catatan="Prototipe antarmuka. Akun disimpan lokal di peramban ini saja."
-      panel={<DaftarLangkah langkah={langkah} />}
       lebarForm="lg:w-[34rem]"
     >
       <h2 className="text-2xl font-bold text-slate-800">Buat akun</h2>

@@ -55,7 +55,7 @@ describe('Pembatasan rute', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Profil' })).toBeInTheDocument()
 
     expect(
-      screen.getByRole('heading', { level: 2, name: 'Pandu Wicaksono, S.Kom., M.Kom.' }),
+      screen.getByRole('heading', { level: 2, name: 'User-Dosen(1)' }),
     ).toBeInTheDocument()
   })
 })
@@ -75,7 +75,7 @@ describe('Halaman login', () => {
     const user = userEvent.setup()
     renderApp('/login')
 
-    await user.type(screen.getByLabelText(/Email/), 'aulia.rahmawati@binus.ac.id')
+    await user.type(screen.getByLabelText(/Email/), 'user.mahasiswa1@binus.ac.id')
     await user.type(screen.getByLabelText(/Kata Sandi/), 'sandi-salah')
     await user.click(screen.getByRole('button', { name: 'Masuk' }))
 
@@ -86,7 +86,7 @@ describe('Halaman login', () => {
     const user = userEvent.setup()
     renderApp('/login')
 
-    await user.type(screen.getByLabelText(/Email/), 'aulia.rahmawati@binus.ac.id')
+    await user.type(screen.getByLabelText(/Email/), 'user.mahasiswa1@binus.ac.id')
     await user.type(screen.getByLabelText(/Kata Sandi/), SANDI_DEMO)
     await user.click(screen.getByRole('button', { name: 'Masuk' }))
 

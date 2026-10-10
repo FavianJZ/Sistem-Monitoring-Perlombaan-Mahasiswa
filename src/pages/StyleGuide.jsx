@@ -375,20 +375,18 @@ export default function StyleGuide() {
             label="Lomba aktif"
             nilai={7}
             keterangan="4 berlangsung, 3 terdaftar"
-            icon={Trophy}
             tone="primary"
             to="/lomba-saya"
             aksiLabel="Lihat daftar"
           />
-          <StatCard label="Agenda bulan ini" nilai={12} satuan="lomba" icon={Search} />
+          <StatCard label="Agenda bulan ini" nilai={12} satuan="lomba" />
           <StatCard
             label="Dokumen belum lengkap"
             nilai={4}
             keterangan="Perlu bukti pembayaran"
-            icon={Trash2}
             tone="warning"
           />
-          <StatCard label="Prestasi tercatat" nilai={6} icon={Plus} tone="success" />
+          <StatCard label="Prestasi tercatat" nilai={6} tone="success" />
         </div>
       </Section>
 

@@ -51,7 +51,7 @@ describe('validasiDetailUmum', () => {
 })
 
 describe('validasiAnggota', () => {
-  const ketua = { nim: '2502019876', nama: 'Aulia Rahmawati', prodi: 'Teknik Informatika', peran: 'ketua' }
+  const ketua = { nim: '2502019876', nama: 'User-Mahasiswa(1)', prodi: 'Teknik Informatika', peran: 'ketua' }
 
   it('langsung lolos untuk lomba perorangan', () => {
     expect(validasiAnggota({ jenis: 'individu', anggota: [ketua] }).valid).toBe(true)
@@ -67,7 +67,7 @@ describe('validasiAnggota', () => {
   it('lolos bila anggota tambahan lengkap', () => {
     const hasil = validasiAnggota({
       jenis: 'tim',
-      anggota: [ketua, { nim: '2502021111', nama: 'Gilang Ramadhan', prodi: 'Sistem Informasi' }],
+      anggota: [ketua, { nim: '2502021111', nama: 'User-Mahasiswa(7)', prodi: 'Sistem Informasi' }],
     })
 
     expect(hasil.valid).toBe(true)
@@ -76,7 +76,7 @@ describe('validasiAnggota', () => {
   it('menolak NIM yang bukan sepuluh angka', () => {
     const hasil = validasiAnggota({
       jenis: 'tim',
-      anggota: [ketua, { nim: '25020', nama: 'Gilang', prodi: 'Sistem Informasi' }],
+      anggota: [ketua, { nim: '25020', nama: 'User-Mahasiswa(7)', prodi: 'Sistem Informasi' }],
     })
 
     expect(hasil.valid).toBe(false)
@@ -99,8 +99,8 @@ describe('validasiAnggota', () => {
       jenis: 'tim',
       anggota: [
         ketua,
-        { nim: '2502021111', nama: 'Gilang', prodi: 'Sistem Informasi' },
-        { nim: '2502021111', nama: 'Hana', prodi: 'Sistem Informasi' },
+        { nim: '2502021111', nama: 'User-Mahasiswa(7)', prodi: 'Sistem Informasi' },
+        { nim: '2502021111', nama: 'User-Mahasiswa(8)', prodi: 'Sistem Informasi' },
       ],
     })
 

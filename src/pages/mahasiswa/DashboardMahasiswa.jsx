@@ -1,12 +1,6 @@
 import { useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import {
-  CalendarClock,
-  CirclePlus,
-  FileWarning,
-  Medal,
-  Trophy,
-} from 'lucide-react'
+import { CalendarClock, CirclePlus, Trophy } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
@@ -19,7 +13,7 @@ import { Skeleton, SkeletonText } from '@/components/ui/Skeleton'
 import { useAuth } from '@/auth/AuthContext'
 import { useAsync } from '@/hooks/useAsync'
 import { agendaLomba, daftarLomba, statistikLomba } from '@/services/competitionService'
-import { formatTanggalDenganHari, jarakHari } from '@/lib/date'
+import { formatTanggalDenganHari, toneSisaHari, waktuTahap } from '@/lib/date'
 import { labelTahapan } from '@/config/domain'
 
 function KartuMemuat() {
@@ -96,7 +90,6 @@ export default function DashboardMahasiswa() {
               label="Lomba aktif"
               nilai={lombaAktif}
               keterangan={`${statistik.perStatus.berlangsung} sedang berlangsung, ${statistik.perStatus.terdaftar} baru terdaftar`}
-              icon={Trophy}
               tone="primary"
               to="/lomba-saya"
               aksiLabel="Lihat daftar"
@@ -105,21 +98,17 @@ export default function DashboardMahasiswa() {
               label="Agenda bulan ini"
               nilai={statistik.lombaBulanIni}
               satuan="lomba"
-              keterangan="Punya tahapan yang jatuh pada bulan berjalan"
-              icon={CalendarClock}
             />
             <StatCard
               label="Dokumen belum lengkap"
               nilai={statistik.dokumenBelumLengkap}
-              keterangan="Bukti pendaftaran atau pembayaran belum diunggah"
-              icon={FileWarning}
+              keterangan="Bukti daftar atau bayar belum diunggah"
               tone={statistik.dokumenBelumLengkap > 0 ? 'warning' : 'success'}
             />
             <StatCard
               label="Prestasi tercatat"
               nilai={statistik.totalPrestasi}
               keterangan={`Dari ${statistik.perStatus.selesai} lomba yang sudah selesai`}
-              icon={Medal}
               tone="success"
             />
           </div>
@@ -164,8 +153,8 @@ export default function DashboardMahasiswa() {
                             {formatTanggalDenganHari(item.tahap.tanggalMulai)}
                           </span>
                         </span>
-                        <Badge tone={item.sisaHari <= 3 ? 'warning' : 'neutral'} size="sm">
-                          {jarakHari(item.tahap.tanggalMulai)}
+                        <Badge tone={toneSisaHari(item.sisaHari)} size="sm">
+                          {waktuTahap(item.tahap)}
                         </Badge>
                       </Link>
                     </li>

@@ -27,7 +27,7 @@ describe('AppShell', () => {
   it('menampilkan identitas pengguna pada topbar', () => {
     renderApp('/', { sesi: SESI_MAHASISWA() })
 
-    expect(screen.getByText('Aulia Rahmawati')).toBeInTheDocument()
+    expect(screen.getByText('User-Mahasiswa(1)')).toBeInTheDocument()
     expect(screen.getByText(/2502019876/)).toBeInTheDocument()
   })
 

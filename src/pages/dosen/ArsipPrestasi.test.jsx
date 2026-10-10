@@ -57,7 +57,7 @@ describe('Arsip Prestasi - tampilan', () => {
 
     const isi = within(tabel())
 
-    expect(isi.getAllByText('Elvira Nuraini').length).toBeGreaterThan(0)
+    expect(isi.getAllByText('User-Mahasiswa(5)').length).toBeGreaterThan(0)
     expect(isi.getAllByText('Juara 1').length).toBeGreaterThan(0)
     expect(isi.getAllByText('Ada').length).toBeGreaterThan(0)
     expect(isi.getAllByText(/Dilaporkan \d+ \w+ 2026/).length).toBeGreaterThan(0)

@@ -2,12 +2,13 @@ import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/cn'
 
-const TONES = {
-  neutral: { ikon: 'bg-slate-100 text-slate-600', angka: 'text-slate-900' },
-  primary: { ikon: 'bg-primary-50 text-primary-600', angka: 'text-slate-900' },
-  success: { ikon: 'bg-success-50 text-success-600', angka: 'text-slate-900' },
-  warning: { ikon: 'bg-warning-50 text-warning-700', angka: 'text-warning-800' },
-  danger: { ikon: 'bg-danger-50 text-danger-600', angka: 'text-danger-700' },
+// Hanya angka yang diberi warna; kartu sengaja polos agar angka yang menonjol.
+const WARNA_ANGKA = {
+  neutral: 'text-slate-900',
+  primary: 'text-slate-900',
+  success: 'text-slate-900',
+  warning: 'text-warning-800',
+  danger: 'text-danger-700',
 }
 
 export function StatCard({
@@ -15,25 +16,16 @@ export function StatCard({
   nilai,
   satuan,
   keterangan,
-  icon: Icon,
   tone = 'neutral',
   to,
   aksiLabel = 'Lihat rincian',
   className,
 }) {
-  const warna = TONES[tone] ?? TONES.neutral
   const isi = (
     <>
-      <div className="flex items-start justify-between gap-3">
-        <p className="text-sm font-medium text-slate-600">{label}</p>
-        {Icon && (
-          <span className={cn('grid size-9 shrink-0 place-items-center rounded-lg', warna.ikon)}>
-            <Icon className="size-5" aria-hidden="true" />
-          </span>
-        )}
-      </div>
+      <p className="text-sm font-medium text-slate-600">{label}</p>
 
-      <p className={cn('mt-3 text-3xl font-extrabold tracking-tight', warna.angka)}>
+      <p className={cn('mt-2 text-3xl font-bold tracking-tight', WARNA_ANGKA[tone] ?? WARNA_ANGKA.neutral)}>
         {nilai}
         {satuan && <span className="ml-1 text-base font-semibold text-slate-500">{satuan}</span>}
       </p>

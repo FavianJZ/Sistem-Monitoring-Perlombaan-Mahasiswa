@@ -90,7 +90,7 @@ describe('Detail lomba - navigasi tab', () => {
     await user.click(within(tablist()).getByRole('tab', { name: 'Tim' }))
 
     const tabel = screen.getByRole('table', { name: 'Anggota tim Sanca Digital' })
-    expect(within(tabel).getByText('Aulia Rahmawati')).toBeInTheDocument()
+    expect(within(tabel).getByText('User-Mahasiswa(1)')).toBeInTheDocument()
     expect(within(tabel).getByText('Ketua Tim')).toBeInTheDocument()
     expect(within(tabel).getAllByRole('row')).toHaveLength(4)
   })

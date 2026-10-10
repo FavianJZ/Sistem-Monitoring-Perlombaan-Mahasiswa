@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { FileUpload, metadataBerkas, validasiBerkas } from './FileUpload'
 import { UNGGAH_MAKS_BYTE } from '@/config/domain'
@@ -62,7 +62,7 @@ describe('metadataBerkas', () => {
   it('hanya mengambil data yang bisa disimpan', () => {
     const meta = metadataBerkas(buatFile({ nama: 'poster.png', tipe: 'image/png', ukuran: 2048 }))
 
-    expect(meta).toEqual({ namaFile: 'poster.png', mimeType: 'image/png', size: 2048 })
+    expect(meta).toEqual({ namaFile: 'poster.png', mimeType: 'image/png', size: 2048, url: null })
   })
 })
 
@@ -89,9 +89,12 @@ describe('FileUpload', () => {
 
     await user.upload(screen.getByLabelText(/Bukti Pembayaran/), buatFile({ ukuran: 2048 }))
 
-    expect(onPilih).toHaveBeenCalledWith(
-      { namaFile: 'bukti.pdf', mimeType: 'application/pdf', size: 2048 },
-      expect.any(File),
+    // Berkas kecil dibaca FileReader menjadi data URL sebelum diteruskan.
+    await waitFor(() =>
+      expect(onPilih).toHaveBeenCalledWith(
+        { namaFile: 'bukti.pdf', mimeType: 'application/pdf', size: 2048, url: expect.stringMatching(/^data:/) },
+        expect.any(File),
+      ),
     )
     expect(screen.getByText('bukti.pdf')).toBeInTheDocument()
     expect(screen.getByText(/2 KB/)).toBeInTheDocument()
@@ -126,7 +129,7 @@ describe('FileUpload', () => {
     expect(screen.getByText(/Tipe berkas tidak didukung/)).toBeInTheDocument()
   })
 
-  it('menerima berkas yang ditarik ke dropzone', () => {
+  it('menerima berkas yang ditarik ke dropzone', async () => {
     const onPilih = vi.fn()
     render(<Harness onPilih={onPilih} />)
 
@@ -136,9 +139,11 @@ describe('FileUpload', () => {
     fireEvent.dragOver(dropzone)
     fireEvent.drop(dropzone, { dataTransfer: { files: [file] } })
 
-    expect(onPilih).toHaveBeenCalledWith(
-      { namaFile: 'poster.png', mimeType: 'image/png', size: 4096 },
-      expect.any(File),
+    await waitFor(() =>
+      expect(onPilih).toHaveBeenCalledWith(
+        { namaFile: 'poster.png', mimeType: 'image/png', size: 4096, url: expect.stringMatching(/^data:/) },
+        expect.any(File),
+      ),
     )
   })
 

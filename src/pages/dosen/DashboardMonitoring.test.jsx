@@ -99,7 +99,7 @@ describe('Dashboard Monitoring - kartu lomba', () => {
     const semuaTeks = kartuLomba.map((node) => node.textContent).join(' ')
 
     expect(semuaTeks).toMatch(/Tim /)
-    expect(semuaTeks).toMatch(/Pandu Wicaksono|Ratna Kusumawati|Irfan Maulana|Sari Melati/)
+    expect(semuaTeks).toMatch(/User-Dosen\([1-4]\)/)
   })
 
   it('menampilkan progres tahapan sebagai bilah', async () => {

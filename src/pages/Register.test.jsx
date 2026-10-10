@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { screen, within } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SESI_MAHASISWA, renderApp } from '@/test/utils'
 import { KUNCI_SESI } from '@/auth/sesi'
@@ -8,7 +8,7 @@ import { KUNCI_AKUN, login, registrasi } from '@/services/userService'
 
 const SANDI_KUAT = 'Rahasia123'
 
-async function isiDataUmum(user, { nama = 'Nadia Putri', email = 'nadia.putri@binus.ac.id' } = {}) {
+async function isiDataUmum(user, { nama = 'User-Mahasiswa(20)', email = 'user.mahasiswa20@binus.ac.id' } = {}) {
   await user.type(screen.getByLabelText(/Nama lengkap/), nama)
   await user.type(screen.getByLabelText(/Email kampus/), email)
   await user.selectOptions(screen.getByLabelText(/Program studi/), 'Sistem Informasi')
@@ -20,8 +20,8 @@ async function isiDataUmum(user, { nama = 'Nadia Putri', email = 'nadia.putri@bi
 describe('validasiRegistrasi', () => {
   const dasar = {
     role: 'mahasiswa',
-    nama: 'Nadia Putri',
-    email: 'nadia.putri@binus.ac.id',
+    nama: 'User-Mahasiswa(20)',
+    email: 'user.mahasiswa20@binus.ac.id',
     nim: '2502099999',
     angkatan: '2026',
     prodi: 'Sistem Informasi',
@@ -63,8 +63,8 @@ describe('validasiRegistrasi', () => {
 describe('Service registrasi', () => {
   const data = {
     role: 'dosen',
-    nama: '  Budi   Santoso ',
-    email: 'Budi.Santoso@binus.ac.id',
+    nama: '  User   Dosen  5 ',
+    email: 'User.Dosen5@binus.ac.id',
     prodi: 'Manajemen',
     password: SANDI_KUAT,
     konfirmasi: SANDI_KUAT,
@@ -74,19 +74,19 @@ describe('Service registrasi', () => {
     const hasil = await registrasi(data)
 
     expect(hasil.user).toMatchObject({
-      nama: 'Budi Santoso',
-      email: 'budi.santoso@binus.ac.id',
+      nama: 'User Dosen 5',
+      email: 'user.dosen5@binus.ac.id',
       role: 'dosen',
     })
     expect(hasil.user.nim).toBeUndefined()
 
-    const masuk = await login({ email: 'budi.santoso@binus.ac.id', password: SANDI_KUAT })
+    const masuk = await login({ email: 'user.dosen5@binus.ac.id', password: SANDI_KUAT })
     expect(masuk.user.id).toBe(hasil.user.id)
   })
 
   it('menolak email yang sudah dipakai akun demo dengan status 409', async () => {
     await expect(
-      registrasi({ ...data, email: 'pandu.wicaksono@binus.ac.id' }),
+      registrasi({ ...data, email: 'user.dosen1@binus.ac.id' }),
     ).rejects.toMatchObject({ status: 409 })
   })
 
@@ -143,29 +143,18 @@ describe('Halaman daftar', () => {
     expect(screen.getByText('Akun berhasil dibuat')).toBeInTheDocument()
 
     const sesi = JSON.parse(window.localStorage.getItem(KUNCI_SESI))
-    expect(sesi.user).toMatchObject({ nama: 'Nadia Putri', nim: '2502099999', role: 'mahasiswa' })
+    expect(sesi.user).toMatchObject({ nama: 'User-Mahasiswa(20)', nim: '2502099999', role: 'mahasiswa' })
   })
 
   it('memberi tahu bila email sudah terdaftar', async () => {
     const user = userEvent.setup()
     renderApp('/daftar')
 
-    await isiDataUmum(user, { email: 'pandu.wicaksono@binus.ac.id' })
+    await isiDataUmum(user, { email: 'user.dosen1@binus.ac.id' })
     await user.type(screen.getByLabelText(/^NIM/), '2502099999')
     await user.click(screen.getByRole('button', { name: 'Buat akun' }))
 
     expect(screen.getByText(/sudah terdaftar/)).toBeInTheDocument()
-  })
-
-  it('menampilkan progres langkah di panel kiri', async () => {
-    const user = userEvent.setup()
-    renderApp('/daftar')
-
-    const progres = screen.getByRole('list', { name: 'Progres pendaftaran' })
-    expect(within(progres).getByText(/1 dari 5 isian lengkap/)).toBeInTheDocument()
-
-    await user.type(screen.getByLabelText(/^Kata sandi/), SANDI_KUAT)
-    expect(within(progres).getByText('Kekuatan: Kuat')).toBeInTheDocument()
   })
 
   it('mengalihkan pengguna yang sudah masuk ke berandanya', () => {

@@ -78,7 +78,7 @@ describe('Detail lomba untuk dosen - isi tab', () => {
 
     const panel = within(screen.getByRole('tabpanel'))
     expect(panel.getByText('Dosen pembimbing')).toBeInTheDocument()
-    expect(panel.getByText('Pandu Wicaksono, S.Kom., M.Kom.')).toBeInTheDocument()
+    expect(panel.getByText('User-Dosen(1)')).toBeInTheDocument()
     expect(
       screen.getByRole('img', { name: 'Poster GEMASTIK XIX Divisi Pemrograman' }),
     ).toBeInTheDocument()
@@ -91,7 +91,7 @@ describe('Detail lomba untuk dosen - isi tab', () => {
     await user.click(within(tablist()).getByRole('tab', { name: 'Tim' }))
 
     const tabel = screen.getByRole('table', { name: 'Anggota tim Sanca Digital' })
-    expect(within(tabel).getByText('Aulia Rahmawati')).toBeInTheDocument()
+    expect(within(tabel).getByText('User-Mahasiswa(1)')).toBeInTheDocument()
     expect(within(tabel).getByText('2502019876')).toBeInTheDocument()
   })
 
@@ -161,7 +161,8 @@ describe('Detail lomba untuk dosen - hasil', () => {
   })
 })
 
-describe('Detail lomba untuk dosen - hanya baca', () => {
+describe('Detail lomba untuk dosen - tanpa kontrol milik mahasiswa', () => {
+  // Dosen hanya memverifikasi berkas; mengunggah dan mengubah data tetap milik mahasiswa.
   it('tidak menyediakan kontrol unggah maupun penyimpanan', async () => {
     const user = userEvent.setup()
     await bukaDetail('lomba-09')
@@ -171,7 +172,6 @@ describe('Detail lomba untuk dosen - hanya baca', () => {
 
       expect(screen.queryByRole('button', { name: /Simpan/ })).not.toBeInTheDocument()
       expect(screen.queryByRole('button', { name: /Pilih berkas/ })).not.toBeInTheDocument()
-      expect(screen.queryByRole('button', { name: /Setujui|Tolak|Verifikasi/ })).not.toBeInTheDocument()
       expect(screen.queryByLabelText(/Capaian Akhir/)).not.toBeInTheDocument()
     }
   })

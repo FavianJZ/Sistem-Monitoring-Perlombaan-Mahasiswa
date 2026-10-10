@@ -97,8 +97,8 @@ describe('buatLomba', () => {
     linkPublikasi: 'https://its.ac.id/osn',
     createdBy: 'mhs-2',
     anggota: [
-      { nim: '2502011234', nama: 'Bagas Prayoga', prodi: 'Sistem Informasi', peran: 'ketua' },
-      { nim: '2502022222', nama: 'Hana Puspita', prodi: 'Sistem Informasi' },
+      { nim: '2502011234', nama: 'User-Mahasiswa(2)', prodi: 'Sistem Informasi', peran: 'ketua' },
+      { nim: '2502022222', nama: 'User-Mahasiswa(8)', prodi: 'Sistem Informasi' },
       { nim: '', nama: '' },
     ],
     berkas: [{ tipe: 'bukti_daftar', namaFile: 'daftar.pdf', mimeType: 'application/pdf', size: 1000 }],
@@ -330,7 +330,7 @@ describe('isolasi store', () => {
 
 describe('userService', () => {
   it('menerima kredensial demo yang benar', async () => {
-    const hasil = await login({ email: 'aulia.rahmawati@binus.ac.id', password: SANDI_DEMO })
+    const hasil = await login({ email: 'user.mahasiswa1@binus.ac.id', password: SANDI_DEMO })
 
     expect(hasil.user.role).toBe('mahasiswa')
     expect(hasil.user.nim).toBe('2502019876')
@@ -338,13 +338,13 @@ describe('userService', () => {
   })
 
   it('tidak peduli huruf besar kecil pada email', async () => {
-    const hasil = await login({ email: 'AULIA.RAHMAWATI@BINUS.AC.ID', password: SANDI_DEMO })
+    const hasil = await login({ email: 'USER.MAHASISWA1@BINUS.AC.ID', password: SANDI_DEMO })
     expect(hasil.user.id).toBe('mhs-1')
   })
 
   it('menolak kata sandi yang salah dengan status 401', async () => {
     await expect(
-      login({ email: 'aulia.rahmawati@binus.ac.id', password: 'salah' }),
+      login({ email: 'user.mahasiswa1@binus.ac.id', password: 'salah' }),
     ).rejects.toMatchObject({ status: 401 })
   })
 
@@ -356,7 +356,7 @@ describe('userService', () => {
 
   it('meminta email dan kata sandi diisi', async () => {
     await expect(login({ email: '', password: SANDI_DEMO })).rejects.toThrow(/Email/)
-    await expect(login({ email: 'aulia.rahmawati@binus.ac.id', password: '' })).rejects.toThrow(
+    await expect(login({ email: 'user.mahasiswa1@binus.ac.id', password: '' })).rejects.toThrow(
       /Kata sandi/,
     )
   })
@@ -369,7 +369,7 @@ describe('userService', () => {
   })
 
   it('mencari nama pengguna secara sinkron', () => {
-    expect(namaPengguna('dsn-1')).toContain('Pandu')
+    expect(namaPengguna('dsn-1')).toContain('User-Dosen(1)')
     expect(namaPengguna('tidak-ada')).toBe('-')
   })
 
@@ -383,7 +383,7 @@ describe('userService', () => {
       {
         statusVerifikasi: 'ditolak',
         catatanPenolakan: 'Bukti pendaftaran buram, mohon unggah ulang.',
-        diverifikasiOleh: 'Dosen Pandu',
+        diverifikasiOleh: 'User-Dosen(1)',
       },
       OPSI,
     )
@@ -413,7 +413,7 @@ describe('userService', () => {
     const disetujui = await verifikasiBerkas(
       'lomba-01',
       berkasId,
-      { statusVerifikasi: 'diterima', diverifikasiOleh: 'Dosen Pandu' },
+      { statusVerifikasi: 'diterima', diverifikasiOleh: 'User-Dosen(1)' },
       OPSI,
     )
 

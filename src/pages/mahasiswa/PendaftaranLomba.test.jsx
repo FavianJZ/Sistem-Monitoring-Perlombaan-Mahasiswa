@@ -120,7 +120,7 @@ describe('Wizard pendaftaran - langkah 1', () => {
 
     const pilihan = screen.getByLabelText(/Dosen Pembimbing/)
     await waitFor(() =>
-      expect(within(pilihan).getByRole('option', { name: /Pandu Wicaksono/ })).toBeInTheDocument(),
+      expect(within(pilihan).getByRole('option', { name: /User-Dosen\(1\)/ })).toBeInTheDocument(),
     )
   })
 })
@@ -147,7 +147,7 @@ describe('Wizard pendaftaran - langkah 2 anggota tim', () => {
     const barisKetua = within(barisAnggota()[0])
     expect(barisKetua.getByLabelText('NIM')).toHaveValue('2502019876')
     expect(barisKetua.getByLabelText('NIM')).toBeDisabled()
-    expect(barisKetua.getByLabelText('Nama Lengkap')).toHaveValue('Aulia Rahmawati')
+    expect(barisKetua.getByLabelText('Nama Lengkap')).toHaveValue('User-Mahasiswa(1)')
   })
 
   it('menolak lanjut bila tim hanya berisi ketua', async () => {
@@ -191,7 +191,7 @@ describe('Wizard pendaftaran - langkah 2 anggota tim', () => {
 
     const baris = within(barisAnggota()[1])
     await user.type(baris.getByLabelText(/NIM/), '25020')
-    await user.type(baris.getByLabelText(/Nama Lengkap/), 'Gilang Ramadhan')
+    await user.type(baris.getByLabelText(/Nama Lengkap/), 'User-Mahasiswa(7)')
     await user.selectOptions(baris.getByLabelText(/Program Studi/), 'Sistem Informasi')
 
     await user.click(screen.getByRole('button', { name: /Lanjut/ }))
@@ -206,7 +206,7 @@ describe('Wizard pendaftaran - langkah 2 anggota tim', () => {
 
     const baris = within(barisAnggota()[1])
     await user.type(baris.getByLabelText(/NIM/), '2502021111')
-    await user.type(baris.getByLabelText(/Nama Lengkap/), 'Gilang Ramadhan')
+    await user.type(baris.getByLabelText(/Nama Lengkap/), 'User-Mahasiswa(7)')
     await user.selectOptions(baris.getByLabelText(/Program Studi/), 'Sistem Informasi')
 
     await user.click(screen.getByRole('button', { name: /Lanjut/ }))

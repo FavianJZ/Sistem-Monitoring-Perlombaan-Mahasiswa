@@ -19,7 +19,7 @@ import {
   petakKalender,
   tambahBulan,
 } from '@/lib/date'
-import { labelTahapan } from '@/config/domain'
+import { labelTahapan, labelTahapanPendek } from '@/config/domain'
 import { cn } from '@/lib/cn'
 
 const FILTER_BAWAAN = {
@@ -205,9 +205,10 @@ export default function KalenderAgenda() {
                                 {agenda.slice(0, 2).map((item, indeks) => (
                                   <span
                                     key={`${item.lombaId}-${item.tahap.id}-${indeks}`}
+                                    title={`${labelTahapan(item.tahap.jenis)} - ${item.namaLomba}`}
                                     className="truncate rounded bg-primary-100 px-1 py-0.5 text-[11px] font-medium text-primary-800"
                                   >
-                                    {labelTahapan(item.tahap.jenis)}
+                                    {labelTahapanPendek(item.tahap.jenis)}
                                   </span>
                                 ))}
                                 {agenda.length > 2 && (

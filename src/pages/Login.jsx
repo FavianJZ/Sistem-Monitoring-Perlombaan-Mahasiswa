@@ -85,11 +85,7 @@ export default function Login() {
     <AuthLayout
       judul="Setiap lomba mahasiswa tercatat, terpantau, dan siap dilaporkan."
       deskripsi="Sistem Monitoring Perlombaan Mahasiswa mengumpulkan data keikutsertaan beserta bukti pendukungnya, lalu menyajikannya untuk pemantauan program studi."
-      catatan={
-        MODE_DEMO
-          ? 'Prototipe antarmuka. Data masih tiruan dan belum tersambung ke basis data.'
-          : 'Prototipe antarmuka. Akun dan data lomba disimpan lokal di peramban ini.'
-      }
+      catatan={MODE_DEMO ? 'Mode demo: memakai data contoh, tidak tersambung ke basis data.' : undefined}
       panel={
         <ul className="space-y-5">
           {SOROTAN.map((item) => {
