@@ -17,13 +17,15 @@ import { verifikasiTandaTangan, susunEmail } from './_lib/emailHook.js'
 
 let transporter
 
+const smtpUser = () => (process.env.SMTP_USER ?? '').trim()
+
 function ambilTransporter() {
   transporter ??= nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.office365.com',
     port: Number(process.env.SMTP_PORT || 587),
     secure: Number(process.env.SMTP_PORT || 587) === 465,
     requireTLS: true,
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+    auth: { user: smtpUser(), pass: process.env.SMTP_PASS },
     connectionTimeout: 20_000,
     greetingTimeout: 20_000,
     socketTimeout: 40_000,
@@ -35,7 +37,7 @@ async function kirim(email) {
   const mulai = Date.now()
   try {
     const info = await ambilTransporter().sendMail({
-      from: { name: process.env.SMTP_FROM_NAME || 'SiMonLomba', address: process.env.SMTP_USER },
+      from: { name: process.env.SMTP_FROM_NAME || 'SiMonLomba', address: smtpUser() },
       to: email.ke,
       subject: email.subjek,
       html: email.html,
@@ -44,6 +46,14 @@ async function kirim(email) {
     console.log(`[send-email] terkirim ke ${email.ke} dalam ${Date.now() - mulai} ms`, info.response)
   } catch (err) {
     console.error(`[send-email] GAGAL ke ${email.ke} setelah ${Date.now() - mulai} ms:`, err.message)
+    if (err.responseCode === 535) {
+      // Membantu melacak salah ketik tanpa mencatat isi kata sandi.
+      const pass = process.env.SMTP_PASS ?? ''
+      console.error(
+        `[send-email] cek kredensial: user="${smtpUser()}" panjangSandi=${pass.length}` +
+          ` spasiDiTepi=${pass !== pass.trim()} adaTandaKutip=${/^["']|["']$/.test(pass)}`,
+      )
+    }
   }
 }
 
@@ -63,7 +73,7 @@ export default {
       return json({ error: { http_code: 401, message: 'Tanda tangan webhook tidak valid.' } }, 401)
     }
 
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    if (!smtpUser() || !process.env.SMTP_PASS) {
       return json({ error: { http_code: 500, message: 'SMTP_USER/SMTP_PASS belum diisi di Vercel.' } }, 500)
     }
 
