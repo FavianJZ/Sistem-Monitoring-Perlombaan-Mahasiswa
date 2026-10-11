@@ -104,5 +104,4 @@ export const SEMUA_PENGGUNA = [...MAHASISWA, ...DOSEN, ...ADMIN]
 export const AKUN_DEMO = [
   { id: 'mhs-1', label: 'Masuk sebagai Mahasiswa', keterangan: 'Mahasiswa - 2502019876' },
   { id: 'dsn-1', label: 'Masuk sebagai Dosen', keterangan: 'Dosen' },
-  { id: 'adm-1', label: 'Masuk sebagai Admin Prodi', keterangan: 'Admin Prodi' },
 ]
