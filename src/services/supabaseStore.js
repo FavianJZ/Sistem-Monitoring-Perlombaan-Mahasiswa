@@ -1,18 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { beriTahuPerubahan } from './perubahanData'
 
-/**
- * Penyimpanan lomba di Supabase (tabel public.data_lomba) dengan antarmuka
- * yang sama seperti mockStore, tapi async.
- *
- * - Semua baris yang boleh dibaca (diatur RLS) di-cache di memori.
- * - Perubahan dari pengguna lain masuk lewat Realtime lalu memicu
- *   beriTahuPerubahan(), sehingga halaman memuat ulang sendiri.
- * - Berkas (data: URL dari FileUpload) diunggah ke bucket privat
- *   'berkas-lomba'; record hanya menyimpan path, URL bertanda tangan
- *   dibuat saat data dimuat.
- */
-
 const TABEL = 'data_lomba'
 const BUCKET = 'berkas-lomba'
 const MASA_URL_DETIK = 60 * 60
@@ -26,15 +14,12 @@ function salin(nilai) {
   return structuredClone(nilai)
 }
 
-/* ------------------------------ berkas ------------------------------ */
-
 export function dataUrlKeBlob(dataUrl) {
   const pemisah = dataUrl.indexOf(',')
   const kepala = dataUrl.slice(0, pemisah)
   const isi = dataUrl.slice(pemisah + 1)
   const mime = kepala.match(/data:([^;,]+)/)?.[1] ?? 'application/octet-stream'
 
-  // Data URL tanpa ";base64" berisi teks yang di-percent-encode, bukan base64.
   if (!kepala.includes(';base64')) {
     return new Blob([decodeURIComponent(isi)], { type: mime })
   }
@@ -55,7 +40,6 @@ async function idPenggunaAktif() {
   return data.user.id
 }
 
-/** Unggah satu data: URL, kembalikan path di bucket. */
 async function unggah(dataUrl, { pemilik, lombaId, nama }) {
   const blob = dataUrlKeBlob(dataUrl)
   const path = `${pemilik}/${lombaId}/${Date.now().toString(36)}-${namaAman(nama)}`
@@ -66,7 +50,6 @@ async function unggah(dataUrl, { pemilik, lombaId, nama }) {
   return path
 }
 
-/** Ubah semua data: URL di record menjadi path Storage sebelum disimpan. */
 async function siapkanUntukDisimpan(record, pemilik) {
   const hasil = salin(record)
   const pathPerDataUrl = new Map()
@@ -78,13 +61,11 @@ async function siapkanUntukDisimpan(record, pemilik) {
         pathPerDataUrl.set(item.url, path)
         return { ...item, path, url: null }
       }
-      // URL bertanda tangan bersifat sementara; yang disimpan cukup path-nya.
       return item.path ? { ...item, url: null } : item
     }),
   )
 
   if (typeof hasil.posterUrl === 'string' && hasil.posterUrl.startsWith('data:')) {
-    // Poster yang sama biasanya juga tercatat sebagai berkas; jangan diunggah dua kali.
     hasil.posterPath =
       pathPerDataUrl.get(hasil.posterUrl) ??
       (await unggah(hasil.posterUrl, { pemilik, lombaId: hasil.id, nama: 'poster' }))
@@ -96,7 +77,6 @@ async function siapkanUntukDisimpan(record, pemilik) {
   return hasil
 }
 
-/** Isi url/posterUrl dengan URL bertanda tangan untuk path yang tersimpan. */
 async function lengkapiUrl(records) {
   const paths = new Set()
   for (const r of records) {
@@ -121,8 +101,6 @@ async function lengkapiUrl(records) {
   }))
 }
 
-/* --------------------------- baris <-> record --------------------------- */
-
 function barisKeRecord(baris) {
   return {
     ...baris.data,
@@ -133,7 +111,6 @@ function barisKeRecord(baris) {
 }
 
 function recordKeBaris(record) {
-  // eslint-disable-next-line no-unused-vars
   const { id, createdBy, ...data } = record
   const pembimbing = POLA_UUID.test(record.dosenPembimbingId ?? '') ? record.dosenPembimbingId : null
   return { id, dosen_pembimbing_id: pembimbing, data: { ...data, dosenPembimbingId: pembimbing } }
@@ -145,8 +122,6 @@ async function ambilBaris(id) {
   return data
 }
 
-/* ------------------------------ realtime ------------------------------ */
-
 function pasangRealtime() {
   if (kanal) return
   kanal = supabase
@@ -156,7 +131,6 @@ function pasangRealtime() {
         if (payload.eventType === 'DELETE') {
           cache.delete(payload.old?.id)
         } else {
-          // Ambil ulang baris lengkap: payload Realtime bisa terpotong untuk jsonb besar.
           const baris = await ambilBaris(payload.new.id)
           if (baris) {
             const [record] = await lengkapiUrl([barisKeRecord(baris)])
@@ -173,7 +147,6 @@ function pasangRealtime() {
     .subscribe()
 }
 
-/** Dipanggil saat login/logout agar cache tidak bocor antar pengguna. */
 export function resetCache() {
   cache = new Map()
   pemuatan = null
@@ -202,8 +175,6 @@ async function muat() {
   return pemuatan
 }
 
-/* ------------------------------ antarmuka ------------------------------ */
-
 export async function bacaSemua() {
   await muat()
   return salin([...cache.values()])
@@ -212,7 +183,6 @@ export async function bacaSemua() {
 export async function bacaSatu(id) {
   await muat()
   if (!cache.has(id)) {
-    // Bisa saja baris baru belum sempat masuk lewat Realtime.
     const baris = await ambilBaris(id)
     if (!baris) return null
     const [record] = await lengkapiUrl([barisKeRecord(baris)])
@@ -226,14 +196,11 @@ export async function idLombaBaru() {
   return `lomba-${Date.now().toString(36)}${acak}`
 }
 
-/** Galat Supabase saat menyimpan -> kalimat yang bisa dibaca pengguna. */
 export function pesanGalatSimpan(error) {
-  // Update yang disaring RLS mengembalikan 0 baris, sehingga .single() gagal.
   if (error?.code === 'PGRST116') {
     return 'Anda tidak punya izin mengubah lomba ini. Hanya pemilik dan dosen pembimbingnya yang bisa.'
   }
   if (error?.code === '42501') {
-    // Pesan dari trigger database sudah berbahasa Indonesia; pesan RLS bawaan belum.
     return /row-level security/i.test(error.message ?? '')
       ? 'Anda tidak punya izin untuk menyimpan data lomba ini.'
       : error.message
@@ -242,7 +209,6 @@ export function pesanGalatSimpan(error) {
 }
 
 async function simpanKeServer(record, { baru }) {
-  // Berkas selalu diunggah ke folder milik pengunggah (syarat policy Storage).
   const uid = await idPenggunaAktif()
   const siap = await siapkanUntukDisimpan(record, uid)
   const baris = recordKeBaris(siap)

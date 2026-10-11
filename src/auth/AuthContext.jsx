@@ -23,7 +23,6 @@ function sesiTersimpanYangValid() {
   return null
 }
 
-/** Pesan Supabase Auth -> bahasa Indonesia. */
 function terjemahkanGalatAuth(error) {
   const pesan = error?.message ?? ''
   if (/invalid login credentials/i.test(pesan)) return 'Email atau kata sandi tidak cocok.'
@@ -31,7 +30,6 @@ function terjemahkanGalatAuth(error) {
     return 'Akun belum aktif karena konfirmasi email Supabase masih menyala. Hubungi admin prodi.'
   }
   if (/already registered/i.test(pesan)) return 'Email ini sudah terdaftar. Silakan masuk.'
-  // Trigger pembuat profil menolak: NIM/email sudah dipakai, atau domain email bukan BINUS.
   if (/database error saving new user/i.test(pesan)) {
     return 'Pendaftaran ditolak: NIM atau email sudah terdaftar, atau email bukan domain BINUS.'
   }
@@ -41,7 +39,6 @@ function terjemahkanGalatAuth(error) {
   return pesan || 'Terjadi kesalahan saat masuk.'
 }
 
-/** Data yang dibaca trigger handle_user_terdaftar untuk mengisi public.profiles. */
 function metadataPendaftaran(data) {
   const metadata = { nama: data.nama?.trim(), role: data.role, prodi: data.prodi }
   if (data.role === 'mahasiswa') {
@@ -49,17 +46,10 @@ function metadataPendaftaran(data) {
     metadata.angkatan = Number(data.angkatan)
   }
   const kodePeran = data.role === 'admin' ? data.kodeAdmin : data.kodeDosen
-  // Diperiksa & dihapus oleh trigger database; tidak pernah dipercaya di klien.
   if (kodePeran) metadata.kode_peran = kodePeran.trim()
   return metadata
 }
 
-/*
- * Dua mode:
- * - Supabase aktif (env VITE_SUPABASE_* ada): sesi dari Supabase Auth, profil
- *   dari tabel public.profiles. Token diurus supabase-js (refresh otomatis).
- * - Tanpa Supabase (pengujian / demo): akun mock lokal seperti sebelumnya.
- */
 const PAKAI_SUPABASE = apakahSupabaseAktif()
 
 export function AuthProvider({ children, sesiAwal }) {
@@ -67,7 +57,6 @@ export function AuthProvider({ children, sesiAwal }) {
   const [sesi, setSesi] = useState(() =>
     modeSupabase ? null : (sesiAwal ?? sesiTersimpanYangValid()),
   )
-  // Di mode Supabase, tunggu sesi tersimpan dipulihkan sebelum RequireAuth memutuskan.
   const [siap, setSiap] = useState(!modeSupabase)
   const [memproses, setMemproses] = useState(false)
 
@@ -80,12 +69,10 @@ export function AuthProvider({ children, sesiAwal }) {
     }
     const profil = await ambilProfil(sesiSb.user.id)
     if (!profil) {
-      // Akun auth tanpa profil (mis. profil dihapus manual): anggap tidak valid.
       setSesi(null)
       return null
     }
     setSesi((lama) => {
-      // Pengguna berganti: kosongkan cache agar data tidak bocor antar akun.
       if (lama?.user?.id !== profil.id) {
         resetCacheLomba()
         resetCacheProfil()
@@ -116,7 +103,6 @@ export function AuthProvider({ children, sesiAwal }) {
         setSesi((lama) => (lama ? { ...lama, token: sesiSb?.access_token } : lama))
         return
       }
-      // Jangan await di dalam callback (anjuran supabase-js untuk menghindari deadlock).
       setTimeout(() => {
         pakaiSesiSupabase(sesiSb).catch((e) => console.warn('[SiMonLomba]', e.message))
       }, 0)
@@ -159,10 +145,6 @@ export function AuthProvider({ children, sesiAwal }) {
     [modeSupabase, pakaiSesiSupabase],
   )
 
-  /**
-   * Mode Supabase: signUp langsung mengembalikan sesi karena konfirmasi email
-   * dimatikan; profil dibuat oleh trigger database dari metadata.
-   */
   const daftar = useCallback(
     async (data) => {
       setMemproses(true)
@@ -174,7 +156,6 @@ export function AuthProvider({ children, sesiAwal }) {
             options: { data: metadataPendaftaran(data) },
           })
           if (error) throw new Error(terjemahkanGalatAuth(error))
-          // Supabase menyamarkan email ganda sebagai sukses tanpa identitas.
           if (hasil.user && hasil.user.identities?.length === 0) {
             throw new Error('Email ini sudah terdaftar. Silakan masuk.')
           }

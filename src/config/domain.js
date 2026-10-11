@@ -1,5 +1,3 @@
-
-
 export const BIDANG_LOMBA = [
   'Programming',
   'UI/UX',
@@ -55,12 +53,6 @@ export const UNGGAH_MAKS_BYTE = 5 * 1024 * 1024
 export const UNGGAH_TIPE_DIIZINKAN = ['application/pdf', 'image/jpeg', 'image/png']
 export const UNGGAH_EKSTENSI_LABEL = 'PDF, JPG, atau PNG maksimal 5MB'
 
-/**
- * Program studi bidang IT di BINUS (School of Computer Science,
- * School of Information Systems, dan Computer Engineering).
- * Nilai 'Teknik Informatika' & 'Sistem Informasi' dipertahankan apa adanya
- * karena sudah tersimpan di data lomba dan profil yang ada.
- */
 export const PROGRAM_STUDI = [
   'Teknik Informatika',
   'Software Engineering',
@@ -91,7 +83,6 @@ export function labelTahapan(value) {
   return JENIS_TAHAPAN.find((item) => item.value === value)?.label ?? value ?? '-'
 }
 
-/** Label ringkas untuk ruang sempit seperti sel kalender. */
 export function labelTahapanPendek(value) {
   return JENIS_TAHAPAN.find((item) => item.value === value)?.pendek ?? labelTahapan(value)
 }

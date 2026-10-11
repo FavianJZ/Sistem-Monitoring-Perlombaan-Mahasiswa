@@ -24,8 +24,6 @@ import { PROGRAM_STUDI } from '@/config/domain'
 import { cn } from '@/lib/cn'
 
 const TAHUN_INI = new Date().getFullYear()
-// Angkatan 2015 s.d. 2031 (atau 5 tahun ke depan bila tahun berjalan sudah lewat 2026),
-// diurutkan dari yang terbaru.
 const ANGKATAN_TERAKHIR = Math.max(2031, TAHUN_INI + 5)
 const ANGKATAN_PERTAMA = 2015
 const PILIHAN_ANGKATAN = Array.from(
@@ -151,7 +149,6 @@ export default function Register() {
       return
     }
 
-    // Cek ke database lebih dulu, supaya email/NIM ganda ketahuan sebelum akun dibuat.
     setMengecek(true)
     try {
       const cek = await cekKetersediaanAkun({ email: form.email, nim: form.nim })
