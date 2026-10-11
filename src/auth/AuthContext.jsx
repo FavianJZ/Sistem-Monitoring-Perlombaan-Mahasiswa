@@ -31,9 +31,9 @@ function terjemahkanGalatAuth(error) {
     return 'Akun belum aktif karena konfirmasi email Supabase masih menyala. Hubungi admin prodi.'
   }
   if (/already registered/i.test(pesan)) return 'Email ini sudah terdaftar. Silakan masuk.'
-  // Trigger pembuat profil gagal; penyebab paling umum NIM/email sudah dipakai profil lain.
+  // Trigger pembuat profil menolak: NIM/email sudah dipakai, atau domain email bukan BINUS.
   if (/database error saving new user/i.test(pesan)) {
-    return 'NIM atau email ini sudah terdaftar pada akun lain.'
+    return 'Pendaftaran ditolak: NIM atau email sudah terdaftar, atau email bukan domain BINUS.'
   }
   if (/rate limit|too many|security purposes/i.test(pesan)) {
     return 'Terlalu banyak percobaan. Coba lagi beberapa saat.'
@@ -41,7 +41,7 @@ function terjemahkanGalatAuth(error) {
   return pesan || 'Terjadi kesalahan saat masuk.'
 }
 
-/** Data yang dibaca trigger handle_new_user untuk mengisi public.profiles. */
+/** Data yang dibaca trigger handle_user_terdaftar untuk mengisi public.profiles. */
 function metadataPendaftaran(data) {
   const metadata = { nama: data.nama?.trim(), role: data.role, prodi: data.prodi }
   if (data.role === 'mahasiswa') {
