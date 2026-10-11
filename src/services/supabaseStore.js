@@ -28,9 +28,17 @@ function salin(nilai) {
 
 /* ------------------------------ berkas ------------------------------ */
 
-function dataUrlKeBlob(dataUrl) {
-  const [kepala, isi] = dataUrl.split(',')
-  const mime = kepala.match(/data:([^;]+)/)?.[1] ?? 'application/octet-stream'
+export function dataUrlKeBlob(dataUrl) {
+  const pemisah = dataUrl.indexOf(',')
+  const kepala = dataUrl.slice(0, pemisah)
+  const isi = dataUrl.slice(pemisah + 1)
+  const mime = kepala.match(/data:([^;,]+)/)?.[1] ?? 'application/octet-stream'
+
+  // Data URL tanpa ";base64" berisi teks yang di-percent-encode, bukan base64.
+  if (!kepala.includes(';base64')) {
+    return new Blob([decodeURIComponent(isi)], { type: mime })
+  }
+
   const biner = atob(isi)
   const bytes = new Uint8Array(biner.length)
   for (let i = 0; i < biner.length; i += 1) bytes[i] = biner.charCodeAt(i)
@@ -61,11 +69,13 @@ async function unggah(dataUrl, { pemilik, lombaId, nama }) {
 /** Ubah semua data: URL di record menjadi path Storage sebelum disimpan. */
 async function siapkanUntukDisimpan(record, pemilik) {
   const hasil = salin(record)
+  const pathPerDataUrl = new Map()
 
   hasil.berkas = await Promise.all(
     (hasil.berkas ?? []).map(async (item) => {
       if (typeof item.url === 'string' && item.url.startsWith('data:')) {
         const path = await unggah(item.url, { pemilik, lombaId: hasil.id, nama: item.namaFile })
+        pathPerDataUrl.set(item.url, path)
         return { ...item, path, url: null }
       }
       // URL bertanda tangan bersifat sementara; yang disimpan cukup path-nya.
@@ -74,7 +84,10 @@ async function siapkanUntukDisimpan(record, pemilik) {
   )
 
   if (typeof hasil.posterUrl === 'string' && hasil.posterUrl.startsWith('data:')) {
-    hasil.posterPath = await unggah(hasil.posterUrl, { pemilik, lombaId: hasil.id, nama: 'poster' })
+    // Poster yang sama biasanya juga tercatat sebagai berkas; jangan diunggah dua kali.
+    hasil.posterPath =
+      pathPerDataUrl.get(hasil.posterUrl) ??
+      (await unggah(hasil.posterUrl, { pemilik, lombaId: hasil.id, nama: 'poster' }))
     hasil.posterUrl = null
   } else if (hasil.posterPath) {
     hasil.posterUrl = null

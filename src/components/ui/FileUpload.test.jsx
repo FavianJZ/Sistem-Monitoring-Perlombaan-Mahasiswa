@@ -163,7 +163,8 @@ describe('FileUpload', () => {
     render(<Harness />)
 
     await user.upload(screen.getByLabelText(/Bukti Pembayaran/), buatFile())
-    expect(screen.getByText('bukti.pdf')).toBeInTheDocument()
+    // FileReader asinkron: tunggu sampai berkas selesai dibaca.
+    expect(await screen.findByText('bukti.pdf')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /Hapus/ }))
 
@@ -177,7 +178,7 @@ describe('FileUpload', () => {
 
     await user.upload(screen.getByLabelText(/Bukti Pembayaran/), buatFile())
 
-    expect(screen.getByRole('button', { name: 'Ganti berkas' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Ganti berkas' })).toBeInTheDocument()
   })
 
   it('menampilkan error dari luar komponen', () => {
