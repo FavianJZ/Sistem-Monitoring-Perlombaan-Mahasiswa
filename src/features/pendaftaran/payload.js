@@ -1,4 +1,3 @@
-import { posterDataUri } from '@/lib/posterPlaceholder'
 import { toISODate } from '@/lib/date'
 
 export function draftKePayload(draft, pengguna) {
@@ -31,14 +30,9 @@ export function draftKePayload(draft, pengguna) {
     peran: index === 0 ? 'ketua' : 'anggota',
   }))
 
-  const posterUrl = draft.berkas?.poster
-    ? posterDataUri({
-        nama: draft.nama,
-        bidang: draft.bidang,
-        tingkat: draft.tingkat,
-        seed: draft.nama?.length ?? 0,
-      })
-    : null
+  // Pratinjau poster memakai gambar yang diunggah; poster PDF tidak bisa jadi <img>.
+  const poster = draft.berkas?.poster
+  const posterUrl = poster?.url && poster.mimeType?.startsWith('image/') ? poster.url : null
 
   return {
     nama: draft.nama?.trim(),
