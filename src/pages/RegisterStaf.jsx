@@ -6,8 +6,6 @@ import {
   CircleAlert,
   Eye,
   EyeOff,
-  GraduationCap,
-  Presentation,
   ShieldCheck,
   UserPlus,
 } from 'lucide-react'
@@ -20,7 +18,6 @@ import { useAuth } from '@/auth/AuthContext'
 import { berandaRole } from '@/auth/sesi'
 import { DOMAIN_KAMPUS, kekuatanSandi } from '@/auth/validasiRegistrasi'
 import {
-  KODE_ADMIN_DEMO,
   KODE_DOSEN_DEMO,
   cekKetersediaanAkun,
   cekKodePeran,
@@ -30,20 +27,9 @@ import { MODE_DEMO } from '@/config/mode'
 import { PROGRAM_STUDI } from '@/config/domain'
 import { cn } from '@/lib/cn'
 
-const IKON_PERAN = { dosen: Presentation, admin: ShieldCheck }
-
-const PERAN_STAF = [
-  {
-    value: 'dosen',
-    label: 'Dosen Pembimbing',
-    deskripsi: 'Pantau kemajuan & verifikasi berkas lomba mahasiswa',
-  },
-  {
-    value: 'admin',
-    label: 'Admin Program Studi',
-    deskripsi: 'Kelola arsip prestasi, pemeringkatan, & ekspor laporan',
-  },
-]
+// Pendaftaran staf hanya untuk dosen pembimbing. Peran admin tetap ada di
+// database, tetapi tidak lagi bisa dipilih dari halaman ini.
+const ROLE = 'dosen'
 
 const FORM_AWAL = {
   nama: '',
@@ -65,7 +51,6 @@ export default function RegisterStaf() {
   const lokasi = useLocation()
   const formRef = useRef(null)
 
-  const [role, setRole] = useState('dosen')
   const [form, setForm] = useState(FORM_AWAL)
   const [setuju, setSetuju] = useState(false)
   const [lihatSandi, setLihatSandi] = useState(false)
@@ -117,23 +102,14 @@ export default function RegisterStaf() {
     }
 
     if (!form.kodeOtorisasi.trim()) {
-      setGalatServer(
-        role === 'dosen'
-          ? 'Kode otorisasi Dosen Pembimbing wajib diisi.'
-          : 'Kode verifikasi Admin Prodi wajib diisi.',
-      )
+      setGalatServer('Kode otorisasi dosen wajib diisi.')
       return
     }
 
     // Mode lokal membandingkan dengan kode demo; mode Supabase dicek di server.
     if (!modeSupabase) {
-      const kodeBenar = role === 'dosen' ? KODE_DOSEN_DEMO : KODE_ADMIN_DEMO
-      if (form.kodeOtorisasi.trim() !== kodeBenar) {
-        setGalatServer(
-          role === 'dosen'
-            ? 'Kode otorisasi Dosen tidak valid. Hubungi admin fakultas.'
-            : 'Kode verifikasi Admin Prodi tidak valid.',
-        )
+      if (form.kodeOtorisasi.trim() !== KODE_DOSEN_DEMO) {
+        setGalatServer('Kode otorisasi dosen tidak valid. Minta kode yang benar ke program studi.')
         return
       }
     }
@@ -157,7 +133,7 @@ export default function RegisterStaf() {
       setMengecek(true)
       try {
         const [kodeValid, cek] = await Promise.all([
-          cekKodePeran(role, form.kodeOtorisasi),
+          cekKodePeran(ROLE, form.kodeOtorisasi),
           cekKetersediaanAkun({ email }),
         ])
         if (cek.emailTerpakai) {
@@ -178,9 +154,8 @@ export default function RegisterStaf() {
         nama: form.nama,
         email: form.email,
         prodi: form.prodi,
-        role,
-        kodeAdmin: role === 'admin' ? form.kodeOtorisasi : undefined,
-        kodeDosen: role === 'dosen' ? form.kodeOtorisasi : undefined,
+        role: ROLE,
+        kodeDosen: form.kodeOtorisasi,
         password: form.password,
         konfirmasi: form.konfirmasi,
         setuju: true,
@@ -189,7 +164,7 @@ export default function RegisterStaf() {
       const pengguna = await daftar(payload)
       toast({
         variant: 'success',
-        title: 'Akun staf berhasil dibuat',
+        title: 'Akun dosen berhasil dibuat',
         description: `Selamat datang, ${pengguna.nama}.`,
       })
       navigate(tujuan ?? berandaRole(pengguna.role), { replace: true })
@@ -216,8 +191,8 @@ export default function RegisterStaf() {
 
   return (
     <AuthLayout
-      judul="Portal Pendaftaran Dosen & Staf Akademik"
-      deskripsi="Akses pemantauan perlombaan mahasiswa khusus untuk Dosen Pembimbing dan Pengelola Program Studi."
+      judul="Pendaftaran akun dosen pembimbing"
+      deskripsi="Akun dosen dipakai untuk memantau lomba mahasiswa bimbingan dan memverifikasi berkasnya."
       lebarForm="lg:w-[34rem]"
     >
       <div className="flex items-center justify-between gap-2 mb-2">
@@ -235,8 +210,8 @@ export default function RegisterStaf() {
           <ShieldCheck className="size-5" />
         </span>
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Daftar Akun Staf</h2>
-          <p className="text-xs text-slate-500">Khusus Dosen Pembimbing & Admin Prodi</p>
+          <h2 className="text-2xl font-bold text-slate-800">Daftar Akun Dosen</h2>
+          <p className="text-xs text-slate-500">Khusus dosen pembimbing</p>
         </div>
       </div>
 
@@ -252,51 +227,6 @@ export default function RegisterStaf() {
 
       <form ref={formRef} onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
 
-        <fieldset>
-          <legend className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
-            Peran Akademik
-          </legend>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {PERAN_STAF.map((item) => {
-              const Icon = IKON_PERAN[item.value]
-              const dipilih = role === item.value
-              return (
-                <label
-                  key={item.value}
-                  className={cn(
-                    'relative flex cursor-pointer gap-3 rounded-lg border bg-white p-3 transition-all',
-                    dipilih
-                      ? 'border-accent-500 bg-accent-50/60 shadow-card ring-1 ring-accent-500'
-                      : 'border-slate-200 hover:border-accent-300 hover:bg-slate-50',
-                  )}
-                >
-                  <input
-                    type="radio"
-                    name="role"
-                    value={item.value}
-                    checked={dipilih}
-                    onChange={() => setRole(item.value)}
-                    className="sr-only"
-                  />
-                  <span
-                    className={cn(
-                      'grid size-8 shrink-0 place-items-center rounded-md transition-colors',
-                      dipilih ? 'bg-accent-600 text-white' : 'bg-slate-100 text-slate-500',
-                    )}
-                  >
-                    <Icon className="size-4" />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-sm font-semibold text-slate-900">{item.label}</span>
-                    <span className="block text-xs text-slate-500 line-clamp-2 mt-0.5">
-                      {item.deskripsi}
-                    </span>
-                  </span>
-                </label>
-              )
-            })}
-          </div>
-        </fieldset>
 
         <p className="border-t border-slate-200 pt-4 text-xs font-bold uppercase tracking-wider text-slate-500">
           Data Identitas & Otorisasi
@@ -333,15 +263,13 @@ export default function RegisterStaf() {
         />
 
         <Input
-          label={
-            role === 'dosen' ? 'Kode otorisasi dosen' : 'Kode otorisasi admin prodi'
-          }
+          label="Kode otorisasi dosen"
           name="kodeOtorisasi"
           autoComplete="off"
           placeholder="Masukkan kode dari program studi"
           hint={
             MODE_DEMO
-              ? `Kode khusus otorisasi staf. Untuk demo: ${role === 'dosen' ? KODE_DOSEN_DEMO : KODE_ADMIN_DEMO}.`
+              ? `Untuk demo: ${KODE_DOSEN_DEMO}.`
               : 'Kode ini dibagikan oleh program studi kepada dosen dan staf.'
           }
           value={form.kodeOtorisasi}
@@ -434,11 +362,11 @@ export default function RegisterStaf() {
           leadingIcon={UserPlus}
           className="bg-accent-600 hover:bg-accent-700 text-white"
         >
-          Daftarkan Akun Staf
+          Daftarkan Akun Dosen
         </Button>
 
         <p className="text-center text-xs text-slate-500 pt-2">
-          Sudah memiliki akun staf?{' '}
+          Sudah punya akun?{' '}
           <Link to="/login" className="font-semibold text-primary-700 hover:underline">
             Masuk di sini
           </Link>

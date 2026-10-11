@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderApp } from '@/test/utils'
-import { KODE_ADMIN_DEMO, KODE_DOSEN_DEMO } from '@/services/userService'
+import { KODE_DOSEN_DEMO } from '@/services/userService'
 
-describe('Halaman RegisterStaf (Portal Dosen & Admin Prodi)', () => {
+describe('Halaman RegisterStaf (khusus dosen)', () => {
   it('tidak menampilkan tautan pendaftaran staf di halaman login publik', () => {
     renderApp('/login')
     expect(screen.queryByRole('link', { name: /Portal Pendaftaran Staf/ })).not.toBeInTheDocument()
@@ -13,7 +13,7 @@ describe('Halaman RegisterStaf (Portal Dosen & Admin Prodi)', () => {
 
   it('dapat diakses secara langsung melalui rute khusus /daftar-staf', async () => {
     renderApp('/daftar-staf')
-    expect(await screen.findByRole('heading', { level: 2, name: 'Daftar Akun Staf' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 2, name: 'Daftar Akun Dosen' })).toBeInTheDocument()
   })
 
   it('menolak pendaftaran dosen jika kode otorisasi salah', async () => {
@@ -28,9 +28,14 @@ describe('Halaman RegisterStaf (Portal Dosen & Admin Prodi)', () => {
     await user.type(screen.getByLabelText(/Konfirmasi kata sandi/), 'Rahasia123!')
     await user.click(screen.getByRole('checkbox'))
 
-    await user.click(screen.getByRole('button', { name: /Daftarkan Akun Staf/ }))
+    await user.click(screen.getByRole('button', { name: /Daftarkan Akun Dosen/ }))
 
-    expect(await screen.findByText(/Kode otorisasi Dosen tidak valid/)).toBeInTheDocument()
+    expect(await screen.findByText(/Kode otorisasi dosen tidak valid/)).toBeInTheDocument()
+  })
+
+  it('tidak menawarkan pilihan peran admin prodi', () => {
+    renderApp('/daftar-staf')
+    expect(screen.queryByText(/Admin Program Studi/)).not.toBeInTheDocument()
   })
 
   it('berhasil mendaftarkan dosen dengan kode otorisasi DOSEN2026', async () => {
@@ -45,7 +50,7 @@ describe('Halaman RegisterStaf (Portal Dosen & Admin Prodi)', () => {
     await user.type(screen.getByLabelText(/Konfirmasi kata sandi/), 'Rahasia123!')
     await user.click(screen.getByRole('checkbox'))
 
-    await user.click(screen.getByRole('button', { name: /Daftarkan Akun Staf/ }))
+    await user.click(screen.getByRole('button', { name: /Daftarkan Akun Dosen/ }))
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Dashboard Monitoring' })).toBeInTheDocument()
   })
