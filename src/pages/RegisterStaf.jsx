@@ -27,8 +27,6 @@ import { MODE_DEMO } from '@/config/mode'
 import { PROGRAM_STUDI } from '@/config/domain'
 import { cn } from '@/lib/cn'
 
-// Pendaftaran staf hanya untuk dosen pembimbing. Peran admin tetap ada di
-// database, tetapi tidak lagi bisa dipilih dari halaman ini.
 const ROLE = 'dosen'
 
 const FORM_AWAL = {
@@ -106,7 +104,6 @@ export default function RegisterStaf() {
       return
     }
 
-    // Mode lokal membandingkan dengan kode demo; mode Supabase dicek di server.
     if (!modeSupabase) {
       if (form.kodeOtorisasi.trim() !== KODE_DOSEN_DEMO) {
         setGalatServer('Kode otorisasi dosen tidak valid. Minta kode yang benar ke program studi.')

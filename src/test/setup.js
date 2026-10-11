@@ -4,8 +4,6 @@ import { afterEach, beforeEach, vi } from 'vitest'
 
 configure({ asyncUtilTimeout: 5000 })
 
-// Data demo dibuat relatif terhadap hari ini; tanggal dibekukan supaya hasil
-// uji (mis. "lomba bulan ini") tidak berubah mengikuti kalender.
 export const TANGGAL_UJI = new Date(2026, 8, 24, 9, 0, 0)
 
 class MemoryStorage {
