@@ -11,8 +11,6 @@ const PENGGUNA_BAWAAN = MODE_DEMO ? SEMUA_PENGGUNA : []
 
 export const KUNCI_AKUN = 'simonlomba.akun'
 
-// Hanya ada di mode demo/test. Di build produksi nilainya null sehingga
-// string kode tidak ikut ke bundle; kode asli dicek di database.
 export const KODE_ADMIN_DEMO = MODE_DEMO ? 'PRODI2026' : null
 
 export const KODE_DOSEN_DEMO = MODE_DEMO ? 'DOSEN2026' : null
@@ -40,7 +38,6 @@ function semuaPengguna() {
   return [...PENGGUNA_BAWAAN, ...bacaAkun().map((item) => item.user)]
 }
 
-/** Cek kode otorisasi staf di server (RPC cek_kode_peran). Kodenya tidak pernah dikirim ke klien. */
 export async function cekKodePeran(role, kode) {
   if (!apakahSupabaseAktif()) {
     return String(kode ?? '').trim() === (role === 'dosen' ? KODE_DOSEN_DEMO : KODE_ADMIN_DEMO)
@@ -52,8 +49,6 @@ export async function cekKodePeran(role, kode) {
   if (error) throw new ServiceError(`Gagal memeriksa kode otorisasi: ${error.message}`)
   return data === true
 }
-
-/* ------------------------- profil dari Supabase ------------------------- */
 
 let cacheProfil = new Map()
 let pemuatanProfil = null
@@ -71,10 +66,6 @@ export function barisKeProfil(baris) {
   }
 }
 
-/**
- * Muat semua profil yang boleh dibaca (RLS: pengguna yang sudah login),
- * lalu dengarkan perubahan via Realtime. Dipakai namaPengguna() & daftar dosen.
- */
 export function muatProfil() {
   if (!apakahSupabaseAktif()) return Promise.resolve()
   if (!pemuatanProfil) {
@@ -114,7 +105,6 @@ export function resetCacheProfil() {
   }
 }
 
-/** Profil satu pengguna langsung dari database (dipakai AuthContext). */
 export async function ambilProfil(id) {
   const { data, error } = await supabase
     .from('profiles')
@@ -134,12 +124,6 @@ function penggunaDenganRole(role) {
     .map((item) => ({ ...item }))
 }
 
-/*
- * Saat Supabase aktif, sumber kebenaran adalah database, bukan cache akun di
- * localStorage. Cache itu tidak ikut terhapus saat data dihapus di Supabase,
- * sehingga dulu menimbulkan "Email/NIM sudah terdaftar" palsu.
- * Pengecekan ke database dilakukan async lewat cekKetersediaanAkun().
- */
 function penggunaUntukCekDuplikat() {
   return apakahSupabaseAktif() ? PENGGUNA_BAWAAN : semuaPengguna()
 }
@@ -153,12 +137,6 @@ export function nimTerpakai(nim) {
   return penggunaUntukCekDuplikat().some((item) => item.nim && item.nim === nim)
 }
 
-/**
- * Cek email & NIM ke database Supabase lewat fungsi RPC
- * public.cek_ketersediaan_akun (lihat supabase/migrations).
- * Mengembalikan { emailTerpakai, nimTerpakai }. Bila RPC belum dipasang,
- * dianggap tersedia; signUp tetap menolak email ganda.
- */
 export async function cekKetersediaanAkun({ email, nim }) {
   if (!apakahSupabaseAktif()) {
     return { emailTerpakai: emailTerpakai(email), nimTerpakai: nim ? nimTerpakai(nim) : false }
@@ -248,7 +226,6 @@ export async function registrasi(data = {}, opsi = {}) {
     ...(data.role === 'mahasiswa' ? { nim: data.nim, angkatan: Number(data.angkatan) } : {}),
   }
 
-  // Ganti entri lama dengan email/NIM yang sama (sisa akun yang sudah dihapus di database).
   const sisa = bacaAkun().filter(
     (item) =>
       item.user.email.toLowerCase() !== user.email && !(user.nim && item.user.nim === user.nim),

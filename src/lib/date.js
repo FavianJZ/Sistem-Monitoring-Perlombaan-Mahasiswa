@@ -1,5 +1,3 @@
-
-
 const LOCALE = 'id-ID'
 
 export const NAMA_BULAN = [
@@ -169,10 +167,6 @@ export function jarakHari(value, acuan = new Date()) {
   return selisih > 0 ? `${selisih} hari lagi` : `${Math.abs(selisih)} hari lalu`
 }
 
-/**
- * Label waktu sebuah tahapan. Tahap yang sudah dimulai tapi belum selesai
- * ditulis "berlangsung s.d. ...", bukan "N hari lalu".
- */
 export function waktuTahap(tahap, acuan = new Date()) {
   if (!tahap?.tanggalMulai) return '-'
 
@@ -188,7 +182,6 @@ export function waktuTahap(tahap, acuan = new Date()) {
   return jarakHari(tahap.tanggalMulai, acuan)
 }
 
-/** Warna badge hitung mundur: tahap berjalan biru, tiga hari terakhir kuning. */
 export function toneSisaHari(sisaHari) {
   if (sisaHari < 0) return 'primary'
   return sisaHari <= 3 ? 'warning' : 'neutral'

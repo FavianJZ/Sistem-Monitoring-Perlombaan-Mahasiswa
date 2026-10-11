@@ -162,7 +162,6 @@ describe('Detail lomba untuk dosen - hasil', () => {
 })
 
 describe('Detail lomba untuk dosen - tanpa kontrol milik mahasiswa', () => {
-  // Dosen hanya memverifikasi berkas; mengunggah dan mengubah data tetap milik mahasiswa.
   it('tidak menyediakan kontrol unggah maupun penyimpanan', async () => {
     const user = userEvent.setup()
     await bukaDetail('lomba-09')

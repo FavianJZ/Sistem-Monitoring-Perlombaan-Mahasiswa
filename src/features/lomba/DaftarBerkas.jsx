@@ -26,7 +26,6 @@ function KartuBerkas({
   berkas,
   pratinjau,
   role,
-  // Hanya dosen pembimbing lomba ini (atau admin) yang boleh memverifikasi.
   bolehVerifikasi = role === 'dosen' || role === 'admin',
   onLihat,
   onSetujui,
@@ -160,7 +159,6 @@ export function DaftarBerkas({ lomba, onPerbarui }) {
   const ditolak = berkas.filter((item) => item.statusVerifikasi === 'ditolak')
 
   const role = user?.role ?? 'mahasiswa'
-  // Sama dengan aturan database: dosen lain hanya bisa melihat.
   const bolehVerifikasi =
     role === 'admin' || (role === 'dosen' && Boolean(user?.id) && lomba?.dosenPembimbingId === user.id)
 
