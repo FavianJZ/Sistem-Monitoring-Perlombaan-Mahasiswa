@@ -26,6 +26,8 @@ function KartuBerkas({
   berkas,
   pratinjau,
   role,
+  // Hanya dosen pembimbing lomba ini (atau admin) yang boleh memverifikasi.
+  bolehVerifikasi = role === 'dosen' || role === 'admin',
   onLihat,
   onSetujui,
   onBukaTolak,
@@ -106,24 +108,26 @@ function KartuBerkas({
         </Button>
 
         {isDosenAtauAdmin ? (
-          <div className="flex items-center gap-1.5">
-            <Button
-              variant={status === 'ditolak' ? 'danger' : 'ghost'}
-              size="sm"
-              leadingIcon={X}
-              onClick={() => onBukaTolak(berkas)}
-            >
-              {status === 'ditolak' ? 'Ubah Penolakan' : 'Tolak'}
-            </Button>
-            <Button
-              variant={status === 'diterima' ? 'success' : 'outline'}
-              size="sm"
-              leadingIcon={Check}
-              onClick={() => onSetujui(berkas)}
-            >
-              {status === 'diterima' ? 'Disetujui' : 'Setujui'}
-            </Button>
-          </div>
+          bolehVerifikasi ? (
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant={status === 'ditolak' ? 'danger' : 'ghost'}
+                size="sm"
+                leadingIcon={X}
+                onClick={() => onBukaTolak(berkas)}
+              >
+                {status === 'ditolak' ? 'Ubah Penolakan' : 'Tolak'}
+              </Button>
+              <Button
+                variant={status === 'diterima' ? 'success' : 'outline'}
+                size="sm"
+                leadingIcon={Check}
+                onClick={() => onSetujui(berkas)}
+              >
+                {status === 'diterima' ? 'Disetujui' : 'Setujui'}
+              </Button>
+            </div>
+          ) : null
         ) : (
           status === 'ditolak' && (
             <Button
@@ -156,6 +160,9 @@ export function DaftarBerkas({ lomba, onPerbarui }) {
   const ditolak = berkas.filter((item) => item.statusVerifikasi === 'ditolak')
 
   const role = user?.role ?? 'mahasiswa'
+  // Sama dengan aturan database: dosen lain hanya bisa melihat.
+  const bolehVerifikasi =
+    role === 'admin' || (role === 'dosen' && Boolean(user?.id) && lomba?.dosenPembimbingId === user.id)
 
   async function handleSetujui(targetBerkas) {
     setMemproses(true)
@@ -279,6 +286,7 @@ export function DaftarBerkas({ lomba, onPerbarui }) {
               berkas={item}
               pratinjau={item.url || (item.tipe === 'poster' ? lomba.posterUrl : null)}
               role={role}
+              bolehVerifikasi={bolehVerifikasi}
               onLihat={(b) => setBerkasPratinjau(b)}
               onSetujui={handleSetujui}
               onBukaTolak={(b) => setBerkasTolak(b)}
@@ -294,6 +302,7 @@ export function DaftarBerkas({ lomba, onPerbarui }) {
         berkas={berkasPratinjau}
         lomba={lomba}
         role={role}
+        bolehVerifikasi={bolehVerifikasi}
         onSetujui={handleSetujui}
         onTolak={(b) => setBerkasTolak(b)}
         onUnggahUlang={(b) => setBerkasUnggahUlang(b)}
