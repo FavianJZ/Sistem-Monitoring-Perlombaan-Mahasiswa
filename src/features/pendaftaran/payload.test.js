@@ -101,18 +101,31 @@ describe('draftKePayload', () => {
     expect(payload.namaTim).toBeNull()
   })
 
-  it('membuat pratinjau poster hanya bila ada berkas poster', () => {
+  it('memakai gambar poster yang diunggah sebagai pratinjau', () => {
     expect(draftKePayload(DRAFT, PENGGUNA).posterUrl).toBeNull()
 
+    const gambar = 'data:image/png;base64,iVBORw0KGgo='
     const denganPoster = draftKePayload(
       {
         ...DRAFT,
-        berkas: { ...DRAFT.berkas, poster: { namaFile: 'poster.png', mimeType: 'image/png', size: 5 } },
+        berkas: {
+          ...DRAFT.berkas,
+          poster: { namaFile: 'poster.png', mimeType: 'image/png', size: 5, url: gambar },
+        },
       },
       PENGGUNA,
     )
 
-    expect(denganPoster.posterUrl).toContain('data:image/svg+xml')
+    expect(denganPoster.posterUrl).toBe(gambar)
+    expect(denganPoster.posterUrl).not.toContain('svg')
+  })
+
+  it('tidak membuat pratinjau dari poster PDF atau poster tanpa isi', () => {
+    const pdf = { namaFile: 'poster.pdf', mimeType: 'application/pdf', size: 5, url: 'data:application/pdf;base64,JVBE' }
+    const tanpaIsi = { namaFile: 'poster.png', mimeType: 'image/png', size: 5 }
+
+    expect(draftKePayload({ ...DRAFT, berkas: { ...DRAFT.berkas, poster: pdf } }, PENGGUNA).posterUrl).toBeNull()
+    expect(draftKePayload({ ...DRAFT, berkas: { ...DRAFT.berkas, poster: tanpaIsi } }, PENGGUNA).posterUrl).toBeNull()
   })
 
   it('mengubah dosen pembimbing dan tautan kosong menjadi null', () => {
