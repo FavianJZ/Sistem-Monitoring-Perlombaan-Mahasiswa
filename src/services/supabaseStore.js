@@ -226,6 +226,21 @@ export async function idLombaBaru() {
   return `lomba-${Date.now().toString(36)}${acak}`
 }
 
+/** Galat Supabase saat menyimpan -> kalimat yang bisa dibaca pengguna. */
+export function pesanGalatSimpan(error) {
+  // Update yang disaring RLS mengembalikan 0 baris, sehingga .single() gagal.
+  if (error?.code === 'PGRST116') {
+    return 'Anda tidak punya izin mengubah lomba ini. Hanya pemilik dan dosen pembimbingnya yang bisa.'
+  }
+  if (error?.code === '42501') {
+    // Pesan dari trigger database sudah berbahasa Indonesia; pesan RLS bawaan belum.
+    return /row-level security/i.test(error.message ?? '')
+      ? 'Anda tidak punya izin untuk menyimpan data lomba ini.'
+      : error.message
+  }
+  return error?.message ?? 'Terjadi kesalahan tak dikenal.'
+}
+
 async function simpanKeServer(record, { baru }) {
   // Berkas selalu diunggah ke folder milik pengunggah (syarat policy Storage).
   const uid = await idPenggunaAktif()
@@ -237,12 +252,7 @@ async function simpanKeServer(record, { baru }) {
     : supabase.from(TABEL).update({ dosen_pembimbing_id: baris.dosen_pembimbing_id, data: baris.data }).eq('id', siap.id)
 
   const { data, error } = await kueri.select('*').single()
-  if (error) {
-    const pesan = error.code === '42501' || /row-level security/i.test(error.message)
-      ? 'Anda tidak punya izin untuk menyimpan data lomba ini.'
-      : error.message
-    throw new Error(`Gagal menyimpan lomba: ${pesan}`)
-  }
+  if (error) throw new Error(`Gagal menyimpan lomba: ${pesanGalatSimpan(error)}`)
 
   const [hasil] = await lengkapiUrl([barisKeRecord(data)])
   cache.set(hasil.id, hasil)

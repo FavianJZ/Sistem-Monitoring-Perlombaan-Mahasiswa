@@ -24,6 +24,7 @@ export function ModalPratinjauDokumen({
   berkas,
   lomba,
   role = 'mahasiswa',
+  bolehVerifikasi = role === 'dosen' || role === 'admin',
   onSetujui,
   onTolak,
   onUnggahUlang,
@@ -106,24 +107,26 @@ export function ModalPratinjauDokumen({
 
           <div className="flex items-center gap-2">
             {isDosenAtauAdmin ? (
-              <>
-                <Button
-                  variant="danger"
-                  leadingIcon={XCircle}
-                  onClick={() => onTolak?.(berkas)}
-                  disabled={memproses}
-                >
-                  Tolak Dokumen
-                </Button>
-                <Button
-                  variant="primary"
-                  leadingIcon={CheckCircle2}
-                  onClick={() => onSetujui?.(berkas)}
-                  disabled={memproses}
-                >
-                  Setujui Dokumen
-                </Button>
-              </>
+              bolehVerifikasi ? (
+                <>
+                  <Button
+                    variant="danger"
+                    leadingIcon={XCircle}
+                    onClick={() => onTolak?.(berkas)}
+                    disabled={memproses}
+                  >
+                    Tolak Dokumen
+                  </Button>
+                  <Button
+                    variant="primary"
+                    leadingIcon={CheckCircle2}
+                    onClick={() => onSetujui?.(berkas)}
+                    disabled={memproses}
+                  >
+                    Setujui Dokumen
+                  </Button>
+                </>
+              ) : null
             ) : (
               <>
                 {statusVerifikasi === 'ditolak' && (

@@ -58,6 +58,19 @@ describe('Fitur Baru Detail Lomba: Edit, View Dokumen, Reject, dan Re-upload', (
     })
   })
 
+  it('dosen yang bukan pembimbing hanya bisa melihat, tanpa tombol verifikasi', async () => {
+    const user = userEvent.setup()
+
+    // lomba-02 dibimbing User-Dosen(4), bukan dosen pada sesi ini.
+    renderApp('/monitoring/lomba/lomba-02', { sesi: SESI_DOSEN() })
+    await user.click(await screen.findByRole('tab', { name: /Dokumen/i }))
+
+    expect(screen.getAllByRole('button', { name: /Lihat Dokumen/i }).length).toBeGreaterThan(0)
+    expect(screen.queryByRole('button', { name: /^Tolak$/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Setujui$/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Unggah Ulang/i })).not.toBeInTheDocument()
+  })
+
   it('dosen dapat menolak dokumen dan mahasiswa dapat mengunggah ulang', async () => {
     const user = userEvent.setup()
 
