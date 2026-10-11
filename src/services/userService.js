@@ -11,9 +11,11 @@ const PENGGUNA_BAWAAN = MODE_DEMO ? SEMUA_PENGGUNA : []
 
 export const KUNCI_AKUN = 'simonlomba.akun'
 
-export const KODE_ADMIN_DEMO = 'PRODI2026'
+// Hanya ada di mode demo/test. Di build produksi nilainya null sehingga
+// string kode tidak ikut ke bundle; kode asli dicek di database.
+export const KODE_ADMIN_DEMO = MODE_DEMO ? 'PRODI2026' : null
 
-export const KODE_DOSEN_DEMO = 'DOSEN2026'
+export const KODE_DOSEN_DEMO = MODE_DEMO ? 'DOSEN2026' : null
 
 function bacaAkun() {
   try {
