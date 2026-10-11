@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { langgananPerubahan } from '@/services/perubahanData'
 
-/**
- * Menjalankan fungsi async dan menyimpan { data, loading, error }.
- * Dengan `realtime` (bawaan aktif), data dimuat ulang diam-diam setiap kali
- * service memberi tahu ada perubahan, misalnya event Realtime Supabase.
- */
 export function useAsync(fungsi, deps = [], { langsung = true, realtime = true } = {}) {
   const [state, setState] = useState({ data: null, loading: langsung, error: null })
   const versi = useRef(0)
@@ -20,7 +15,6 @@ export function useAsync(fungsi, deps = [], { langsung = true, realtime = true }
 
   const jalankan = useCallback(async ({ diam = false } = {}) => {
     const versiSaya = (versi.current += 1)
-    // Muat ulang diam tidak memunculkan skeleton/loading agar layar tidak berkedip.
     if (!diam) setState((sebelum) => ({ ...sebelum, loading: true, error: null }))
 
     try {
@@ -32,11 +26,9 @@ export function useAsync(fungsi, deps = [], { langsung = true, realtime = true }
     } catch (error) {
       if (!terpasang.current || versiSaya !== versi.current) return null
 
-      // Saat diam, pertahankan data lama bila muat ulang gagal.
       setState((sebelum) => (diam && sebelum.data ? sebelum : { data: null, loading: false, error }))
       return null
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps)
 
   useEffect(() => {

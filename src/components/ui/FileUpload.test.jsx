@@ -89,7 +89,6 @@ describe('FileUpload', () => {
 
     await user.upload(screen.getByLabelText(/Bukti Pembayaran/), buatFile({ ukuran: 2048 }))
 
-    // Berkas kecil dibaca FileReader menjadi data URL sebelum diteruskan.
     await waitFor(() =>
       expect(onPilih).toHaveBeenCalledWith(
         { namaFile: 'bukti.pdf', mimeType: 'application/pdf', size: 2048, url: expect.stringMatching(/^data:/) },
@@ -163,7 +162,6 @@ describe('FileUpload', () => {
     render(<Harness />)
 
     await user.upload(screen.getByLabelText(/Bukti Pembayaran/), buatFile())
-    // FileReader asinkron: tunggu sampai berkas selesai dibaca.
     expect(await screen.findByText('bukti.pdf')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /Hapus/ }))

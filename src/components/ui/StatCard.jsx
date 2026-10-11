@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/cn'
 
-// Hanya angka yang diberi warna; kartu sengaja polos agar angka yang menonjol.
 const WARNA_ANGKA = {
   neutral: 'text-slate-900',
   primary: 'text-slate-900',

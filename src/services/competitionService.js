@@ -3,7 +3,6 @@ import * as storeMock from './mockStore'
 import * as storeSupabase from './supabaseStore'
 import { apakahSupabaseAktif } from '@/lib/supabase'
 
-// Supabase bila env tersedia; data mock lokal untuk pengujian & mode demo.
 const store = apakahSupabaseAktif() ? storeSupabase : storeMock
 import {
   agendaTerdekat,
@@ -337,7 +336,6 @@ export async function opsiFilter(opsi = {}) {
 }
 
 export function resetDataMock(acuan) {
-  // Data Supabase tidak pernah direset dari klien; hanya data mock.
   return storeMock.resetStore(acuan)
 }
 
