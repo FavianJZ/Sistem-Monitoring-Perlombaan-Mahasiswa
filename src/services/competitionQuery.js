@@ -255,6 +255,26 @@ export function bolehTandaiTidakLanjut(lomba) {
   return { boleh: true, alasan: null, kode: 'SIAP' }
 }
 
+export function bolehHapusLomba(lomba) {
+  if (STATUS_AKHIR.includes(lomba?.status) || lomba?.hasil) {
+    return {
+      boleh: false,
+      alasan:
+        'Lomba yang sudah selesai atau ditandai tidak lanjut tersimpan sebagai riwayat dan tidak bisa dihapus.',
+      kode: 'STATUS_AKHIR',
+    }
+  }
+  if ((lomba?.berkas ?? []).some((berkas) => berkas.statusVerifikasi === 'diterima')) {
+    return {
+      boleh: false,
+      alasan:
+        'Ada berkas yang sudah diterima dosen pembimbing, jadi lomba ini tidak bisa dihapus. Pakai "Tandai tidak lanjut" bila lomba tidak diteruskan.',
+      kode: 'ADA_VERIFIKASI',
+    }
+  }
+  return { boleh: true, alasan: null, kode: 'SIAP' }
+}
+
 export function bolehLaporHasil(lomba, acuan = new Date()) {
   if (lombaBerhenti(lomba)) {
     return {
@@ -326,6 +346,7 @@ export function ringkasLomba(lomba, acuan = new Date()) {
     pelaporan: bolehLaporHasil(lomba, acuan),
     statusHasil: statusHasil(lomba),
     penghentian: bolehTandaiTidakLanjut(lomba),
+    penghapusan: bolehHapusLomba(lomba),
     progres: progresTahapan(lomba, acuan),
   }
 }

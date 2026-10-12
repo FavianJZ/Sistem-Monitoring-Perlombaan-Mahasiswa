@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ACUAN_UJI, SESI_MAHASISWA, buatSesi, renderApp } from '@/test/utils'
-import { hapusLomba, resetDataMock } from '@/services/competitionService'
+import { resetDataMock } from '@/services/competitionService'
+import { hapus as hapusDariStore } from '@/services/mockStore'
 
 beforeEach(() => {
   resetDataMock(ACUAN_UJI)
@@ -122,7 +123,7 @@ describe('Halaman Lomba Saya', () => {
   it('menampilkan empty state awal bila mahasiswa belum punya lomba', async () => {
 
     for (const id of ['lomba-02', 'lomba-12', 'lomba-17']) {
-      await hapusLomba(id, { acuan: ACUAN_UJI })
+      hapusDariStore(id)
     }
 
     renderApp('/lomba-saya', { sesi: buatSesi('mhs-3') })
