@@ -13,6 +13,7 @@ import {
   resetDataMock,
   semuaLombaTersaring,
   statistikLomba,
+  tandaiTidakLanjut,
   unggahUlangBerkas,
   verifikasiBerkas,
 } from './competitionService'
@@ -482,5 +483,102 @@ describe('userService', () => {
 
     const berkasValid = disetujui.berkas.find((b) => b.id === berkasId)
     expect(berkasValid.statusVerifikasi).toBe('diterima')
+  })
+})
+
+describe('tandaiTidakLanjut', () => {
+  it('menyimpan status, alasan, tahap terakhir, dan catatan', async () => {
+    const hasil = await tandaiTidakLanjut(
+      'lomba-01',
+      { alasan: 'tidak_lolos', tahapTerakhir: 'pendaftaran', catatan: '  gugur di penyisihan  ' },
+      OPSI,
+    )
+
+    expect(hasil.status).toBe('tidak_lanjut')
+    expect(hasil.tidakLanjut).toEqual({
+      alasan: 'tidak_lolos',
+      tahapTerakhir: 'pendaftaran',
+      catatan: 'gugur di penyisihan',
+      dicatatPada: '2026-09-24',
+    })
+    expect(hasil.pelaporan.kode).toBe('TIDAK_LANJUT')
+    expect(hasil.penghentian.boleh).toBe(false)
+    expect(hasil.tahapanBerikutnya).toBeNull()
+  })
+
+  it('mengabaikan tahap terakhir yang bukan tahapan lomba itu', async () => {
+    const hasil = await tandaiTidakLanjut('lomba-01', { alasan: 'mundur', tahapTerakhir: 'karangan' }, OPSI)
+    expect(hasil.tidakLanjut.tahapTerakhir).toBeNull()
+    expect(hasil.tidakLanjut.catatan).toBeNull()
+  })
+
+  it('menolak alasan yang tidak dikenal', async () => {
+    await expect(tandaiTidakLanjut('lomba-01', { alasan: 'bosan' }, OPSI)).rejects.toMatchObject({
+      kode: 'ALASAN_KOSONG',
+    })
+    expect((await detailLomba('lomba-01', OPSI)).status).toBe('berlangsung')
+  })
+
+  it('menolak catatan yang terlalu panjang', async () => {
+    await expect(
+      tandaiTidakLanjut('lomba-01', { alasan: 'mundur', catatan: 'x'.repeat(501) }, OPSI),
+    ).rejects.toMatchObject({ kode: 'CATATAN_PANJANG' })
+  })
+
+  it('menolak lomba yang hasilnya sudah dilaporkan', async () => {
+    const selesai = (await semuaLombaTersaring({ status: 'selesai' }, OPSI))[0]
+
+    await expect(
+      tandaiTidakLanjut(selesai.id, { alasan: 'mundur' }, OPSI),
+    ).rejects.toMatchObject({ kode: 'SUDAH_LAPOR', status: 409 })
+  })
+
+  it('menolak penandaan kedua', async () => {
+    await tandaiTidakLanjut('lomba-01', { alasan: 'mundur' }, OPSI)
+
+    await expect(
+      tandaiTidakLanjut('lomba-01', { alasan: 'dibatalkan' }, OPSI),
+    ).rejects.toMatchObject({ kode: 'SUDAH_TIDAK_LANJUT' })
+  })
+
+  it('menutup pelaporan hasil setelah ditandai tidak lanjut', async () => {
+    await tandaiTidakLanjut('lomba-01', { alasan: 'diskualifikasi' }, OPSI)
+
+    await expect(
+      laporkanHasil('lomba-01', { capaian: 'juara_1', berkas: SERTIFIKAT }, OPSI),
+    ).rejects.toMatchObject({ kode: 'TIDAK_LANJUT' })
+  })
+
+  it('tidak bisa diubah lewat perbaruiLomba', async () => {
+    await tandaiTidakLanjut('lomba-01', { alasan: 'mundur' }, OPSI)
+    const hasil = await perbaruiLomba(
+      'lomba-01',
+      { status: 'terdaftar', tidakLanjut: null, nama: 'Nama baru' },
+      OPSI,
+    )
+
+    expect(hasil.nama).toBe('Nama baru')
+    expect(hasil.status).toBe('tidak_lanjut')
+    expect(hasil.tidakLanjut.alasan).toBe('mundur')
+  })
+
+  it('masuk statistik sebagai status sendiri, bukan lomba aktif', async () => {
+    const sebelum = await statistikLomba({}, OPSI)
+    await tandaiTidakLanjut('lomba-01', { alasan: 'mundur' }, OPSI)
+    const sesudah = await statistikLomba({}, OPSI)
+
+    expect(sesudah.perStatus.tidak_lanjut).toBe(1)
+    expect(sesudah.perStatus.berlangsung).toBe(sebelum.perStatus.berlangsung - 1)
+    expect(sesudah.mahasiswaAktif).toBeLessThanOrEqual(sebelum.mahasiswaAktif)
+  })
+
+  it('tidak lagi muncul di agenda', async () => {
+    const sebelum = await agendaLomba({}, { ...OPSI, limit: 0 })
+    expect(sebelum.some((item) => item.lombaId === 'lomba-01')).toBe(true)
+
+    await tandaiTidakLanjut('lomba-01', { alasan: 'mundur' }, OPSI)
+    const sesudah = await agendaLomba({}, { ...OPSI, limit: 0 })
+
+    expect(sesudah.some((item) => item.lombaId === 'lomba-01')).toBe(false)
   })
 })
