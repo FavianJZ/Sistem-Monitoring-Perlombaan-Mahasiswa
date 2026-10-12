@@ -21,7 +21,19 @@ export const STATUS_LOMBA = {
   terdaftar: { label: 'Terdaftar', tone: 'primary' },
   berlangsung: { label: 'Berlangsung', tone: 'accent' },
   selesai: { label: 'Selesai', tone: 'success' },
+  tidak_lanjut: { label: 'Tidak Lanjut', tone: 'neutral' },
 }
+
+export const STATUS_AKHIR = ['selesai', 'tidak_lanjut']
+
+export const ALASAN_TIDAK_LANJUT = {
+  tidak_lolos: 'Tidak lolos seleksi',
+  mundur: 'Mengundurkan diri',
+  diskualifikasi: 'Didiskualifikasi',
+  dibatalkan: 'Lomba dibatalkan penyelenggara',
+}
+
+export const CATATAN_TIDAK_LANJUT_MAKS = 500
 
 export const CAPAIAN_LOMBA = {
   juara_1: { label: 'Juara 1', tone: 'success', peringkat: 1 },
@@ -73,6 +85,10 @@ export function labelBidang(value) {
 
 export function labelStatus(value) {
   return STATUS_LOMBA[value]?.label ?? value ?? '-'
+}
+
+export function labelAlasanTidakLanjut(value) {
+  return ALASAN_TIDAK_LANJUT[value] ?? value ?? '-'
 }
 
 export function labelCapaian(value) {

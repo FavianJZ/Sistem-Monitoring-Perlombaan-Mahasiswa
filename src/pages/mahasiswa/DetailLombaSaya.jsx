@@ -6,6 +6,7 @@ import {
   CalendarClock,
   CalendarDays,
   CircleAlert,
+  CircleSlash,
   FileEdit,
   Pencil,
   Users,
@@ -29,7 +30,9 @@ import { DaftarBerkas } from '@/features/lomba/DaftarBerkas'
 import { FormLaporHasil } from '@/features/lomba/FormLaporHasil'
 import { InfoLomba } from '@/features/lomba/InfoLomba'
 import { RingkasanHasil } from '@/features/lomba/RingkasanHasil'
+import { RingkasanTidakLanjut } from '@/features/lomba/RingkasanTidakLanjut'
 import { ModalEditLomba } from '@/features/lomba/ModalEditLomba'
+import { ModalTidakLanjut } from '@/features/lomba/ModalTidakLanjut'
 
 export default function DetailLombaSaya() {
   const { id } = useParams()
@@ -37,6 +40,7 @@ export default function DetailLombaSaya() {
   const [tab, setTab] = useState('info')
   const [editModalBuka, setEditModalBuka] = useState(false)
   const [tabEditAwal, setTabEditAwal] = useState('info')
+  const [modalTidakLanjutBuka, setModalTidakLanjutBuka] = useState(false)
 
   const ambil = useCallback(() => detailLomba(id), [id])
   const { data: lomba, loading, error, jalankan } = useAsync(ambil, [ambil])
@@ -90,6 +94,16 @@ export default function DetailLombaSaya() {
     toast({
       title: 'Hasil lomba tersimpan',
       description: `Capaian ${hasil.nama} sudah tercatat.`,
+      variant: 'success',
+    })
+    await jalankan()
+  }
+
+  async function handleTidakLanjut(hasil) {
+    setModalTidakLanjutBuka(false)
+    toast({
+      title: 'Lomba ditandai tidak lanjut',
+      description: `${hasil.nama} tersimpan sebagai riwayat keikutsertaan.`,
       variant: 'success',
     })
     await jalankan()
@@ -232,7 +246,9 @@ export default function DetailLombaSaya() {
         </TabPanel>
 
         <TabPanel id="hasil" aktif={tab} idPrefix="detail-lomba" className="px-5 py-4">
-          {lomba.hasil ? (
+          {lomba.status === 'tidak_lanjut' ? (
+            <RingkasanTidakLanjut lomba={lomba} />
+          ) : lomba.hasil ? (
             <RingkasanHasil lomba={lomba} onPerbarui={jalankan} />
           ) : lomba.pelaporan.boleh ? (
             <FormLaporHasil lomba={lomba} onTersimpan={handleTersimpan} />
@@ -243,6 +259,26 @@ export default function DetailLombaSaya() {
               description={lomba.pelaporan.alasan}
             />
           )}
+
+          {lomba.penghentian.boleh && (
+            <div className="mt-6 flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-slate-900">Tidak melanjutkan lomba ini?</p>
+                <p className="mt-0.5 text-xs text-slate-600">
+                  Tandai bila tim tidak lolos seleksi, mengundurkan diri, didiskualifikasi, atau
+                  lombanya dibatalkan. Data tetap tersimpan sebagai riwayat.
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                leadingIcon={CircleSlash}
+                onClick={() => setModalTidakLanjutBuka(true)}
+              >
+                Tandai tidak lanjut
+              </Button>
+            </div>
+          )}
         </TabPanel>
       </Card>
 
@@ -252,6 +288,13 @@ export default function DetailLombaSaya() {
         lomba={lomba}
         tabAwal={tabEditAwal}
         onTersimpan={jalankan}
+      />
+
+      <ModalTidakLanjut
+        open={modalTidakLanjutBuka}
+        onClose={() => setModalTidakLanjutBuka(false)}
+        lomba={lomba}
+        onTersimpan={handleTidakLanjut}
       />
     </div>
   )

@@ -1,4 +1,4 @@
-import { CircleCheck, CircleDashed, FileWarning, Loader, Medal } from 'lucide-react'
+import { CircleCheck, CircleDashed, CircleSlash, FileWarning, Loader, Medal } from 'lucide-react'
 import { Badge } from './Badge'
 import { CAPAIAN_LOMBA, STATUS_LOMBA } from '@/config/domain'
 
@@ -6,6 +6,7 @@ const STATUS_ICONS = {
   terdaftar: CircleDashed,
   berlangsung: Loader,
   selesai: CircleCheck,
+  tidak_lanjut: CircleSlash,
 }
 
 export function StatusBadge({ status, size = 'md', withIcon = true }) {

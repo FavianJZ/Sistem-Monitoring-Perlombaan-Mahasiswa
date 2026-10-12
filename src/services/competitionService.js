@@ -6,6 +6,7 @@ import { apakahSupabaseAktif } from '@/lib/supabase'
 const store = apakahSupabaseAktif() ? storeSupabase : storeMock
 import {
   agendaTerdekat,
+  bolehTandaiTidakLanjut,
   filterLomba,
   hitungKelengkapan,
   hitungStatistik,
@@ -15,7 +16,7 @@ import {
   urutkanLomba,
 } from './competitionQuery'
 import { akhirBulan, awalBulan, toISODate } from '@/lib/date'
-import { CAPAIAN_LOMBA } from '@/config/domain'
+import { ALASAN_TIDAK_LANJUT, CAPAIAN_LOMBA, CATATAN_TIDAK_LANJUT_MAKS } from '@/config/domain'
 
 class ServiceError extends Error {
   constructor(message, { status = 400, kode } = {}) {
@@ -145,7 +146,7 @@ export async function buatLomba(payload, opsi = {}) {
   return ringkasLomba(tersimpan ?? record, sekarang(opsi))
 }
 
-const KOLOM_TERKUNCI = ['id', 'createdBy', 'status', 'hasil']
+const KOLOM_TERKUNCI = ['id', 'createdBy', 'status', 'hasil', 'tidakLanjut']
 
 function tanpaKolomTerkunci(patch = {}) {
   return Object.fromEntries(
@@ -194,6 +195,12 @@ export async function laporkanHasil(id, laporan = {}, opsi = {}) {
         kode: 'SUDAH_LAPOR',
       })
     }
+    if (lomba.status === 'tidak_lanjut') {
+      throw new ServiceError('Lomba ini sudah ditandai tidak lanjut.', {
+        status: 409,
+        kode: 'TIDAK_LANJUT',
+      })
+    }
 
     const berkasBaru = bersihkanBerkas(laporan.berkas ?? [], id).map((berkas, index) => ({
       ...berkas,
@@ -210,6 +217,49 @@ export async function laporkanHasil(id, laporan = {}, opsi = {}) {
         capaian: laporan.capaian,
         linkBerita: laporan.linkBerita?.trim() || null,
         dilaporkanPada: toISODate(acuan),
+      },
+    }
+  })
+
+  if (!hasil) {
+    throw new ServiceError(`Lomba ${id} tidak ditemukan.`, { status: 404, kode: 'LOMBA_TIDAK_ADA' })
+  }
+
+  return ringkasLomba(hasil, acuan)
+}
+
+export async function tandaiTidakLanjut(id, { alasan, tahapTerakhir = null, catatan = '' } = {}, opsi = {}) {
+  await jeda(opsi.jeda)
+
+  if (!ALASAN_TIDAK_LANJUT[alasan]) {
+    throw new ServiceError('Alasan tidak melanjutkan lomba wajib dipilih.', {
+      kode: 'ALASAN_KOSONG',
+    })
+  }
+  const catatanBersih = String(catatan ?? '').trim()
+  if (catatanBersih.length > CATATAN_TIDAK_LANJUT_MAKS) {
+    throw new ServiceError(`Catatan maksimal ${CATATAN_TIDAK_LANJUT_MAKS} karakter.`, {
+      kode: 'CATATAN_PANJANG',
+    })
+  }
+
+  const acuan = sekarang(opsi)
+  const hasil = await store.perbarui(id, (lomba) => {
+    const izin = bolehTandaiTidakLanjut(lomba)
+    if (!izin.boleh) {
+      throw new ServiceError(izin.alasan, { status: 409, kode: izin.kode })
+    }
+
+    const tahapSah = (lomba.tahapan ?? []).some((tahap) => tahap.jenis === tahapTerakhir)
+
+    return {
+      ...lomba,
+      status: 'tidak_lanjut',
+      tidakLanjut: {
+        alasan,
+        tahapTerakhir: tahapSah ? tahapTerakhir : null,
+        catatan: catatanBersih || null,
+        dicatatPada: toISODate(acuan),
       },
     }
   })

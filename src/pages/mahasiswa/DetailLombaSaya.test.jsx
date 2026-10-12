@@ -2,7 +2,12 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ACUAN_UJI, SESI_MAHASISWA, buatSesi, renderApp } from '@/test/utils'
-import { detailLomba, perbaruiLomba, resetDataMock } from '@/services/competitionService'
+import {
+  detailLomba,
+  perbaruiLomba,
+  resetDataMock,
+  tandaiTidakLanjut,
+} from '@/services/competitionService'
 
 beforeEach(() => {
   resetDataMock(ACUAN_UJI)
@@ -265,6 +270,71 @@ describe('Detail lomba - pelaporan hasil', () => {
     expect(screen.getAllByText('Juara 2').length).toBeGreaterThan(0)
     expect(screen.getByText('Dilaporkan pada')).toBeInTheDocument()
     expect(screen.getByText('Bukti prestasi')).toBeInTheDocument()
+    expect(screen.queryByLabelText(/Capaian Akhir/)).not.toBeInTheDocument()
+  })
+})
+
+describe('Detail lomba - tidak lanjut', () => {
+  async function bukaTabHasil(idLomba = 'lomba-01', sesi = SESI_MAHASISWA()) {
+    const user = userEvent.setup()
+    await bukaDetail(idLomba, sesi)
+    await user.click(within(tablist()).getByRole('tab', { name: 'Hasil' }))
+    return user
+  }
+
+  it('menawarkan penandaan tidak lanjut sebelum hasil dilaporkan', async () => {
+    await bukaTabHasil()
+
+    expect(screen.getByText('Tidak melanjutkan lomba ini?')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Tandai tidak lanjut' })).toBeInTheDocument()
+  })
+
+  it('mewajibkan alasan sebelum menyimpan', async () => {
+    const user = await bukaTabHasil()
+
+    await user.click(screen.getByRole('button', { name: 'Tandai tidak lanjut' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Tandai lomba tidak lanjut' })
+    await user.click(within(dialog).getByRole('button', { name: 'Tandai tidak lanjut' }))
+
+    expect(within(dialog).getByText('Pilih alasan lomba tidak dilanjutkan.')).toBeInTheDocument()
+    expect((await detailLomba('lomba-01', { acuan: ACUAN_UJI })).status).toBe('berlangsung')
+  })
+
+  it('menyimpan alasan lalu menampilkan ringkasan tidak lanjut', async () => {
+    const user = await bukaTabHasil()
+
+    await user.click(screen.getByRole('button', { name: 'Tandai tidak lanjut' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Tandai lomba tidak lanjut' })
+    await user.selectOptions(within(dialog).getByLabelText(/Alasan/), 'tidak_lolos')
+    await user.type(within(dialog).getByLabelText(/Catatan/), 'Gugur di penyisihan')
+    await user.click(within(dialog).getByRole('button', { name: 'Tandai tidak lanjut' }))
+
+    expect(await screen.findByText('Lomba tidak dilanjutkan')).toBeInTheDocument()
+    expect(screen.getByText('Tidak lolos seleksi')).toBeInTheDocument()
+    expect(screen.getByText('Gugur di penyisihan')).toBeInTheDocument()
+    expect(screen.getAllByText('Tidak Lanjut').length).toBeGreaterThan(0)
+    expect(screen.queryByText('Tidak melanjutkan lomba ini?')).not.toBeInTheDocument()
+
+    const tersimpan = await detailLomba('lomba-01', { acuan: ACUAN_UJI })
+    expect(tersimpan.status).toBe('tidak_lanjut')
+    expect(tersimpan.tidakLanjut.alasan).toBe('tidak_lolos')
+  })
+
+  it('tidak menawarkan penandaan untuk lomba yang sudah selesai', async () => {
+    const { semuaLombaTersaring } = await import('@/services/competitionService')
+    const selesai = (await semuaLombaTersaring({ status: 'selesai' }, { acuan: ACUAN_UJI }))[0]
+    await bukaTabHasil(selesai.id, buatSesi(selesai.createdBy))
+    expect(screen.getByText('Capaian akhir')).toBeInTheDocument()
+
+    expect(screen.queryByText('Tidak melanjutkan lomba ini?')).not.toBeInTheDocument()
+  })
+
+  it('menampilkan ringkasan untuk lomba yang sudah ditandai', async () => {
+    await tandaiTidakLanjut('lomba-01', { alasan: 'mundur' }, { acuan: ACUAN_UJI })
+    await bukaTabHasil()
+
+    expect(screen.getByText('Lomba tidak dilanjutkan')).toBeInTheDocument()
+    expect(screen.getByText('Mengundurkan diri')).toBeInTheDocument()
     expect(screen.queryByLabelText(/Capaian Akhir/)).not.toBeInTheDocument()
   })
 })

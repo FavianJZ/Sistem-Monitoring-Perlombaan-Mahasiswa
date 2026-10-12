@@ -189,6 +189,33 @@ describe('namaBerkasLaporan', () => {
   })
 })
 
+describe('kolom status akhir', () => {
+  const indeksKolom = (kunci) => KOLOM_EKSPOR.findIndex((kolom) => kolom.kunci === kunci)
+  const berhenti = {
+    ...TANPA_HASIL,
+    status: 'tidak_lanjut',
+    tidakLanjut: { alasan: 'tidak_lolos', tahapTerakhir: 'penyisihan', catatan: 'peringkat 24' },
+  }
+
+  it('menulis status akhir dan keterangan tidak lanjut', () => {
+    const [baris] = barisEkspor([berhenti])
+
+    expect(baris[indeksKolom('status')]).toBe('Tidak Lanjut')
+    expect(baris[indeksKolom('keterangan')]).toBe(
+      'Tidak lolos seleksi; tahap terakhir Penyisihan / Pengumpulan Karya; peringkat 24',
+    )
+    expect(baris[indeksKolom('capaian')]).toBe('-')
+    expect(baris[indeksKolom('sertifikat')]).toBe('-')
+  })
+
+  it('mengosongkan keterangan untuk lomba yang selesai', () => {
+    const [baris] = barisEkspor([{ ...LOMBA, status: 'selesai' }])
+
+    expect(baris[indeksKolom('status')]).toBe('Selesai')
+    expect(baris[indeksKolom('keterangan')]).toBe('-')
+  })
+})
+
 describe('ringkasanLaporan', () => {
   it('menghitung total, berprestasi, dan bersertifikat', () => {
     const ringkasan = ringkasanLaporan([

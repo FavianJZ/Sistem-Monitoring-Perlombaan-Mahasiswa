@@ -22,10 +22,16 @@ import {
 } from '@/services/competitionService'
 import { formatTanggal } from '@/lib/date'
 import { namaPengguna } from '@/services/userService'
-import { CAPAIAN_LOMBA } from '@/config/domain'
+import { CAPAIAN_LOMBA, STATUS_AKHIR, labelAlasanTidakLanjut } from '@/config/domain'
 import { LABEL_VERIFIKASI_HASIL } from '@/features/arsip/eksporData'
 
 const UKURAN_HALAMAN = 10
+
+const OPSI_STATUS_AKHIR = [
+  { value: 'selesai', label: 'Selesai' },
+  { value: 'tidak_lanjut', label: 'Tidak lanjut' },
+  { value: 'semua', label: 'Semua status akhir' },
+]
 
 const FILTER_BAWAAN = {
   search: '',
@@ -37,6 +43,7 @@ const FILTER_BAWAAN = {
   tingkat: '',
   capaian: '',
   prodi: '',
+  status: 'selesai',
   sort: 'capaian',
   order: 'asc',
   page: 1,
@@ -51,7 +58,7 @@ export default function ArsipPrestasi() {
 
   const filterService = useMemo(
     () => ({
-      status: 'selesai',
+      status: filter.status === 'semua' ? STATUS_AKHIR : filter.status,
       search: pencarian,
       mode: filter.mode,
       tanggal: filter.tanggal || undefined,
@@ -74,6 +81,7 @@ export default function ArsipPrestasi() {
       filter.tingkat,
       filter.capaian,
       filter.prodi,
+      filter.status,
       filter.sort,
       filter.order,
     ],
@@ -192,19 +200,28 @@ export default function ArsipPrestasi() {
       key: 'capaian',
       header: 'Capaian',
       sortable: true,
-      render: (lomba) => (
-        <div className="space-y-1.5">
-          <CapaianBadge capaian={lomba.hasil?.capaian} size="sm" />
-          <p className="text-xs text-slate-500">
-            Dilaporkan {formatTanggal(lomba.hasil?.dilaporkanPada)}
-          </p>
-        </div>
-      ),
+      render: (lomba) =>
+        lomba.status === 'tidak_lanjut' ? (
+          <div className="space-y-1.5">
+            <Badge size="sm">Tidak lanjut</Badge>
+            <p className="text-xs text-slate-500">
+              {labelAlasanTidakLanjut(lomba.tidakLanjut?.alasan)}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            <CapaianBadge capaian={lomba.hasil?.capaian} size="sm" />
+            <p className="text-xs text-slate-500">
+              Dilaporkan {formatTanggal(lomba.hasil?.dilaporkanPada)}
+            </p>
+          </div>
+        ),
     },
     {
       key: 'sertifikat',
       header: 'Sertifikat',
       render: (lomba) => {
+        if (lomba.status === 'tidak_lanjut') return <span className="text-slate-400">-</span>
         const status = lomba.statusHasil
         const tone =
           status === 'terverifikasi' ? 'success' : status === 'ditolak' ? 'danger' : 'warning'
@@ -233,7 +250,7 @@ export default function ArsipPrestasi() {
     <div className="mx-auto max-w-7xl">
       <PageHeader
         title="Arsip & Prestasi"
-        description="Riwayat perlombaan yang telah selesai beserta capaian dan sertifikatnya, siap diekspor untuk laporan akreditasi."
+        description="Riwayat perlombaan yang telah selesai atau tidak dilanjutkan, beserta capaian dan sertifikatnya, siap diekspor untuk laporan akreditasi."
         actions={
           <>
             <Button
@@ -316,7 +333,10 @@ export default function ArsipPrestasi() {
           onReset={reset}
           adaFilter={adaFilter}
           opsi={opsi ?? {}}
-          sembunyikan={['status', 'jenisTahapan']}
+          sembunyikan={['jenisTahapan']}
+          opsiStatus={OPSI_STATUS_AKHIR}
+          labelStatus="Status akhir"
+          placeholderStatus={null}
         />
 
         {error ? (
