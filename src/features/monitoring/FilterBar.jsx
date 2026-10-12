@@ -39,6 +39,9 @@ export function FilterBar({
   adaFilter,
   opsi = {},
   sembunyikan = [],
+  opsiStatus = OPSI_STATUS,
+  labelStatus = 'Status',
+  placeholderStatus = 'Semua status',
   className,
 }) {
   const tampil = (nama) => !sembunyikan.includes(nama)
@@ -143,9 +146,9 @@ export function FilterBar({
 
         {tampil('status') && (
           <Select
-            label="Status"
-            placeholder="Semua status"
-            options={OPSI_STATUS}
+            label={labelStatus}
+            placeholder={placeholderStatus}
+            options={opsiStatus}
             value={filter.status}
             onChange={(event) => onUbah({ status: event.target.value })}
           />

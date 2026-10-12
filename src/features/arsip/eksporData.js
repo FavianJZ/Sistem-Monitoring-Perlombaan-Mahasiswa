@@ -1,5 +1,11 @@
 import { formatTanggal } from '@/lib/date'
-import { CAPAIAN_LOMBA, JENIS_KEIKUTSERTAAN } from '@/config/domain'
+import {
+  CAPAIAN_LOMBA,
+  JENIS_KEIKUTSERTAAN,
+  labelAlasanTidakLanjut,
+  labelStatus,
+  labelTahapan,
+} from '@/config/domain'
 import { namaPengguna } from '@/services/userService'
 import { prestasiTerverifikasi, statusHasil } from '@/services/competitionQuery'
 
@@ -57,11 +63,31 @@ export const KOLOM_EKSPOR = [
     lebar: 30,
     ambil: (lomba) => (lomba.dosenPembimbingId ? namaPengguna(lomba.dosenPembimbingId) : '-'),
   },
+  { kunci: 'status', judul: 'Status Akhir', lebar: 14, ambil: (lomba) => labelStatus(lomba.status) },
   {
     kunci: 'capaian',
     judul: 'Capaian',
     lebar: 16,
-    ambil: (lomba) => CAPAIAN_LOMBA[lomba.hasil?.capaian]?.label ?? 'Belum dilaporkan',
+    ambil: (lomba) =>
+      lomba.status === 'tidak_lanjut'
+        ? '-'
+        : (CAPAIAN_LOMBA[lomba.hasil?.capaian]?.label ?? 'Belum dilaporkan'),
+  },
+  {
+    kunci: 'keterangan',
+    judul: 'Keterangan Tidak Lanjut',
+    lebar: 34,
+    ambil: (lomba) => {
+      if (lomba.status !== 'tidak_lanjut') return '-'
+      const info = lomba.tidakLanjut ?? {}
+      return [
+        labelAlasanTidakLanjut(info.alasan),
+        info.tahapTerakhir ? `tahap terakhir ${labelTahapan(info.tahapTerakhir)}` : null,
+        info.catatan,
+      ]
+        .filter(Boolean)
+        .join('; ')
+    },
   },
   {
     kunci: 'pengumuman',
@@ -83,7 +109,8 @@ export const KOLOM_EKSPOR = [
     kunci: 'sertifikat',
     judul: 'Sertifikat',
     lebar: 14,
-    ambil: (lomba) => LABEL_VERIFIKASI_HASIL[statusHasil(lomba)],
+    ambil: (lomba) =>
+      lomba.status === 'tidak_lanjut' ? '-' : LABEL_VERIFIKASI_HASIL[statusHasil(lomba)],
   },
   {
     kunci: 'berita',
@@ -100,6 +127,7 @@ export const KOLOM_PDF = [
   'ketua',
   'nim',
   'prodi',
+  'status',
   'capaian',
   'sertifikat',
 ]

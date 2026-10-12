@@ -18,6 +18,7 @@ import { DaftarAnggota } from '@/features/lomba/DaftarAnggota'
 import { DaftarBerkas } from '@/features/lomba/DaftarBerkas'
 import { InfoLomba } from '@/features/lomba/InfoLomba'
 import { RingkasanHasil } from '@/features/lomba/RingkasanHasil'
+import { RingkasanTidakLanjut } from '@/features/lomba/RingkasanTidakLanjut'
 import { formatTanggal } from '@/lib/date'
 import { labelTahapan } from '@/config/domain'
 
@@ -141,9 +142,11 @@ export default function DetailLombaDosen() {
               label={`Progres tahapan ${lomba.nama}`}
             />
             <p className="mt-2 text-xs text-slate-500">
-              {lomba.tahapanBerikutnya
-                ? `Tahapan terdekat: ${judulTahapan(lomba.tahapanBerikutnya)} pada ${formatTanggal(lomba.tahapanBerikutnya.tanggalMulai)}.`
-                : 'Seluruh tahapan sudah terlewati.'}
+              {lomba.status === 'tidak_lanjut'
+                ? 'Mahasiswa tidak melanjutkan lomba ini.'
+                : lomba.tahapanBerikutnya
+                  ? `Tahapan terdekat: ${judulTahapan(lomba.tahapanBerikutnya)} pada ${formatTanggal(lomba.tahapanBerikutnya.tanggalMulai)}.`
+                  : 'Seluruh tahapan sudah terlewati.'}
             </p>
           </CardContent>
         </Card>
@@ -177,7 +180,9 @@ export default function DetailLombaDosen() {
         </TabPanel>
 
         <TabPanel id="hasil" aktif={tab} idPrefix="detail-monitoring" className="px-5 py-4">
-          {lomba.hasil ? (
+          {lomba.status === 'tidak_lanjut' ? (
+            <RingkasanTidakLanjut lomba={lomba} />
+          ) : lomba.hasil ? (
             <RingkasanHasil lomba={lomba} onPerbarui={jalankan} />
           ) : (
             <EmptyState
