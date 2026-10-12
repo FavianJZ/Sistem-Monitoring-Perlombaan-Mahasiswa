@@ -147,6 +147,13 @@ describe('buatLomba', () => {
     await expect(buatLomba({ ...payload, createdBy: null }, OPSI)).rejects.toThrow(/Pemilik data/)
   })
 
+  it('selalu membuat lomba berstatus terdaftar tanpa hasil', async () => {
+    const dibuat = await buatLomba({ ...payload, status: 'selesai' }, OPSI)
+
+    expect(dibuat.status).toBe('terdaftar')
+    expect(dibuat.hasil).toBeNull()
+  })
+
   it('data baru bisa langsung dibaca kembali', async () => {
     const dibuat = await buatLomba(payload, OPSI)
     const dibaca = await detailLomba(dibuat.id, OPSI)
@@ -161,6 +168,17 @@ describe('perbaruiLomba', () => {
 
     expect(hasil.penyelenggara).toBe('Penyelenggara Baru')
     expect(hasil.nama).toContain('GEMASTIK')
+  })
+
+  it('tidak mengizinkan status atau hasil diubah lewat patch', async () => {
+    const hasil = await perbaruiLomba(
+      'lomba-01',
+      { status: 'selesai', hasil: { capaian: 'juara_1' } },
+      OPSI,
+    )
+
+    expect(hasil.status).toBe('berlangsung')
+    expect(hasil.hasil).toBeNull()
   })
 
   it('tidak mengizinkan penggantian id maupun pemilik', async () => {
@@ -195,11 +213,15 @@ describe('perbaruiLomba', () => {
   })
 })
 
+const SERTIFIKAT = [
+  { tipe: 'sertifikat', namaFile: 'sertifikat.pdf', mimeType: 'application/pdf', size: 900 },
+]
+
 describe('laporkanHasil', () => {
   it('menyimpan capaian dan menandai lomba selesai', async () => {
     const hasil = await laporkanHasil(
       'lomba-01',
-      { capaian: 'juara_2', linkBerita: 'https://contoh.id/berita' },
+      { capaian: 'juara_2', linkBerita: 'https://contoh.id/berita', berkas: SERTIFIKAT },
       OPSI,
     )
 
@@ -224,13 +246,50 @@ describe('laporkanHasil', () => {
     expect(hasil.berkas.some((berkas) => berkas.tipe === 'sertifikat')).toBe(true)
   })
 
-  it('mengubah statistik prestasi setelah dilaporkan', async () => {
+  it('baru menghitung prestasi setelah sertifikat diterima dosen', async () => {
     const sebelum = await statistikLomba({}, OPSI)
-    await laporkanHasil('lomba-01', { capaian: 'juara_3' }, OPSI)
-    const sesudah = await statistikLomba({}, OPSI)
+    const dilapor = await laporkanHasil('lomba-01', { capaian: 'juara_3', berkas: SERTIFIKAT }, OPSI)
+    const sesudahLapor = await statistikLomba({}, OPSI)
 
-    expect(sesudah.totalPrestasi).toBe(sebelum.totalPrestasi + 1)
-    expect(sesudah.perStatus.selesai).toBe(sebelum.perStatus.selesai + 1)
+    expect(dilapor.statusHasil).toBe('menunggu')
+    expect(sesudahLapor.totalPrestasi).toBe(sebelum.totalPrestasi)
+    expect(sesudahLapor.hasilMenungguVerifikasi).toBe(sebelum.hasilMenungguVerifikasi + 1)
+    expect(sesudahLapor.perStatus.selesai).toBe(sebelum.perStatus.selesai + 1)
+
+    const sertifikat = dilapor.berkas.find((berkas) => berkas.tipe === 'sertifikat')
+    const diverifikasi = await verifikasiBerkas(
+      'lomba-01',
+      sertifikat.id,
+      { statusVerifikasi: 'diterima', diverifikasiOleh: 'User-Dosen(1)' },
+      OPSI,
+    )
+    const sesudahVerifikasi = await statistikLomba({}, OPSI)
+
+    expect(diverifikasi.statusHasil).toBe('terverifikasi')
+    expect(sesudahVerifikasi.totalPrestasi).toBe(sebelum.totalPrestasi + 1)
+    expect(sesudahVerifikasi.hasilMenungguVerifikasi).toBe(sebelum.hasilMenungguVerifikasi)
+  })
+
+  it('menolak laporan tanpa sertifikat', async () => {
+    await expect(laporkanHasil('lomba-01', { capaian: 'juara_1' }, OPSI)).rejects.toMatchObject({
+      kode: 'SERTIFIKAT_KOSONG',
+    })
+    expect((await detailLomba('lomba-01', OPSI)).hasil).toBeNull()
+  })
+
+  it('menolak capaian yang tidak dikenal', async () => {
+    await expect(
+      laporkanHasil('lomba-01', { capaian: 'juara_umum', berkas: SERTIFIKAT }, OPSI),
+    ).rejects.toMatchObject({ kode: 'CAPAIAN_TIDAK_SAH' })
+  })
+
+  it('menolak laporan kedua untuk lomba yang sama', async () => {
+    await laporkanHasil('lomba-01', { capaian: 'finalis', berkas: SERTIFIKAT }, OPSI)
+
+    await expect(
+      laporkanHasil('lomba-01', { capaian: 'juara_1', berkas: SERTIFIKAT }, OPSI),
+    ).rejects.toMatchObject({ kode: 'SUDAH_LAPOR', status: 409 })
+    expect((await detailLomba('lomba-01', OPSI)).hasil.capaian).toBe('finalis')
   })
 
   it('menolak laporan tanpa capaian', async () => {
@@ -238,7 +297,11 @@ describe('laporkanHasil', () => {
   })
 
   it('mengosongkan link berita kosong menjadi null', async () => {
-    const hasil = await laporkanHasil('lomba-01', { capaian: 'peserta', linkBerita: '   ' }, OPSI)
+    const hasil = await laporkanHasil(
+      'lomba-01',
+      { capaian: 'peserta', linkBerita: '   ', berkas: SERTIFIKAT },
+      OPSI,
+    )
     expect(hasil.hasil.linkBerita).toBeNull()
   })
 })

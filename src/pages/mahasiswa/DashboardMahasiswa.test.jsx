@@ -79,7 +79,8 @@ describe('Dashboard Mahasiswa', () => {
     renderApp('/', { sesi: buatSesi('mhs-5') })
     await screen.findByText('Prestasi tercatat')
 
-    expect(within(kartu('Prestasi tercatat')).getByText('2')).toBeInTheDocument()
+    expect(within(kartu('Prestasi tercatat')).getByText('1')).toBeInTheDocument()
+    expect(screen.getByText(/1 menunggu verifikasi sertifikat/)).toBeInTheDocument()
   })
 
   it('menyediakan tombol daftarkan lomba di header', async () => {

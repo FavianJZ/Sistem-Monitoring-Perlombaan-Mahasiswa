@@ -233,7 +233,7 @@ export default function DetailLombaSaya() {
 
         <TabPanel id="hasil" aktif={tab} idPrefix="detail-lomba" className="px-5 py-4">
           {lomba.hasil ? (
-            <RingkasanHasil lomba={lomba} />
+            <RingkasanHasil lomba={lomba} onPerbarui={jalankan} />
           ) : lomba.pelaporan.boleh ? (
             <FormLaporHasil lomba={lomba} onTersimpan={handleTersimpan} />
           ) : (

@@ -108,7 +108,11 @@ export default function DashboardMahasiswa() {
             <StatCard
               label="Prestasi tercatat"
               nilai={statistik.totalPrestasi}
-              keterangan={`Dari ${statistik.perStatus.selesai} lomba yang sudah selesai`}
+              keterangan={`Dari ${statistik.perStatus.selesai} lomba yang sudah selesai${
+                statistik.hasilMenungguVerifikasi
+                  ? `, ${statistik.hasilMenungguVerifikasi} menunggu verifikasi sertifikat`
+                  : ''
+              }`}
               tone="success"
             />
           </div>
