@@ -67,7 +67,7 @@ export async function unduhPdf(items, { nama, judul = 'Rekapitulasi Prestasi Mah
 
   dokumen.setFontSize(9)
   dokumen.text(
-    `Total ${ringkasan.total} perlombaan - ${ringkasan.berprestasi} meraih prestasi - ${ringkasan.bersertifikat} bersertifikat`,
+    `Total ${ringkasan.total} perlombaan - ${ringkasan.berprestasi} meraih prestasi - ${ringkasan.bersertifikat} sertifikat terverifikasi`,
     40,
     58,
   )

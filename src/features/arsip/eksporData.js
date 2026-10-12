@@ -1,6 +1,14 @@
 import { formatTanggal } from '@/lib/date'
 import { CAPAIAN_LOMBA, JENIS_KEIKUTSERTAAN } from '@/config/domain'
 import { namaPengguna } from '@/services/userService'
+import { prestasiTerverifikasi, statusHasil } from '@/services/competitionQuery'
+
+export const LABEL_VERIFIKASI_HASIL = {
+  belum: 'Belum ada',
+  menunggu: 'Menunggu verifikasi',
+  ditolak: 'Ditolak',
+  terverifikasi: 'Terverifikasi',
+}
 
 export const KOLOM_EKSPOR = [
   { kunci: 'nama', judul: 'Nama Perlombaan', lebar: 38, ambil: (lomba) => lomba.nama },
@@ -75,8 +83,7 @@ export const KOLOM_EKSPOR = [
     kunci: 'sertifikat',
     judul: 'Sertifikat',
     lebar: 14,
-    ambil: (lomba) =>
-      (lomba.berkas ?? []).some((berkas) => berkas.tipe === 'sertifikat') ? 'Ada' : 'Belum ada',
+    ambil: (lomba) => LABEL_VERIFIKASI_HASIL[statusHasil(lomba)],
   },
   {
     kunci: 'berita',
@@ -143,11 +150,9 @@ export function namaBerkasLaporan(ekstensi, acuan = new Date()) {
 
 export function ringkasanLaporan(items = []) {
   const berprestasi = items.filter(
-    (lomba) => lomba.hasil?.capaian && lomba.hasil.capaian !== 'peserta',
+    (lomba) => prestasiTerverifikasi(lomba) && lomba.hasil.capaian !== 'peserta',
   ).length
-  const bersertifikat = items.filter((lomba) =>
-    (lomba.berkas ?? []).some((berkas) => berkas.tipe === 'sertifikat'),
-  ).length
+  const bersertifikat = items.filter(prestasiTerverifikasi).length
 
   return {
     total: items.length,

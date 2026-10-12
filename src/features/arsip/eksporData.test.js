@@ -27,7 +27,7 @@ const LOMBA = {
   ],
   berkas: [
     { tipe: 'bukti_daftar', namaFile: 'daftar.pdf' },
-    { tipe: 'sertifikat', namaFile: 'sertifikat.pdf' },
+    { tipe: 'sertifikat', namaFile: 'sertifikat.pdf', statusVerifikasi: 'diterima' },
   ],
   tahapan: [
     { jenis: 'pendaftaran', tanggalMulai: '2026-04-27' },
@@ -110,9 +110,12 @@ describe('barisEkspor', () => {
     expect(baris[indeks('dilaporkan')]).toBe('25 Jun 2026')
   })
 
-  it('menandai ketersediaan sertifikat', () => {
-    expect(baris[indeks('sertifikat')]).toBe('Ada')
+  it('menandai status verifikasi sertifikat', () => {
+    expect(baris[indeks('sertifikat')]).toBe('Terverifikasi')
     expect(barisEkspor([TANPA_HASIL])[0][indeks('sertifikat')]).toBe('Belum ada')
+
+    const menunggu = { ...LOMBA, berkas: [{ tipe: 'sertifikat', namaFile: 's.pdf' }] }
+    expect(barisEkspor([menunggu])[0][indeks('sertifikat')]).toBe('Menunggu verifikasi')
   })
 
   it('menulis nama dosen pembimbing atau tanda hubung', () => {
@@ -197,5 +200,14 @@ describe('ringkasanLaporan', () => {
     expect(ringkasan.total).toBe(3)
     expect(ringkasan.berprestasi).toBe(1)
     expect(ringkasan.bersertifikat).toBe(1)
+  })
+
+  it('tidak menghitung prestasi yang sertifikatnya belum diterima', () => {
+    const ringkasan = ringkasanLaporan([
+      { ...LOMBA, berkas: [{ tipe: 'sertifikat', namaFile: 's.pdf', statusVerifikasi: 'ditolak' }] },
+    ])
+
+    expect(ringkasan.berprestasi).toBe(0)
+    expect(ringkasan.bersertifikat).toBe(0)
   })
 })

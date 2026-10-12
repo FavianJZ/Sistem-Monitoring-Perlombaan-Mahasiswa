@@ -36,8 +36,10 @@ describe('Dashboard Monitoring - statistik', () => {
   it('menghitung prestasi dari lomba yang sudah selesai', async () => {
     await bukaDashboard()
 
-    expect(within(kartu('Prestasi tercatat')).getByText('6')).toBeInTheDocument()
-    expect(screen.getByText('Dari 8 lomba yang sudah selesai')).toBeInTheDocument()
+    expect(within(kartu('Prestasi tercatat')).getByText('5')).toBeInTheDocument()
+    expect(
+      screen.getByText('Dari 8 lomba yang sudah selesai, 1 menunggu verifikasi sertifikat'),
+    ).toBeInTheDocument()
   })
 
   it('menampilkan sebaran status, tingkat, dan bidang', async () => {

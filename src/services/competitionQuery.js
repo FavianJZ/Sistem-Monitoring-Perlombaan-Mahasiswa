@@ -268,6 +268,21 @@ export function bolehLaporHasil(lomba, acuan = new Date()) {
   return { boleh: true, alasan: null, kode: 'SIAP' }
 }
 
+export function statusHasil(lomba) {
+  if (!lomba?.hasil) return 'belum'
+
+  const sertifikat = (lomba.berkas ?? []).filter((berkas) => berkas.tipe === 'sertifikat')
+  const status = sertifikat.map((berkas) => berkas.statusVerifikasi ?? 'menunggu')
+
+  if (status.includes('diterima')) return 'terverifikasi'
+  if (status.length > 0 && status.every((nilai) => nilai === 'ditolak')) return 'ditolak'
+  return 'menunggu'
+}
+
+export function prestasiTerverifikasi(lomba) {
+  return statusHasil(lomba) === 'terverifikasi'
+}
+
 export function ringkasLomba(lomba, acuan = new Date()) {
   const kelengkapan = hitungKelengkapan(lomba)
   const berikutnya = tahapanBerikutnya(lomba, acuan)
@@ -280,6 +295,7 @@ export function ringkasLomba(lomba, acuan = new Date()) {
     sisaHariTahapan: berikutnya ? selisihHari(acuan, berikutnya.tanggalMulai) : null,
     jumlahAnggota: (lomba.anggota ?? []).length,
     pelaporan: bolehLaporHasil(lomba, acuan),
+    statusHasil: statusHasil(lomba),
     progres: progresTahapan(lomba, acuan),
   }
 }
@@ -303,6 +319,7 @@ export function hitungStatistik(items = [], acuan = new Date()) {
   let lombaBulanIni = 0
   let dokumenBelumLengkap = 0
   let totalPrestasi = 0
+  let hasilMenungguVerifikasi = 0
 
   for (const lomba of items) {
     tambahHitungan(perStatus, lomba.status)
@@ -318,8 +335,12 @@ export function hitungStatistik(items = [], acuan = new Date()) {
     if (!hitungKelengkapan(lomba).lengkap) dokumenBelumLengkap += 1
 
     if (lomba.hasil?.capaian) {
-      tambahHitungan(perCapaian, lomba.hasil.capaian)
-      if (lomba.hasil.capaian !== 'peserta') totalPrestasi += 1
+      if (prestasiTerverifikasi(lomba)) {
+        tambahHitungan(perCapaian, lomba.hasil.capaian)
+        if (lomba.hasil.capaian !== 'peserta') totalPrestasi += 1
+      } else {
+        hasilMenungguVerifikasi += 1
+      }
     }
   }
 
@@ -332,6 +353,7 @@ export function hitungStatistik(items = [], acuan = new Date()) {
     lombaBulanIni,
     dokumenBelumLengkap,
     totalPrestasi,
+    hasilMenungguVerifikasi,
     mahasiswaAktif: nimAktif.size,
     mahasiswaTerlibat: nimSemua.size,
   }
