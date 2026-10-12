@@ -164,6 +164,7 @@ export default function DashboardMonitoring() {
                   <Badge tone="primary">Terdaftar: {statistik.perStatus.terdaftar}</Badge>
                   <Badge tone="accent">Berlangsung: {statistik.perStatus.berlangsung}</Badge>
                   <Badge tone="success">Selesai: {statistik.perStatus.selesai}</Badge>
+                  <Badge>Tidak lanjut: {statistik.perStatus.tidak_lanjut}</Badge>
                 </div>
                 <Sebaran judul="Tingkat" data={statistik.perTingkat} total={statistik.total} />
                 <Sebaran judul="Bidang" data={statistik.perBidang} total={statistik.total} />

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ACUAN_UJI, SESI_DOSEN, alamatSekarang, renderApp } from '@/test/utils'
-import { resetDataMock } from '@/services/competitionService'
+import { resetDataMock, tandaiTidakLanjut } from '@/services/competitionService'
 import { keCsv } from '@/features/arsip/eksporData'
 
 vi.mock('@/features/arsip/eksporBerkas', () => ({
@@ -73,12 +73,34 @@ describe('Arsip Prestasi - tampilan', () => {
     expect(barisPertama.textContent).toContain('Juara 1')
   })
 
-  it('menyembunyikan filter status dan jenis tahapan', async () => {
+  it('mengganti filter status dengan status akhir dan menyembunyikan jenis tahapan', async () => {
     await bukaArsip()
 
     expect(screen.queryByLabelText('Status')).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Status akhir')).toHaveValue('selesai')
     expect(screen.queryByLabelText('Jenis tahapan')).not.toBeInTheDocument()
     expect(screen.getByLabelText('Hasil')).toBeInTheDocument()
+  })
+
+  it('menampilkan lomba tidak lanjut beserta alasannya bila dipilih', async () => {
+    await tandaiTidakLanjut('lomba-01', { alasan: 'tidak_lolos' }, { acuan: ACUAN_UJI })
+    const user = userEvent.setup()
+    await bukaArsip()
+
+    expect(within(tabel()).queryByText('GEMASTIK XIX Divisi Pemrograman')).not.toBeInTheDocument()
+
+    await user.selectOptions(screen.getByLabelText('Status akhir'), 'tidak_lanjut')
+
+    await waitFor(() =>
+      expect(within(tabel()).getByText('GEMASTIK XIX Divisi Pemrograman')).toBeInTheDocument(),
+    )
+    expect(within(tabel()).getByText('Tidak lolos seleksi')).toBeInTheDocument()
+    expect(screen.getByText('Menampilkan 1-1 dari 1 prestasi')).toBeInTheDocument()
+
+    await user.selectOptions(screen.getByLabelText('Status akhir'), 'semua')
+    await waitFor(() =>
+      expect(screen.getByText('Menampilkan 1-9 dari 9 prestasi')).toBeInTheDocument(),
+    )
   })
 })
 

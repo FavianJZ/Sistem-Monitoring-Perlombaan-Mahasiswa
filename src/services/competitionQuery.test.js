@@ -5,6 +5,7 @@ import {
   adaTahapanDiRentang,
   agendaTerdekat,
   bolehLaporHasil,
+  bolehTandaiTidakLanjut,
   cocokPencarian,
   filterLomba,
   hitungKelengkapan,
@@ -533,5 +534,38 @@ describe('statusHasil', () => {
     expect(
       statusHasil({ hasil, berkas: [{ tipe: 'foto', statusVerifikasi: 'diterima' }] }),
     ).toBe('menunggu')
+  })
+})
+
+describe('status tidak lanjut', () => {
+  const berhenti = { ...DATA[0], status: 'tidak_lanjut', tidakLanjut: { alasan: 'mundur' } }
+
+  it('hanya boleh ditandai selama hasil belum dilaporkan', () => {
+    expect(bolehTandaiTidakLanjut(DATA[0]).boleh).toBe(true)
+    expect(bolehTandaiTidakLanjut(berhenti).kode).toBe('SUDAH_TIDAK_LANJUT')
+    expect(bolehTandaiTidakLanjut({ ...DATA[0], status: 'selesai', hasil: { capaian: 'peserta' } }).kode).toBe(
+      'SUDAH_LAPOR',
+    )
+  })
+
+  it('menutup pelaporan hasil', () => {
+    expect(bolehLaporHasil(berhenti, ACUAN).kode).toBe('TIDAK_LANJUT')
+  })
+
+  it('filter status menerima daftar status', () => {
+    const hasil = filterLomba([...DATA, berhenti], { status: ['selesai', 'tidak_lanjut'] }, ACUAN)
+    expect(hasil.every((lomba) => ['selesai', 'tidak_lanjut'].includes(lomba.status))).toBe(true)
+    expect(hasil.some((lomba) => lomba.status === 'tidak_lanjut')).toBe(true)
+  })
+
+  it('tidak dihitung sebagai dokumen belum lengkap', () => {
+    const kurang = { ...DATA[0], berkas: [] }
+    expect(hitungStatistik([kurang]).dokumenBelumLengkap).toBe(1)
+    expect(hitungStatistik([{ ...kurang, status: 'tidak_lanjut' }]).dokumenBelumLengkap).toBe(0)
+  })
+
+  it('tidak muncul di kalender', () => {
+    const peta = tahapanPerTanggal([berhenti], { dari: '2020-01-01', sampai: '2030-12-31' })
+    expect(peta.size).toBe(0)
   })
 })

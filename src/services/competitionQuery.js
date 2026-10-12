@@ -7,7 +7,13 @@ import {
   selisihHari,
   toDate,
 } from '@/lib/date'
-import { CAPAIAN_LOMBA, JENIS_BERKAS, JENIS_TAHAPAN, STATUS_LOMBA } from '@/config/domain'
+import {
+  CAPAIAN_LOMBA,
+  JENIS_BERKAS,
+  JENIS_TAHAPAN,
+  STATUS_AKHIR,
+  STATUS_LOMBA,
+} from '@/config/domain'
 
 export const BERKAS_WAJIB = Object.entries(JENIS_BERKAS)
   .filter(([, meta]) => meta.wajib)
@@ -157,7 +163,7 @@ export function filterLomba(items = [], filter = {}, acuan = new Date()) {
     if (filter.bidang && lomba.bidang !== filter.bidang) return false
     if (filter.tingkat && lomba.tingkat !== filter.tingkat) return false
     if (filter.jenis && lomba.jenis !== filter.jenis) return false
-    if (filter.status && lomba.status !== filter.status) return false
+    if (filter.status && ![].concat(filter.status).includes(lomba.status)) return false
 
     if (filter.capaian) {
       if (filter.capaian === 'belum') {
@@ -235,7 +241,29 @@ export function paginasi(items = [], { page = 1, pageSize = 10 } = {}) {
   }
 }
 
+export function lombaBerhenti(lomba) {
+  return lomba?.status === 'tidak_lanjut'
+}
+
+export function bolehTandaiTidakLanjut(lomba) {
+  if (lombaBerhenti(lomba)) {
+    return { boleh: false, alasan: 'Lomba ini sudah ditandai tidak lanjut.', kode: 'SUDAH_TIDAK_LANJUT' }
+  }
+  if (lomba?.hasil || lomba?.status === 'selesai') {
+    return { boleh: false, alasan: 'Hasil lomba ini sudah dilaporkan.', kode: 'SUDAH_LAPOR' }
+  }
+  return { boleh: true, alasan: null, kode: 'SIAP' }
+}
+
 export function bolehLaporHasil(lomba, acuan = new Date()) {
+  if (lombaBerhenti(lomba)) {
+    return {
+      boleh: false,
+      alasan: 'Lomba ini ditandai tidak lanjut, jadi tidak ada hasil yang perlu dilaporkan.',
+      kode: 'TIDAK_LANJUT',
+    }
+  }
+
   if (lomba?.hasil) {
     return { boleh: false, alasan: 'Hasil lomba ini sudah dilaporkan.', kode: 'SUDAH_LAPOR' }
   }
@@ -285,17 +313,19 @@ export function prestasiTerverifikasi(lomba) {
 
 export function ringkasLomba(lomba, acuan = new Date()) {
   const kelengkapan = hitungKelengkapan(lomba)
-  const berikutnya = tahapanBerikutnya(lomba, acuan)
+  const berhenti = lombaBerhenti(lomba)
+  const berikutnya = berhenti ? null : tahapanBerikutnya(lomba, acuan)
 
   return {
     ...lomba,
     kelengkapan,
     tahapanBerikutnya: berikutnya,
-    tahapanAktif: tahapanAktif(lomba, acuan),
+    tahapanAktif: berhenti ? null : tahapanAktif(lomba, acuan),
     sisaHariTahapan: berikutnya ? selisihHari(acuan, berikutnya.tanggalMulai) : null,
     jumlahAnggota: (lomba.anggota ?? []).length,
     pelaporan: bolehLaporHasil(lomba, acuan),
     statusHasil: statusHasil(lomba),
+    penghentian: bolehTandaiTidakLanjut(lomba),
     progres: progresTahapan(lomba, acuan),
   }
 }
@@ -309,7 +339,7 @@ export function hitungStatistik(items = [], acuan = new Date()) {
   const awal = awalBulan(acuan)
   const akhir = akhirBulan(acuan)
 
-  const perStatus = { terdaftar: 0, berlangsung: 0, selesai: 0 }
+  const perStatus = { terdaftar: 0, berlangsung: 0, selesai: 0, tidak_lanjut: 0 }
   const perTingkat = {}
   const perBidang = {}
   const perCapaian = {}
@@ -328,11 +358,11 @@ export function hitungStatistik(items = [], acuan = new Date()) {
 
     for (const anggota of lomba.anggota ?? []) {
       nimSemua.add(anggota.nim)
-      if (lomba.status !== 'selesai') nimAktif.add(anggota.nim)
+      if (!STATUS_AKHIR.includes(lomba.status)) nimAktif.add(anggota.nim)
     }
 
     if (adaTahapanDiRentang(lomba, awal, akhir)) lombaBulanIni += 1
-    if (!hitungKelengkapan(lomba).lengkap) dokumenBelumLengkap += 1
+    if (!lombaBerhenti(lomba) && !hitungKelengkapan(lomba).lengkap) dokumenBelumLengkap += 1
 
     if (lomba.hasil?.capaian) {
       if (prestasiTerverifikasi(lomba)) {
@@ -364,6 +394,8 @@ export function agendaTerdekat(items = [], { limit = 6, acuan = new Date() } = {
   const agenda = []
 
   for (const lomba of items) {
+    if (lombaBerhenti(lomba)) continue
+
     for (const tahap of tahapanTerurut(lomba)) {
       const akhir = akhirHari(tahap.tanggalSelesai ?? tahap.tanggalMulai)
       if (akhir < batas) continue
@@ -390,6 +422,8 @@ export function tahapanPerTanggal(items = [], { dari, sampai } = {}) {
   const batasAkhir = sampai ? akhirHari(sampai) : null
 
   for (const lomba of items) {
+    if (lombaBerhenti(lomba)) continue
+
     for (const tahap of tahapanTerurut(lomba)) {
       const mulai = awalHari(tahap.tanggalMulai)
       const selesai = awalHari(tahap.tanggalSelesai ?? tahap.tanggalMulai)
