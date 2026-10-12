@@ -23,6 +23,7 @@ import {
 import { formatTanggal } from '@/lib/date'
 import { namaPengguna } from '@/services/userService'
 import { CAPAIAN_LOMBA } from '@/config/domain'
+import { LABEL_VERIFIKASI_HASIL } from '@/features/arsip/eksporData'
 
 const UKURAN_HALAMAN = 10
 
@@ -204,10 +205,12 @@ export default function ArsipPrestasi() {
       key: 'sertifikat',
       header: 'Sertifikat',
       render: (lomba) => {
-        const ada = (lomba.berkas ?? []).some((berkas) => berkas.tipe === 'sertifikat')
+        const status = lomba.statusHasil
+        const tone =
+          status === 'terverifikasi' ? 'success' : status === 'ditolak' ? 'danger' : 'warning'
         return (
-          <Badge tone={ada ? 'success' : 'warning'} size="sm">
-            {ada ? 'Ada' : 'Belum ada'}
+          <Badge tone={tone} size="sm">
+            {LABEL_VERIFIKASI_HASIL[status] ?? '-'}
           </Badge>
         )
       },
@@ -270,7 +273,7 @@ export default function ArsipPrestasi() {
           <StatCard
             label="Prestasi tercatat"
             nilai={statistik.totalPrestasi}
-            keterangan="Juara 1 sampai finalis"
+            keterangan="Juara 1 sampai finalis, sertifikat terverifikasi"
             tone="success"
           />
           <StatCard
@@ -297,6 +300,11 @@ export default function ArsipPrestasi() {
                 {meta.label}: {statistik?.perCapaian?.[kunci] ?? 0}
               </Badge>
             ))}
+            {statistik?.hasilMenungguVerifikasi > 0 && (
+              <Badge tone="warning">
+                Menunggu verifikasi: {statistik.hasilMenungguVerifikasi}
+              </Badge>
+            )}
           </div>
         </CardContent>
       </Card>

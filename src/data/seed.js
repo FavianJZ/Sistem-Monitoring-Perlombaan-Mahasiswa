@@ -1,6 +1,6 @@
 import { toISODate, tambahHari } from '@/lib/date'
 import { posterDataUri } from '@/lib/posterPlaceholder'
-import { MAHASISWA } from './users'
+import { DOSEN, MAHASISWA } from './users'
 
 const REKAN_TIM = [
   { nim: '2502021111', nama: 'User-Mahasiswa(7)', prodi: 'Teknik Informatika' },
@@ -291,7 +291,7 @@ const SPEC_LOMBA = [
     linkPublikasi: 'https://ub.ac.id/olimpiade-akuntansi',
     status: 'selesai',
     berkas: ['bukti_daftar', 'bukti_bayar', 'sertifikat'],
-    hasil: { capaian: 'harapan', selisihLapor: 6 },
+    hasil: { capaian: 'harapan', selisihLapor: 6, sertifikatMenunggu: true },
     tahapan: [
       { jenis: 'pendaftaran', mulai: -170, selesai: -155 },
       { jenis: 'penyisihan', mulai: -150, selesai: -145 },
@@ -481,6 +481,16 @@ function buatAnggota(spec, lombaId) {
   return anggota
 }
 
+function verifikasiSertifikat(spec, tanggal) {
+  if (!spec.hasil || spec.hasil.sertifikatMenunggu) return {}
+  const pembimbing = DOSEN.find((dosen) => dosen.id === spec.dosenPembimbingId)
+  return {
+    statusVerifikasi: 'diterima',
+    diverifikasiPada: tanggal,
+    diverifikasiOleh: pembimbing?.nama ?? null,
+  }
+}
+
 function buatBerkas(spec, lombaId, acuan, tanggalUnggah) {
   return (spec.berkas ?? []).map((tipe, index) => ({
     id: `${lombaId}-brk-${index + 1}`,
@@ -489,6 +499,7 @@ function buatBerkas(spec, lombaId, acuan, tanggalUnggah) {
     ...BERKAS_CONTOH[tipe],
     url: null,
     diunggahPada: tanggalUnggah,
+    ...(tipe === 'sertifikat' ? verifikasiSertifikat(spec, tanggalUnggah) : {}),
   }))
 }
 

@@ -98,8 +98,8 @@ export default function DetailLombaDosen() {
       <div className="mb-6 flex items-start gap-2.5 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
         <Eye className="mt-px size-4 shrink-0 text-slate-400" aria-hidden="true" />
         <p>
-          Halaman ini bersifat pemantauan. Data diisi mahasiswa dan tidak memerlukan persetujuan,
-          sehingga tidak ada tindakan menyetujui atau menolak di sini.
+          Data lomba diisi mahasiswa. Dosen pembimbing memverifikasi berkas di tab Dokumen,
+          termasuk sertifikat yang menentukan apakah capaian tercatat sebagai prestasi.
         </p>
       </div>
 
@@ -178,7 +178,7 @@ export default function DetailLombaDosen() {
 
         <TabPanel id="hasil" aktif={tab} idPrefix="detail-monitoring" className="px-5 py-4">
           {lomba.hasil ? (
-            <RingkasanHasil lomba={lomba} />
+            <RingkasanHasil lomba={lomba} onPerbarui={jalankan} />
           ) : (
             <EmptyState
               icon={Hourglass}

@@ -15,6 +15,7 @@ import {
   urutkanLomba,
 } from './competitionQuery'
 import { akhirBulan, awalBulan, toISODate } from '@/lib/date'
+import { CAPAIAN_LOMBA } from '@/config/domain'
 
 class ServiceError extends Error {
   constructor(message, { status = 400, kode } = {}) {
@@ -131,7 +132,7 @@ export async function buatLomba(payload, opsi = {}) {
     dosenPembimbingId: payload.dosenPembimbingId ?? null,
     linkPublikasi: payload.linkPublikasi?.trim() || null,
     posterUrl: payload.posterUrl ?? null,
-    status: payload.status ?? 'terdaftar',
+    status: 'terdaftar',
     createdBy: payload.createdBy,
     createdAt: toISODate(sekarang(opsi)),
     anggota: bersihkanAnggota(payload.anggota, id),
@@ -144,14 +145,20 @@ export async function buatLomba(payload, opsi = {}) {
   return ringkasLomba(tersimpan ?? record, sekarang(opsi))
 }
 
+const KOLOM_TERKUNCI = ['id', 'createdBy', 'status', 'hasil']
+
+function tanpaKolomTerkunci(patch = {}) {
+  return Object.fromEntries(
+    Object.entries(patch).filter(([kunci]) => !KOLOM_TERKUNCI.includes(kunci)),
+  )
+}
+
 export async function perbaruiLomba(id, patch = {}, opsi = {}) {
   await jeda(opsi.jeda)
 
   const hasil = await store.perbarui(id, (lomba) => ({
     ...lomba,
-    ...patch,
-    id: lomba.id,
-    createdBy: lomba.createdBy,
+    ...tanpaKolomTerkunci(patch),
     anggota: patch.anggota ? bersihkanAnggota(patch.anggota, id) : lomba.anggota,
     berkas: patch.berkas ? bersihkanBerkas(patch.berkas, id) : lomba.berkas,
     tahapan: patch.tahapan ? bersihkanTahapan(patch.tahapan, id) : lomba.tahapan,
@@ -170,9 +177,24 @@ export async function laporkanHasil(id, laporan = {}, opsi = {}) {
   if (!laporan.capaian) {
     throw new ServiceError('Capaian wajib dipilih.', { kode: 'CAPAIAN_KOSONG' })
   }
+  if (!CAPAIAN_LOMBA[laporan.capaian]) {
+    throw new ServiceError('Capaian tidak dikenal.', { kode: 'CAPAIAN_TIDAK_SAH' })
+  }
+  if (!(laporan.berkas ?? []).some((berkas) => berkas?.tipe === 'sertifikat')) {
+    throw new ServiceError('Sertifikat wajib diunggah sebagai bukti capaian.', {
+      kode: 'SERTIFIKAT_KOSONG',
+    })
+  }
 
   const acuan = sekarang(opsi)
   const hasil = await store.perbarui(id, (lomba) => {
+    if (lomba.hasil) {
+      throw new ServiceError('Hasil lomba ini sudah dilaporkan.', {
+        status: 409,
+        kode: 'SUDAH_LAPOR',
+      })
+    }
+
     const berkasBaru = bersihkanBerkas(laporan.berkas ?? [], id).map((berkas, index) => ({
       ...berkas,
       id: `${id}-brk-hasil-${index + 1}`,
