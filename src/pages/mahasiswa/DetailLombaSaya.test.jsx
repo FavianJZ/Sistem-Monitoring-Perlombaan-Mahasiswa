@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { ACUAN_UJI, SESI_MAHASISWA, buatSesi, renderApp } from '@/test/utils'
+import { ACUAN_UJI, SESI_MAHASISWA, alamatSekarang, buatSesi, renderApp } from '@/test/utils'
 import {
   detailLomba,
   perbaruiLomba,
@@ -336,5 +336,40 @@ describe('Detail lomba - tidak lanjut', () => {
     expect(screen.getByText('Lomba tidak dilanjutkan')).toBeInTheDocument()
     expect(screen.getByText('Mengundurkan diri')).toBeInTheDocument()
     expect(screen.queryByLabelText(/Capaian Akhir/)).not.toBeInTheDocument()
+  })
+})
+
+describe('Detail lomba - hapus', () => {
+  it('menghapus lomba setelah konfirmasi lalu kembali ke daftar', async () => {
+    const user = userEvent.setup()
+    await bukaDetail()
+
+    expect(screen.getByText('Salah memasukkan lomba ini?')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Hapus lomba' }))
+
+    const dialog = await screen.findByRole('dialog', { name: 'Hapus lomba?' })
+    await user.click(within(dialog).getByRole('button', { name: 'Hapus permanen' }))
+
+    await waitFor(() => expect(alamatSekarang(screen)).toBe('/lomba-saya'))
+    await expect(detailLomba('lomba-01', { acuan: ACUAN_UJI })).rejects.toMatchObject({ status: 404 })
+  })
+
+  it('membatalkan penghapusan tanpa mengubah data', async () => {
+    const user = userEvent.setup()
+    await bukaDetail()
+
+    await user.click(screen.getByRole('button', { name: 'Hapus lomba' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Hapus lomba?' })
+    await user.click(within(dialog).getByRole('button', { name: 'Batal' }))
+
+    expect(screen.queryByRole('dialog', { name: 'Hapus lomba?' })).not.toBeInTheDocument()
+    expect((await detailLomba('lomba-01', { acuan: ACUAN_UJI })).id).toBe('lomba-01')
+  })
+
+  it('tidak menawarkan hapus untuk lomba yang sudah ditandai tidak lanjut', async () => {
+    await tandaiTidakLanjut('lomba-01', { alasan: 'mundur' }, { acuan: ACUAN_UJI })
+    await bukaDetail()
+
+    expect(screen.queryByRole('button', { name: 'Hapus lomba' })).not.toBeInTheDocument()
   })
 })
