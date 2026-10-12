@@ -4,6 +4,7 @@ import {
   BERKAS_WAJIB,
   adaTahapanDiRentang,
   agendaTerdekat,
+  bolehHapusLomba,
   bolehLaporHasil,
   bolehTandaiTidakLanjut,
   cocokPencarian,
@@ -567,5 +568,29 @@ describe('status tidak lanjut', () => {
   it('tidak muncul di kalender', () => {
     const peta = tahapanPerTanggal([berhenti], { dari: '2020-01-01', sampai: '2030-12-31' })
     expect(peta.size).toBe(0)
+  })
+})
+
+describe('bolehHapusLomba', () => {
+  const dasar = { status: 'terdaftar', hasil: null, berkas: [{ tipe: 'bukti_daftar' }] }
+
+  it('boleh selama belum berstatus akhir dan belum ada berkas diterima', () => {
+    expect(bolehHapusLomba(dasar).boleh).toBe(true)
+    expect(bolehHapusLomba({ ...dasar, status: 'berlangsung' }).boleh).toBe(true)
+    expect(
+      bolehHapusLomba({ ...dasar, berkas: [{ tipe: 'bukti_daftar', statusVerifikasi: 'ditolak' }] }).boleh,
+    ).toBe(true)
+  })
+
+  it('tidak boleh untuk status akhir atau hasil yang sudah ada', () => {
+    expect(bolehHapusLomba({ ...dasar, status: 'selesai' }).kode).toBe('STATUS_AKHIR')
+    expect(bolehHapusLomba({ ...dasar, status: 'tidak_lanjut' }).kode).toBe('STATUS_AKHIR')
+    expect(bolehHapusLomba({ ...dasar, hasil: { capaian: 'peserta' } }).kode).toBe('STATUS_AKHIR')
+  })
+
+  it('tidak boleh bila ada berkas yang diterima', () => {
+    expect(
+      bolehHapusLomba({ ...dasar, berkas: [{ tipe: 'bukti_bayar', statusVerifikasi: 'diterima' }] }).kode,
+    ).toBe('ADA_VERIFIKASI')
   })
 })

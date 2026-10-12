@@ -319,6 +319,46 @@ describe('hapusLomba', () => {
   it('melempar 404 bila data tidak ada', async () => {
     await expect(hapusLomba('lomba-999', OPSI)).rejects.toMatchObject({ status: 404 })
   })
+
+  it('menolak lomba yang sudah selesai', async () => {
+    const selesai = (await semuaLombaTersaring({ status: 'selesai' }, OPSI))[0]
+
+    await expect(hapusLomba(selesai.id, OPSI)).rejects.toMatchObject({
+      status: 409,
+      kode: 'STATUS_AKHIR',
+    })
+    expect((await detailLomba(selesai.id, OPSI)).id).toBe(selesai.id)
+  })
+
+  it('menolak lomba yang sudah ditandai tidak lanjut', async () => {
+    await tandaiTidakLanjut('lomba-01', { alasan: 'mundur' }, OPSI)
+
+    await expect(hapusLomba('lomba-01', OPSI)).rejects.toMatchObject({ kode: 'STATUS_AKHIR' })
+  })
+
+  it('menolak lomba yang punya berkas diterima dosen', async () => {
+    const lomba = await detailLomba('lomba-01', OPSI)
+    await verifikasiBerkas(
+      'lomba-01',
+      lomba.berkas[0].id,
+      { statusVerifikasi: 'diterima', diverifikasiOleh: 'User-Dosen(1)' },
+      OPSI,
+    )
+
+    await expect(hapusLomba('lomba-01', OPSI)).rejects.toMatchObject({ kode: 'ADA_VERIFIKASI' })
+  })
+
+  it('tetap boleh menghapus bila berkasnya hanya ditolak', async () => {
+    const lomba = await detailLomba('lomba-01', OPSI)
+    await verifikasiBerkas(
+      'lomba-01',
+      lomba.berkas[0].id,
+      { statusVerifikasi: 'ditolak', catatanPenolakan: 'buram' },
+      OPSI,
+    )
+
+    await expect(hapusLomba('lomba-01', OPSI)).resolves.toEqual({ id: 'lomba-01' })
+  })
 })
 
 describe('statistikLomba', () => {

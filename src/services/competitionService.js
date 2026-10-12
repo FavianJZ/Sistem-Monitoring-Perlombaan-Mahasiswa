@@ -6,6 +6,7 @@ import { apakahSupabaseAktif } from '@/lib/supabase'
 const store = apakahSupabaseAktif() ? storeSupabase : storeMock
 import {
   agendaTerdekat,
+  bolehHapusLomba,
   bolehTandaiTidakLanjut,
   filterLomba,
   hitungKelengkapan,
@@ -349,9 +350,22 @@ export async function unggahUlangBerkas(idLomba, idBerkas, berkasBaru = {}, opsi
 export async function hapusLomba(id, opsi = {}) {
   await jeda(opsi.jeda)
 
+  const lomba = await store.bacaSatu(id)
+  if (!lomba) {
+    throw new ServiceError(`Lomba ${id} tidak ditemukan.`, { status: 404, kode: 'LOMBA_TIDAK_ADA' })
+  }
+
+  const izin = bolehHapusLomba(lomba)
+  if (!izin.boleh) {
+    throw new ServiceError(izin.alasan, { status: 409, kode: izin.kode })
+  }
+
   const terhapus = await store.hapus(id)
   if (!terhapus) {
-    throw new ServiceError(`Lomba ${id} tidak ditemukan.`, { status: 404, kode: 'LOMBA_TIDAK_ADA' })
+    throw new ServiceError('Lomba ini tidak bisa dihapus dengan akun Anda.', {
+      status: 403,
+      kode: 'HAPUS_DITOLAK',
+    })
   }
 
   return { id }

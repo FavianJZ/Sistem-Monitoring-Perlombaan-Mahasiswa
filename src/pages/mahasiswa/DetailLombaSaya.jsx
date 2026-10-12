@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   AlertCircle,
   ArrowLeft,
@@ -9,6 +9,7 @@ import {
   CircleSlash,
   FileEdit,
   Pencil,
+  Trash2,
   Users,
 } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -33,14 +34,17 @@ import { RingkasanHasil } from '@/features/lomba/RingkasanHasil'
 import { RingkasanTidakLanjut } from '@/features/lomba/RingkasanTidakLanjut'
 import { ModalEditLomba } from '@/features/lomba/ModalEditLomba'
 import { ModalTidakLanjut } from '@/features/lomba/ModalTidakLanjut'
+import { ModalHapusLomba } from '@/features/lomba/ModalHapusLomba'
 
 export default function DetailLombaSaya() {
   const { id } = useParams()
   const { toast } = useToast()
+  const navigate = useNavigate()
   const [tab, setTab] = useState('info')
   const [editModalBuka, setEditModalBuka] = useState(false)
   const [tabEditAwal, setTabEditAwal] = useState('info')
   const [modalTidakLanjutBuka, setModalTidakLanjutBuka] = useState(false)
+  const [modalHapusBuka, setModalHapusBuka] = useState(false)
 
   const ambil = useCallback(() => detailLomba(id), [id])
   const { data: lomba, loading, error, jalankan } = useAsync(ambil, [ambil])
@@ -97,6 +101,16 @@ export default function DetailLombaSaya() {
       variant: 'success',
     })
     await jalankan()
+  }
+
+  function handleTerhapus(terhapus) {
+    setModalHapusBuka(false)
+    toast({
+      title: 'Lomba dihapus',
+      description: `${terhapus.nama} dan berkasnya sudah dihapus.`,
+      variant: 'success',
+    })
+    navigate('/lomba-saya', { replace: true })
   }
 
   async function handleTidakLanjut(hasil) {
@@ -196,6 +210,27 @@ export default function DetailLombaSaya() {
             </Button>
           </div>
           <InfoLomba lomba={lomba} />
+
+          {lomba.penghapusan.boleh && (
+            <div className="mt-6 flex flex-col gap-3 rounded-lg border border-danger-200 bg-danger-50/60 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-danger-900">Salah memasukkan lomba ini?</p>
+                <p className="mt-0.5 text-xs text-danger-800">
+                  Lomba yang belum punya berkas terverifikasi bisa dihapus permanen beserta
+                  berkasnya.
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                leadingIcon={Trash2}
+                className="border-danger-300 text-danger-700 hover:bg-danger-100 hover:text-danger-800"
+                onClick={() => setModalHapusBuka(true)}
+              >
+                Hapus lomba
+              </Button>
+            </div>
+          )}
         </TabPanel>
 
         <TabPanel id="tim" aktif={tab} idPrefix="detail-lomba" className="px-5 py-4">
@@ -288,6 +323,13 @@ export default function DetailLombaSaya() {
         lomba={lomba}
         tabAwal={tabEditAwal}
         onTersimpan={jalankan}
+      />
+
+      <ModalHapusLomba
+        open={modalHapusBuka}
+        onClose={() => setModalHapusBuka(false)}
+        lomba={lomba}
+        onTerhapus={handleTerhapus}
       />
 
       <ModalTidakLanjut
