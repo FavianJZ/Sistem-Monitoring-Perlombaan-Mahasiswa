@@ -13,6 +13,7 @@ import {
   progresTahapan,
   rentangDariMode,
   ringkasLomba,
+  statusHasil,
   tahapanBerikutnya,
   tahapanPerTanggal,
   tahapanTerurut,
@@ -356,6 +357,12 @@ describe('hitungStatistik', () => {
     expect(statistik.mahasiswaAktif).toBeLessThanOrEqual(statistik.mahasiswaTerlibat)
   })
 
+  it('tidak menghitung hasil yang sertifikatnya belum diterima', () => {
+    expect(statistik.hasilMenungguVerifikasi).toBe(1)
+    expect(statistik.perCapaian.harapan ?? 0).toBe(0)
+    expect(statistik.totalPrestasi).toBe(5)
+  })
+
   it('menghitung prestasi tanpa memasukkan capaian peserta', () => {
     const pesertaSaja = statistik.perCapaian.peserta ?? 0
     const totalHasil = Object.values(statistik.perCapaian).reduce((jumlah, nilai) => jumlah + nilai, 0)
@@ -496,5 +503,35 @@ describe('progresTahapan', () => {
 
   it('aman untuk lomba tanpa tahapan', () => {
     expect(progresTahapan({ tahapan: [] }, ACUAN)).toEqual({ total: 0, lewat: 0, persen: 0 })
+  })
+})
+
+describe('statusHasil', () => {
+  const hasil = { capaian: 'juara_1' }
+  const sertifikat = (statusVerifikasi) => ({ tipe: 'sertifikat', statusVerifikasi })
+
+  it('belum bila hasil belum dilaporkan', () => {
+    expect(statusHasil({ hasil: null, berkas: [sertifikat('diterima')] })).toBe('belum')
+  })
+
+  it('menunggu bila sertifikat belum diperiksa', () => {
+    expect(statusHasil({ hasil, berkas: [sertifikat(undefined)] })).toBe('menunggu')
+    expect(statusHasil({ hasil, berkas: [] })).toBe('menunggu')
+  })
+
+  it('terverifikasi bila ada sertifikat yang diterima', () => {
+    expect(statusHasil({ hasil, berkas: [sertifikat('ditolak'), sertifikat('diterima')] })).toBe(
+      'terverifikasi',
+    )
+  })
+
+  it('ditolak bila semua sertifikat ditolak', () => {
+    expect(statusHasil({ hasil, berkas: [sertifikat('ditolak')] })).toBe('ditolak')
+  })
+
+  it('mengabaikan berkas selain sertifikat', () => {
+    expect(
+      statusHasil({ hasil, berkas: [{ tipe: 'foto', statusVerifikasi: 'diterima' }] }),
+    ).toBe('menunggu')
   })
 })

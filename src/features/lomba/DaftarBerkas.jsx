@@ -144,7 +144,7 @@ function KartuBerkas({
   )
 }
 
-export function DaftarBerkas({ lomba, onPerbarui }) {
+export function DaftarBerkas({ lomba, onPerbarui, tampilkanKelengkapan = true }) {
   const { user } = useAuth()
   const { toast } = useToast()
 
@@ -155,7 +155,7 @@ export function DaftarBerkas({ lomba, onPerbarui }) {
 
   const berkas = lomba?.berkas ?? []
   const tersedia = new Set(berkas.map((item) => item.tipe))
-  const kurang = BERKAS_WAJIB.filter((tipe) => !tersedia.has(tipe))
+  const kurang = tampilkanKelengkapan ? BERKAS_WAJIB.filter((tipe) => !tersedia.has(tipe)) : []
   const ditolak = berkas.filter((item) => item.statusVerifikasi === 'ditolak')
 
   const role = user?.role ?? 'mahasiswa'

@@ -28,11 +28,11 @@ describe('Detail lomba untuk dosen - tampilan', () => {
     expect(screen.getAllByText('Programming').length).toBeGreaterThan(0)
   })
 
-  it('menegaskan bahwa halaman ini hanya untuk memantau', async () => {
+  it('menjelaskan peran dosen pembimbing dalam verifikasi berkas', async () => {
     await bukaDetail()
 
-    expect(screen.getByText(/Halaman ini bersifat pemantauan/)).toBeInTheDocument()
-    expect(screen.getByText(/tidak memerlukan persetujuan/)).toBeInTheDocument()
+    expect(screen.getByText(/Dosen pembimbing memverifikasi berkas/)).toBeInTheDocument()
+    expect(screen.getByText(/tercatat sebagai prestasi/)).toBeInTheDocument()
   })
 
   it('menampilkan dua ringkasan: kelengkapan bukti dan progres tahapan', async () => {
@@ -187,6 +187,6 @@ describe('Detail lomba untuk dosen - tanpa kontrol milik mahasiswa', () => {
     renderApp('/monitoring/lomba/lomba-01', { sesi: SESI_MAHASISWA() })
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Dashboard' })).toBeInTheDocument()
-    expect(screen.queryByText(/Halaman ini bersifat pemantauan/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Dosen pembimbing memverifikasi berkas/)).not.toBeInTheDocument()
   })
 })

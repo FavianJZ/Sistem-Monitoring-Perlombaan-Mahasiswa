@@ -40,7 +40,7 @@ describe('Arsip Prestasi - tampilan', () => {
     await bukaArsip()
 
     expect(within(screen.getByTestId('stat-Lomba selesai')).getByText('8')).toBeInTheDocument()
-    expect(within(screen.getByTestId('stat-Prestasi tercatat')).getByText('6')).toBeInTheDocument()
+    expect(within(screen.getByTestId('stat-Prestasi tercatat')).getByText('5')).toBeInTheDocument()
     expect(within(screen.getByTestId('stat-Hasil terfilter')).getByText('8')).toBeInTheDocument()
   })
 
@@ -50,6 +50,8 @@ describe('Arsip Prestasi - tampilan', () => {
     expect(screen.getByText('Sebaran capaian')).toBeInTheDocument()
     expect(screen.getByText('Juara 1: 2')).toBeInTheDocument()
     expect(screen.getByText('Peserta: 2')).toBeInTheDocument()
+    expect(screen.getByText('Juara Harapan: 0')).toBeInTheDocument()
+    expect(screen.getByText('Menunggu verifikasi: 1')).toBeInTheDocument()
   })
 
   it('menampilkan peserta, capaian, dan status sertifikat per baris', async () => {
@@ -59,7 +61,8 @@ describe('Arsip Prestasi - tampilan', () => {
 
     expect(isi.getAllByText('User-Mahasiswa(5)').length).toBeGreaterThan(0)
     expect(isi.getAllByText('Juara 1').length).toBeGreaterThan(0)
-    expect(isi.getAllByText('Ada').length).toBeGreaterThan(0)
+    expect(isi.getAllByText('Terverifikasi').length).toBeGreaterThan(0)
+    expect(isi.getAllByText('Menunggu verifikasi').length).toBe(1)
     expect(isi.getAllByText(/Dilaporkan \d+ \w+ 2026/).length).toBeGreaterThan(0)
   })
 
