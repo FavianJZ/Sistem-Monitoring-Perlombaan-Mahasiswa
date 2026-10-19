@@ -1,15 +1,3 @@
--- =====================================================================
--- Status akhir "tidak_lanjut" untuk lomba yang tidak diteruskan
--- (tidak lolos seleksi, mundur, didiskualifikasi, dibatalkan).
--- Jalankan SETELAH 20261012030000_kunci_status_hasil.sql.
--- Aman dijalankan ulang (idempotent). Jalan turun ada di bagian bawah.
---
--- Mahasiswa pemilik boleh menandai lomba "tidak_lanjut" selama hasilnya
--- belum dilaporkan, dengan alasan yang sah. Setelah itu status, hasil, dan
--- keterangan tidak lanjut terkunci (hanya admin / SQL Editor yang bisa
--- mengubah).
--- =====================================================================
-
 create or replace function public.alasan_tidak_lanjut_sah(a text)
 returns boolean
 language sql
@@ -71,13 +59,3 @@ begin
   return status_lama = 'selesai' and not public.punya_sertifikat(lama, 'diterima');
 end;
 $$;
-
--- =====================================================================
--- JALAN TURUN (jalankan manual bila perlu membatalkan):
---
--- Pastikan tidak ada lomba berstatus tidak_lanjut yang perlu dipertahankan:
---   select id from public.data_lomba where data->>'status' = 'tidak_lanjut';
--- Jalankan ulang definisi transisi_lomba_sah dari
--- 20261012030000_kunci_status_hasil.sql, lalu:
--- drop function if exists public.alasan_tidak_lanjut_sah(text);
--- =====================================================================
