@@ -1,17 +1,3 @@
--- =====================================================================
--- Kunci status dan hasil lomba.
--- Jalankan SETELAH 20261012000000_kunci_verifikasi_dosen.sql.
--- Aman dijalankan ulang (idempotent). Jalan turun ada di bagian bawah.
---
--- Mahasiswa pemilik tidak lagi bisa menulis status/hasil sembarangan:
---   - lomba baru selalu berstatus "terdaftar" tanpa hasil;
---   - status "selesai" + hasil hanya lewat pelaporan hasil, dengan capaian
---     yang sah dan berkas sertifikat;
---   - hasil yang sudah dilaporkan hanya bisa diubah selama sertifikatnya
---     belum diterima dosen pembimbing.
--- Dosen sudah dibatasi trigger sebelumnya (hanya verifikasi berkas).
--- =====================================================================
-
 create or replace function public.capaian_sah(c text)
 returns boolean
 language sql
@@ -152,14 +138,3 @@ end;
 $$;
 
 revoke execute on function public.jaga_isi_data_lomba() from public, anon, authenticated;
-
--- =====================================================================
--- JALAN TURUN (jalankan manual bila perlu membatalkan):
---
--- Jalankan ulang definisi jaga_isi_data_lomba dari
--- 20261012000000_kunci_verifikasi_dosen.sql, lalu:
--- drop function if exists public.transisi_lomba_sah(jsonb, jsonb);
--- drop function if exists public.punya_sertifikat(jsonb, text);
--- drop function if exists public.daftar_berkas(jsonb);
--- drop function if exists public.capaian_sah(text);
--- =====================================================================

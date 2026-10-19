@@ -1,28 +1,15 @@
--- =====================================================================
--- Integrasi penuh SiMonLomba ke Supabase: peran aman, data lomba,
--- penyimpanan berkas, dan Realtime.
--- Jalankan SETELAH skema awal & cek_ketersediaan_akun.
--- Aman dijalankan ulang (idempotent).
--- =====================================================================
-
--- ---------------------------------------------------------------------
--- 1. Kode otorisasi peran staf (tidak bisa dibaca klien sama sekali)
--- ---------------------------------------------------------------------
 create table if not exists public.kode_otorisasi_peran (
   role text primary key check (role in ('dosen', 'admin')),
   kode text not null
 );
 
 alter table public.kode_otorisasi_peran enable row level security;
--- Sengaja TANPA policy: anon/authenticated tidak bisa membaca kode.
 
--- GANTI kode ini di SQL Editor sebelum dipakai sungguhan.
 insert into public.kode_otorisasi_peran (role, kode) values
   ('dosen', 'DOSEN2026'),
   ('admin', 'PRODI2026')
 on conflict (role) do nothing;
 
--- Dipakai halaman daftar staf untuk memberi tahu kode salah lebih awal.
 create or replace function public.cek_kode_peran(p_role text, p_kode text)
 returns boolean
 language sql
@@ -39,10 +26,6 @@ $$;
 revoke all on function public.cek_kode_peran(text, text) from public;
 grant execute on function public.cek_kode_peran(text, text) to anon, authenticated;
 
--- ---------------------------------------------------------------------
--- 2. Profil dibuat otomatis saat sign up. Peran staf HANYA diberikan bila
---    kode otorisasinya benar; selain itu selalu 'mahasiswa'.
--- ---------------------------------------------------------------------
 create or replace function public.handle_user_terdaftar()
 returns trigger
 language plpgsql
@@ -73,7 +56,6 @@ begin
   )
   on conflict (id) do nothing;
 
-  -- Jangan biarkan kode otorisasi tersimpan di metadata pengguna.
   if meta ? 'kode_peran' then
     update auth.users
       set raw_user_meta_data = raw_user_meta_data - 'kode_peran'
@@ -89,11 +71,9 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_user_terdaftar();
 
--- Pengguna boleh mengubah nama/prodi/avatar miliknya, tapi TIDAK role, nim, email.
 revoke update on public.profiles from authenticated, anon;
 grant update (nama, prodi, avatar_url) on public.profiles to authenticated;
 
--- Helper tanpa rekursi RLS.
 create or replace function public.peran_saya()
 returns text
 language sql
@@ -117,10 +97,6 @@ $$;
 grant execute on function public.peran_saya() to authenticated;
 grant execute on function public.nim_saya() to authenticated;
 
--- ---------------------------------------------------------------------
--- 3. Data lomba. Satu baris = satu record lomba utuh (anggota, tahapan,
---    berkas, hasil) di kolom jsonb, sesuai model aplikasi.
--- ---------------------------------------------------------------------
 create table if not exists public.data_lomba (
   id text primary key,
   created_by uuid not null default auth.uid() references public.profiles (id) on delete cascade,
@@ -140,7 +116,6 @@ set search_path = ''
 as $$
 begin
   new.diperbarui_pada := now();
-  -- Pemilik tidak boleh dipindahkan lewat update.
   new.created_by := old.created_by;
   return new;
 end;
@@ -197,9 +172,6 @@ create policy "data_lomba hapus"
     or (select public.peran_saya()) = 'admin'
   );
 
--- ---------------------------------------------------------------------
--- 4. Realtime
--- ---------------------------------------------------------------------
 do $$
 begin
   if not exists (
@@ -216,9 +188,6 @@ begin
   end if;
 end $$;
 
--- ---------------------------------------------------------------------
--- 5. Storage berkas (privat). Path: <uid pemilik>/<id lomba>/<nama file>
--- ---------------------------------------------------------------------
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
   'berkas-lomba', 'berkas-lomba', false, 5242880,
