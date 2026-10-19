@@ -1,13 +1,3 @@
--- =====================================================================
--- Kunci verifikasi berkas dan domain email pendaftar.
--- Jalankan SETELAH 20261009130000_integrasi_realtime.sql.
--- Aman dijalankan ulang (idempotent). Jalan turun ada di bagian bawah.
--- =====================================================================
-
--- ---------------------------------------------------------------------
--- 1. Hanya dosen pembimbing lomba itu (atau admin) yang boleh mengubah
---    baris milik mahasiswa lain. Dosen lain tetap bisa membaca.
--- ---------------------------------------------------------------------
 drop policy if exists "data_lomba ubah" on public.data_lomba;
 create policy "data_lomba ubah"
   on public.data_lomba for update
@@ -29,14 +19,6 @@ create policy "data_lomba ubah"
     )
   );
 
--- ---------------------------------------------------------------------
--- 2. Isi jsonb dijaga trigger:
---    - mahasiswa tidak bisa menyetujui/menolak berkasnya sendiri, dan
---      tidak bisa menukar file yang sudah diverifikasi;
---    - dosen hanya bisa mengubah kolom verifikasi berkas.
--- ---------------------------------------------------------------------
-
--- Bagian berkas yang menentukan "file yang sama" (tanpa url sementara).
 create or replace function public.identitas_berkas(b jsonb)
 returns jsonb
 language sql
@@ -78,7 +60,6 @@ declare
   lama jsonb;
   kunci text;
 begin
-  -- SQL Editor / service role tidak dibatasi.
   if pengguna is null then
     return new;
   end if;
@@ -88,7 +69,6 @@ begin
     return new;
   end if;
 
-  -- Dosen pembimbing yang mengubah lomba mahasiswa: hanya verifikasi berkas.
   if tg_op = 'UPDATE' and peran = 'dosen' and old.created_by <> pengguna then
     if (new.data - 'berkas') is distinct from (old.data - 'berkas')
        or new.dosen_pembimbing_id is distinct from old.dosen_pembimbing_id
@@ -104,8 +84,6 @@ begin
     return new;
   end if;
 
-  -- Pemilik (mahasiswa): berkas baru selalu "menunggu"; berkas yang sudah
-  -- diverifikasi tidak boleh diubah status maupun file-nya.
   for baru in
     select x from jsonb_array_elements(coalesce(new.data->'berkas', '[]'::jsonb)) x
   loop
@@ -141,10 +119,6 @@ create trigger data_lomba_jaga_isi
   before insert or update on public.data_lomba
   for each row execute procedure public.jaga_isi_data_lomba();
 
--- ---------------------------------------------------------------------
--- 3. Domain email dicek di server, bukan hanya di formulir.
---    Mahasiswa: @binus.ac.id. Staf: @binus.ac.id atau @binus.edu.
--- ---------------------------------------------------------------------
 create or replace function public.handle_user_terdaftar()
 returns trigger
 language plpgsql
@@ -187,7 +161,6 @@ begin
   )
   on conflict (id) do nothing;
 
-  -- Jangan biarkan kode otorisasi tersimpan di metadata pengguna.
   if meta ? 'kode_peran' then
     update auth.users
       set raw_user_meta_data = raw_user_meta_data - 'kode_peran'
@@ -198,17 +171,5 @@ begin
 end;
 $$;
 
--- Fungsi trigger tidak perlu bisa dipanggil langsung lewat RPC.
 revoke execute on function public.handle_user_terdaftar() from public, anon, authenticated;
 revoke execute on function public.jaga_isi_data_lomba() from public, anon, authenticated;
-
--- =====================================================================
--- JALAN TURUN (jalankan manual bila perlu membatalkan):
---
--- drop trigger if exists data_lomba_jaga_isi on public.data_lomba;
--- drop function if exists public.jaga_isi_data_lomba();
--- drop function if exists public.verifikasi_berkas(jsonb);
--- drop function if exists public.identitas_berkas(jsonb);
--- lalu jalankan ulang bagian "data_lomba ubah" dan handle_user_terdaftar
--- dari 20261009130000_integrasi_realtime.sql.
--- =====================================================================
