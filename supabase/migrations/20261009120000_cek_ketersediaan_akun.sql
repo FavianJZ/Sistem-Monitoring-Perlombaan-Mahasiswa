@@ -1,6 +1,3 @@
--- Cek apakah email / NIM sudah dipakai, untuk halaman pendaftaran.
--- Dipanggil oleh pengunjung yang belum login (role anon), jadi fungsi berjalan
--- sebagai security definer dan HANYA mengembalikan dua boolean, bukan data akun.
 create or replace function public.cek_ketersediaan_akun(p_email text, p_nim text default null)
 returns table (email_terpakai boolean, nim_terpakai boolean)
 language sql
