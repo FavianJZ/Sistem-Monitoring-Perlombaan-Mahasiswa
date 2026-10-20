@@ -44,6 +44,8 @@ export function verifikasiDanValidasiSesi(sesi) {
   return null
 }
 
+const SESI_PER_TAB = import.meta.env.VITE_MODE_DEMO === 'true'
+
 export function bacaSesi() {
   try {
 
@@ -58,7 +60,7 @@ export function bacaSesi() {
       window.sessionStorage?.removeItem(KUNCI_SESI)
     }
 
-    const tokenCookie = bacaCookie(COOKIE_TOKEN_NAME)
+    const tokenCookie = SESI_PER_TAB ? null : bacaCookie(COOKIE_TOKEN_NAME)
     if (tokenCookie && tokenCookie.split('.').length === 3) {
       try {
         const payload = verifikasiJwt(tokenCookie)
@@ -83,7 +85,7 @@ export function bacaSesi() {
       }
     }
 
-    const mentahLocal = window.localStorage?.getItem(KUNCI_SESI)
+    const mentahLocal = SESI_PER_TAB ? null : window.localStorage?.getItem(KUNCI_SESI)
     if (mentahLocal) {
       const sesi = JSON.parse(mentahLocal)
       const sesiValid = verifikasiDanValidasiSesi(sesi)
@@ -105,6 +107,7 @@ export function simpanSesi(sesi) {
   try {
     const data = JSON.stringify(sesi)
     window.sessionStorage?.setItem(KUNCI_SESI, data)
+    if (SESI_PER_TAB) return
     window.localStorage?.setItem(KUNCI_SESI, data)
 
     if (sesi?.token) {
