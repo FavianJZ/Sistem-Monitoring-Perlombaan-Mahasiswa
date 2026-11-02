@@ -12,13 +12,14 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { Skeleton, SkeletonText } from '@/components/ui/Skeleton'
 import { useAuth } from '@/auth/AuthContext'
 import { useAsync } from '@/hooks/useAsync'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { agendaLomba, daftarLomba, statistikLomba } from '@/services/competitionService'
 import { formatTanggalDenganHari, toneSisaHari, waktuTahap } from '@/lib/date'
 import { labelTahapan } from '@/config/domain'
 
 function KartuMemuat() {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
       {Array.from({ length: 4 }).map((_, index) => (
         <Card key={index}>
           <CardContent>
@@ -33,6 +34,7 @@ function KartuMemuat() {
 
 export default function DashboardMahasiswa() {
   const { user } = useAuth()
+  const layarKecil = useMediaQuery('(max-width: 639px)')
 
   const ambil = useCallback(
     () =>
@@ -85,7 +87,7 @@ export default function DashboardMahasiswa() {
 
       {statistik && (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
             <StatCard
               label="Lomba aktif"
               nilai={lombaAktif}
@@ -117,7 +119,7 @@ export default function DashboardMahasiswa() {
             />
           </div>
 
-          <div className="mt-6 grid gap-6 lg:grid-cols-5">
+          <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-5">
             <Card className="lg:col-span-3">
               <CardHeader
                 actions={
@@ -156,10 +158,19 @@ export default function DashboardMahasiswa() {
                           <span className="mt-0.5 block text-xs text-slate-500">
                             {formatTanggalDenganHari(item.tahap.tanggalMulai)}
                           </span>
+                          {layarKecil && (
+                            <span className="mt-1.5 block">
+                              <Badge tone={toneSisaHari(item.sisaHari)} size="sm">
+                                {waktuTahap(item.tahap)}
+                              </Badge>
+                            </span>
+                          )}
                         </span>
-                        <Badge tone={toneSisaHari(item.sisaHari)} size="sm">
-                          {waktuTahap(item.tahap)}
-                        </Badge>
+                        {!layarKecil && (
+                          <Badge tone={toneSisaHari(item.sisaHari)} size="sm">
+                            {waktuTahap(item.tahap)}
+                          </Badge>
+                        )}
                       </Link>
                     </li>
                   ))}

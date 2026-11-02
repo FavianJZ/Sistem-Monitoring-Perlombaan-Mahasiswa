@@ -1,8 +1,10 @@
-import { CalendarDays, CalendarRange, FilterX, Layers, Search } from 'lucide-react'
+import { useState } from 'react'
+import { CalendarDays, CalendarRange, ChevronDown, FilterX, Layers, Search, SlidersHorizontal } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { cn } from '@/lib/cn'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import {
   CAPAIAN_LOMBA,
   JENIS_TAHAPAN,
@@ -45,6 +47,9 @@ export function FilterBar({
   className,
 }) {
   const tampil = (nama) => !sembunyikan.includes(nama)
+  const layarKecil = useMediaQuery('(max-width: 767px)')
+  const [terbuka, setTerbuka] = useState(false)
+  const tampilkanRincian = !layarKecil || terbuka
 
   return (
     <div className={cn('space-y-4 border-b border-slate-200 p-4', className)}>
@@ -58,6 +63,21 @@ export function FilterBar({
           wrapperClassName="sm:max-w-md"
         />
 
+        {layarKecil && (
+          <Button
+            variant="outline"
+            leadingIcon={SlidersHorizontal}
+            aria-expanded={terbuka}
+            onClick={() => setTerbuka((sebelum) => !sebelum)}
+          >
+            {terbuka ? 'Sembunyikan filter' : 'Filter lainnya'}
+            <ChevronDown
+              className={cn('size-4 transition-transform', terbuka && 'rotate-180')}
+              aria-hidden="true"
+            />
+          </Button>
+        )}
+
         {adaFilter && (
           <Button variant="ghost" leadingIcon={FilterX} onClick={onReset}>
             Bersihkan filter
@@ -65,125 +85,129 @@ export function FilterBar({
         )}
       </div>
 
-      <fieldset>
-        <legend className="mb-2 text-sm font-medium text-slate-700">Rentang waktu tahapan</legend>
-        <div
-          role="group"
-          aria-label="Mode filter waktu"
-          className="flex flex-wrap gap-1 rounded-lg border border-slate-300 bg-white p-1"
-        >
-          {MODE_WAKTU.map((mode) => {
-            const Icon = mode.icon
-            const aktif = (filter.mode ?? 'semua') === mode.value
+      {tampilkanRincian && (
+        <fieldset>
+          <legend className="mb-2 text-sm font-medium text-slate-700">Rentang waktu tahapan</legend>
+          <div
+            role="group"
+            aria-label="Mode filter waktu"
+            className="flex flex-wrap gap-1 rounded-lg border border-slate-300 bg-white p-1"
+          >
+            {MODE_WAKTU.map((mode) => {
+              const Icon = mode.icon
+              const aktif = (filter.mode ?? 'semua') === mode.value
 
-            return (
-              <button
-                key={mode.value}
-                type="button"
-                aria-pressed={aktif}
-                onClick={() => onUbah({ mode: mode.value })}
-                className={cn(
-                  'inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold transition-colors',
-                  aktif ? 'bg-primary-600 text-white' : 'text-slate-600 hover:bg-slate-100',
-                )}
-              >
-                <Icon className="size-4" aria-hidden="true" />
-                {mode.label}
-              </button>
-            )
-          })}
-        </div>
-
-        {filter.mode === 'tanggal' && (
-          <Input
-            label="Tanggal"
-            type="date"
-            value={filter.tanggal}
-            onChange={(event) => onUbah({ tanggal: event.target.value })}
-            hint="Menampilkan lomba yang punya tahapan pada tanggal ini."
-            wrapperClassName="mt-3 sm:max-w-56"
-          />
-        )}
-
-        {filter.mode === 'rentang' && (
-          <div className="mt-3 grid gap-3 sm:max-w-md sm:grid-cols-2">
-            <Input
-              label="Dari tanggal"
-              type="date"
-              value={filter.dari}
-              onChange={(event) => onUbah({ dari: event.target.value })}
-            />
-            <Input
-              label="Sampai tanggal"
-              type="date"
-              value={filter.sampai}
-              onChange={(event) => onUbah({ sampai: event.target.value })}
-            />
+              return (
+                <button
+                  key={mode.value}
+                  type="button"
+                  aria-pressed={aktif}
+                  onClick={() => onUbah({ mode: mode.value })}
+                  className={cn(
+                    'inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold transition-colors',
+                    aktif ? 'bg-primary-600 text-white' : 'text-slate-600 hover:bg-slate-100',
+                  )}
+                >
+                  <Icon className="size-4" aria-hidden="true" />
+                  {mode.label}
+                </button>
+              )
+            })}
           </div>
-        )}
-      </fieldset>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {tampil('bidang') && (
-          <Select
-            label="Bidang"
-            placeholder="Semua bidang"
-            options={opsi.bidang ?? []}
-            value={filter.bidang}
-            onChange={(event) => onUbah({ bidang: event.target.value })}
-          />
-        )}
+          {filter.mode === 'tanggal' && (
+            <Input
+              label="Tanggal"
+              type="date"
+              value={filter.tanggal}
+              onChange={(event) => onUbah({ tanggal: event.target.value })}
+              hint="Menampilkan lomba yang punya tahapan pada tanggal ini."
+              wrapperClassName="mt-3 sm:max-w-56"
+            />
+          )}
 
-        {tampil('tingkat') && (
-          <Select
-            label="Tingkat"
-            placeholder="Semua tingkat"
-            options={opsi.tingkat ?? TINGKAT_LOMBA}
-            value={filter.tingkat}
-            onChange={(event) => onUbah({ tingkat: event.target.value })}
-          />
-        )}
+          {filter.mode === 'rentang' && (
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:max-w-md sm:grid-cols-2">
+              <Input
+                label="Dari tanggal"
+                type="date"
+                value={filter.dari}
+                onChange={(event) => onUbah({ dari: event.target.value })}
+              />
+              <Input
+                label="Sampai tanggal"
+                type="date"
+                value={filter.sampai}
+                onChange={(event) => onUbah({ sampai: event.target.value })}
+              />
+            </div>
+          )}
+        </fieldset>
+      )}
 
-        {tampil('status') && (
-          <Select
-            label={labelStatus}
-            placeholder={placeholderStatus}
-            options={opsiStatus}
-            value={filter.status}
-            onChange={(event) => onUbah({ status: event.target.value })}
-          />
-        )}
+      {tampilkanRincian && (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {tampil('bidang') && (
+            <Select
+              label="Bidang"
+              placeholder="Semua bidang"
+              options={opsi.bidang ?? []}
+              value={filter.bidang}
+              onChange={(event) => onUbah({ bidang: event.target.value })}
+            />
+          )}
 
-        {tampil('capaian') && (
-          <Select
-            label="Hasil"
-            placeholder="Semua hasil"
-            options={OPSI_CAPAIAN}
-            value={filter.capaian}
-            onChange={(event) => onUbah({ capaian: event.target.value })}
-          />
-        )}
+          {tampil('tingkat') && (
+            <Select
+              label="Tingkat"
+              placeholder="Semua tingkat"
+              options={opsi.tingkat ?? TINGKAT_LOMBA}
+              value={filter.tingkat}
+              onChange={(event) => onUbah({ tingkat: event.target.value })}
+            />
+          )}
 
-        {tampil('jenisTahapan') && (
-          <Select
-            label="Jenis tahapan"
-            placeholder="Semua tahapan"
-            options={OPSI_TAHAPAN}
-            value={filter.jenisTahapan}
-            onChange={(event) => onUbah({ jenisTahapan: event.target.value })}
-          />
-        )}
+          {tampil('status') && (
+            <Select
+              label={labelStatus}
+              placeholder={placeholderStatus}
+              options={opsiStatus}
+              value={filter.status}
+              onChange={(event) => onUbah({ status: event.target.value })}
+            />
+          )}
 
-        {tampil('prodi') && (
-          <Select
-            label="Program studi"
-            placeholder="Semua program studi"
-            options={opsi.prodi ?? []}
-            value={filter.prodi}
-            onChange={(event) => onUbah({ prodi: event.target.value })}
-          />
-        )}
-      </div>
+          {tampil('capaian') && (
+            <Select
+              label="Hasil"
+              placeholder="Semua hasil"
+              options={OPSI_CAPAIAN}
+              value={filter.capaian}
+              onChange={(event) => onUbah({ capaian: event.target.value })}
+            />
+          )}
+
+          {tampil('jenisTahapan') && (
+            <Select
+              label="Jenis tahapan"
+              placeholder="Semua tahapan"
+              options={OPSI_TAHAPAN}
+              value={filter.jenisTahapan}
+              onChange={(event) => onUbah({ jenisTahapan: event.target.value })}
+            />
+          )}
+
+          {tampil('prodi') && (
+            <Select
+              label="Program studi"
+              placeholder="Semua program studi"
+              options={opsi.prodi ?? []}
+              value={filter.prodi}
+              onChange={(event) => onUbah({ prodi: event.target.value })}
+            />
+          )}
+        </div>
+      )}
     </div>
   )
 }

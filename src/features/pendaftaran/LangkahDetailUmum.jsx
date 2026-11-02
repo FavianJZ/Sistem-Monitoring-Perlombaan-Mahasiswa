@@ -9,7 +9,7 @@ const IKON_JENIS = { individu: User, tim: Users }
 export function LangkahDetailUmum({ draft, ubah, error = {}, dosen = [], memuatDosen }) {
   return (
     <div className="space-y-6">
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Input
           label="Nama Perlombaan"
           placeholder="Contoh: GEMASTIK XIX Divisi Pemrograman"
@@ -67,7 +67,7 @@ export function LangkahDetailUmum({ draft, ubah, error = {}, dosen = [], memuatD
           </span>
         </legend>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {JENIS_KEIKUTSERTAAN.map((opsi) => {
             const Icon = IKON_JENIS[opsi.value]
             const terpilih = draft.jenis === opsi.value

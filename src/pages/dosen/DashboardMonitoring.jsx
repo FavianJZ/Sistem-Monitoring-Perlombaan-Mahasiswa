@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { CompetitionCard } from '@/features/lomba/CompetitionCard'
 import { useAuth } from '@/auth/AuthContext'
 import { useAsync } from '@/hooks/useAsync'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { agendaLomba, daftarLomba, statistikLomba } from '@/services/competitionService'
 import { formatTanggalDenganHari, toneSisaHari, waktuTahap } from '@/lib/date'
 import { labelTahapan } from '@/config/domain'
@@ -50,7 +51,7 @@ function Sebaran({ judul, data, total }) {
 
 function KartuMemuat() {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
       {Array.from({ length: 4 }).map((_, index) => (
         <Card key={index}>
           <CardContent>
@@ -65,6 +66,7 @@ function KartuMemuat() {
 
 export default function DashboardMonitoring() {
   const { user } = useAuth()
+  const layarKecil = useMediaQuery('(max-width: 639px)')
   const [hanyaBimbingan, setHanyaBimbingan] = useState(false)
 
   const filter = useMemo(
@@ -122,7 +124,7 @@ export default function DashboardMonitoring() {
 
       {statistik && (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
             <StatCard
               label="Mahasiswa aktif berlomba"
               nilai={statistik.mahasiswaAktif}
@@ -154,7 +156,7 @@ export default function DashboardMonitoring() {
             />
           </div>
 
-          <div className="mt-6 grid gap-6 lg:grid-cols-5">
+          <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-5">
             <Card className="lg:col-span-2">
               <CardHeader>
                 <CardTitle>Sebaran keikutsertaan</CardTitle>
@@ -210,10 +212,19 @@ export default function DashboardMonitoring() {
                           <span className="mt-0.5 block text-xs text-slate-500">
                             {formatTanggalDenganHari(item.tahap.tanggalMulai)}
                           </span>
+                          {layarKecil && (
+                            <span className="mt-1.5 block">
+                              <Badge tone={toneSisaHari(item.sisaHari)} size="sm">
+                                {waktuTahap(item.tahap)}
+                              </Badge>
+                            </span>
+                          )}
                         </span>
-                        <Badge tone={toneSisaHari(item.sisaHari)} size="sm">
-                          {waktuTahap(item.tahap)}
-                        </Badge>
+                        {!layarKecil && (
+                          <Badge tone={toneSisaHari(item.sisaHari)} size="sm">
+                            {waktuTahap(item.tahap)}
+                          </Badge>
+                        )}
                       </Link>
                     </li>
                   ))}
@@ -250,7 +261,7 @@ export default function DashboardMonitoring() {
                 />
               </Card>
             ) : (
-              <div className="grid gap-4 lg:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 {data.halaman.items.map((lomba) => (
                   <CompetitionCard key={lomba.id} lomba={lomba} />
                 ))}
