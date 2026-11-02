@@ -306,7 +306,7 @@ export default function RegisterStaf() {
                 {LABEL_KEKUATAN[skorSandi]}
               </span>
             </div>
-            <ul className="mt-2 grid gap-x-3 gap-y-1 sm:grid-cols-3">
+            <ul className="mt-2 grid grid-cols-1 gap-x-3 gap-y-1 sm:grid-cols-3">
               {syarat.map((item) => (
                 <li
                   key={item.id}

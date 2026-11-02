@@ -25,7 +25,7 @@ export function AuthLayout({
         </div>
       </header>
 
-      <div className="mx-auto grid w-full max-w-6xl flex-1 items-start gap-10 px-5 py-8 sm:px-6 lg:grid-cols-[1fr_auto] lg:gap-16 lg:py-14">
+      <div className="mx-auto grid grid-cols-1 w-full max-w-6xl flex-1 items-start gap-10 px-5 py-8 sm:px-6 lg:grid-cols-[1fr_auto] lg:gap-16 lg:py-14">
         <section className="hidden lg:sticky lg:top-10 lg:block">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-accent-700">{label}</p>
           <h1 className="mt-3 max-w-lg text-3xl font-light leading-snug text-slate-700 xl:text-4xl">

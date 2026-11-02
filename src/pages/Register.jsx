@@ -63,7 +63,7 @@ function MeteranSandi({ sandi }) {
           {LABEL_KEKUATAN[skor]}
         </span>
       </div>
-      <ul className="mt-2 grid gap-x-3 gap-y-1 sm:grid-cols-3">
+      <ul className="mt-2 grid grid-cols-1 gap-x-3 gap-y-1 sm:grid-cols-3">
         {syarat.map((item) => (
           <li
             key={item.id}
@@ -250,7 +250,7 @@ export default function Register() {
           required
         />
 
-        <div className="grid gap-5 sm:grid-cols-[1.4fr_1fr]">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-[1.4fr_1fr]">
           <Input
             label="NIM"
             name="nim"

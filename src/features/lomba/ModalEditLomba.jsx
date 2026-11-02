@@ -324,7 +324,7 @@ export function ModalEditLomba({
               required
             />
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Input
                 label="Penyelenggara"
                 name="penyelenggara"
@@ -343,7 +343,7 @@ export function ModalEditLomba({
               />
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Select
                 label="Tingkat Kompetisi"
                 name="tingkat"
@@ -425,7 +425,7 @@ export function ModalEditLomba({
                 <p className="text-xs font-semibold text-primary-900">
                   Tambah Anggota Baru ke Tim
                 </p>
-                <div className="grid gap-3 sm:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   <Input
                     label="Nama Anggota"
                     placeholder="Nama lengkap"
@@ -544,7 +544,7 @@ export function ModalEditLomba({
                 <p className="text-xs font-semibold text-primary-900">
                   Tambah Tahapan Baru
                 </p>
-                <div className="grid gap-3 sm:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   <Select
                     label="Jenis Tahapan"
                     value={tahapBaru.jenis}

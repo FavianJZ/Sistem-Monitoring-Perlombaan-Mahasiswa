@@ -277,7 +277,7 @@ export function DaftarBerkas({ lomba, onPerbarui, tampilkanKelengkapan = true })
       {berkas.length === 0 ? (
         <p className="text-sm text-slate-600">Belum ada berkas yang diunggah untuk lomba ini.</p>
       ) : (
-        <ul aria-label="Berkas pendukung" className="grid gap-3 sm:grid-cols-2">
+        <ul aria-label="Berkas pendukung" className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {berkas.map((item) => (
             <KartuBerkas
               key={item.id ?? `${item.tipe}-${item.namaFile}`}

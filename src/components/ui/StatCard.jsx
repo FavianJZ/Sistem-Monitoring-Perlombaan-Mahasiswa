@@ -24,7 +24,7 @@ export function StatCard({
     <>
       <p className="text-sm font-medium text-slate-600">{label}</p>
 
-      <p className={cn('mt-2 text-3xl font-bold tracking-tight', WARNA_ANGKA[tone] ?? WARNA_ANGKA.neutral)}>
+      <p className={cn('mt-2 text-2xl font-bold tracking-tight sm:text-3xl', WARNA_ANGKA[tone] ?? WARNA_ANGKA.neutral)}>
         {nilai}
         {satuan && <span className="ml-1 text-base font-semibold text-slate-500">{satuan}</span>}
       </p>
@@ -41,7 +41,7 @@ export function StatCard({
   )
 
   const kelas = cn(
-    'block rounded-lg border border-slate-200 bg-white p-5 shadow-card',
+    'block min-w-0 rounded-lg border border-slate-200 bg-white p-4 shadow-card sm:p-5',
     to && 'transition-colors hover:border-primary-300 hover:bg-primary-50/40',
     className,
   )

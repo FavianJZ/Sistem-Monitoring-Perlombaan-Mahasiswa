@@ -95,7 +95,7 @@ export default function KalenderAgenda() {
       />
 
       <Card className="mb-6">
-        <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <CardContent className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <Select
             label="Bidang"
             placeholder="Semua bidang"
@@ -113,7 +113,7 @@ export default function KalenderAgenda() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader
             actions={
@@ -183,7 +183,7 @@ export default function KalenderAgenda() {
                               }`}
                               onClick={() => ubah({ tanggal: terpilih ? '' : sehari.iso })}
                               className={cn(
-                                'flex h-24 w-full flex-col gap-1 rounded-md border p-1.5 text-left transition-colors',
+                                'flex h-14 w-full flex-col items-center gap-1 rounded-md border p-1 text-left transition-colors sm:h-24 sm:items-stretch sm:p-1.5',
                                 terpilih
                                   ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500'
                                   : 'border-slate-200 hover:border-primary-300 hover:bg-slate-50',
@@ -201,7 +201,16 @@ export default function KalenderAgenda() {
                                 {ini && <span className="sr-only"> (hari ini)</span>}
                               </span>
 
-                              <span className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-hidden">
+                              {agenda.length > 0 && (
+                                <span
+                                  aria-hidden="true"
+                                  className="rounded-full bg-primary-100 px-1.5 text-[11px] font-semibold leading-4 text-primary-800 sm:hidden"
+                                >
+                                  {agenda.length}
+                                </span>
+                              )}
+
+                              <span className="hidden min-h-0 flex-1 flex-col gap-0.5 overflow-hidden sm:flex">
                                 {agenda.slice(0, 2).map((item, indeks) => (
                                   <span
                                     key={`${item.lombaId}-${item.tahap.id}-${indeks}`}

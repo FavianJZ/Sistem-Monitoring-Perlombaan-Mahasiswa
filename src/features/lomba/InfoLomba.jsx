@@ -20,7 +20,7 @@ export function TautanLuar({ href, children }) {
       href={href}
       target="_blank"
       rel="noreferrer noopener"
-      className="inline-flex items-center gap-1.5 text-primary-700 hover:underline"
+      className="inline-flex max-w-full items-center gap-1.5 text-primary-700 hover:underline"
     >
       <span className="truncate">{children ?? href}</span>
       <ExternalLink className="size-3.5 shrink-0" aria-hidden="true" />
@@ -32,7 +32,7 @@ export function InfoLomba({ lomba }) {
   const labelJenis = JENIS_KEIKUTSERTAAN.find((item) => item.value === lomba.jenis)?.label
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
       <dl className="lg:col-span-2">
         <BarisInfo label="Penyelenggara" nilai={lomba.penyelenggara} />
         <BarisInfo label="Bidang lomba" nilai={lomba.bidang} />
