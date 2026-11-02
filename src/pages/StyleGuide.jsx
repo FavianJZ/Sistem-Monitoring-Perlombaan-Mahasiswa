@@ -225,7 +225,7 @@ export default function StyleGuide() {
       </Section>
 
       <Section title="Kontrol Form" description="Setiap kontrol punya label eksplisit, teks bantuan, dan state error.">
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <Input label="Nama Perlombaan" placeholder="Contoh: GEMASTIK XVIII" required />
           <Input
             label="Instansi Penyelenggara"
@@ -370,7 +370,7 @@ export default function StyleGuide() {
       </Section>
 
       <Section title="Stat Card" description="Kartu angka untuk dashboard, bisa berupa tautan.">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             label="Lomba aktif"
             nilai={7}
@@ -418,7 +418,7 @@ export default function StyleGuide() {
         title="File Upload"
         description="Dropzone dengan pratinjau, validasi tipe, dan batas ukuran 5MB sesuai PRD."
       >
-        <div className="grid gap-5 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
           <FileUpload
             label="Bukti Pembayaran"
             hint="Bukti transfer, invoice, atau kwitansi."
@@ -469,7 +469,7 @@ export default function StyleGuide() {
       </Section>
 
       <Section title="Empty State dan Skeleton" description="Tampilan saat data kosong dan saat masih dimuat.">
-        <div className="grid gap-5 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
           <div className="rounded-lg border border-slate-200">
             <EmptyState
               icon={Trophy}

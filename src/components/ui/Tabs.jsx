@@ -28,7 +28,7 @@ export function Tabs({ tabs, aktif, onGanti, idPrefix, className }) {
       role="tablist"
       aria-label="Bagian detail lomba"
       onKeyDown={handleKeyDown}
-      className={cn('flex gap-1 overflow-x-auto border-b border-slate-200 px-2', className)}
+      className={cn('flex gap-1 overflow-x-auto border-b border-slate-200 px-2 [scrollbar-width:none]', className)}
     >
       {tabs.map((tab, indeks) => {
         const terpilih = tab.id === aktif

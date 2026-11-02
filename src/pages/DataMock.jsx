@@ -73,7 +73,7 @@ export default function DataMock() {
 
       {data && (
         <>
-          <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
               ['Total lomba', data.statistik.total],
               ['Mahasiswa aktif berlomba', data.statistik.mahasiswaAktif],
@@ -91,7 +91,7 @@ export default function DataMock() {
             ))}
           </div>
 
-          <div className="mb-6 grid gap-6 lg:grid-cols-2">
+          <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>Sebaran data</CardTitle>

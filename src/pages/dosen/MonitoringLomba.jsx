@@ -316,7 +316,7 @@ export default function MonitoringLomba() {
 
           {data && data.items.length > 0 && (
             <>
-              <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
                 {data.items.map((lomba) => (
                   <CompetitionCard key={lomba.id} lomba={lomba} />
                 ))}
