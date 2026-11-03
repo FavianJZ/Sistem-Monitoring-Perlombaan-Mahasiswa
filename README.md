@@ -1,4 +1,4 @@
-# Sistem Monitoring Perlombaan Mahasiswa (Frontend)
+# Sistem Monitoring Perlombaan Mahasiswa (Frontend + Backend)
 
 Platform web untuk monitoring, pendaftaran, dan pengelolaan partisipasi perlombaan mahasiswa serta arsip prestasi berbasis React dan Vite.
 
