@@ -158,6 +158,32 @@ describe('OTP Supabase di AuthContext', () => {
   })
 })
 
+describe('masuk dengan Google', () => {
+  it('mengalihkan ke Google lewat Supabase dan kembali ke situs ini', async () => {
+    auth.signInWithOAuth = vi.fn().mockResolvedValue({ data: {}, error: null })
+    const { result } = pakaiAuth()
+    await waitFor(() => expect(result.current.siap).toBe(true))
+
+    await result.current.masukDenganGoogle()
+
+    expect(auth.signInWithOAuth).toHaveBeenCalledWith({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/` },
+    })
+  })
+
+  it('meneruskan galat bila provider Google belum aktif', async () => {
+    auth.signInWithOAuth = vi.fn().mockResolvedValue({
+      data: {},
+      error: { message: 'Unsupported provider: provider is not enabled' },
+    })
+    const { result } = pakaiAuth()
+    await waitFor(() => expect(result.current.siap).toBe(true))
+
+    await expect(result.current.masukDenganGoogle()).rejects.toThrow(/provider is not enabled/)
+  })
+})
+
 describe('validasiSandiBaru', () => {
   it('menerima kode dan sandi yang sah', () => {
     expect(validasiSandiBaru({ kode: '12345678', password: 'SandiBaru123', konfirmasi: 'SandiBaru123' })).toEqual({})
