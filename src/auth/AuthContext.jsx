@@ -1,11 +1,13 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import {
   ambilProfil,
+  hapusFotoProfil,
   login as loginService,
   muatProfil,
   penggunaSinkron,
   registrasi as registrasiService,
   resetCacheProfil,
+  simpanFotoProfil,
 } from '@/services/userService'
 import { resetCache as resetCacheLomba } from '@/services/supabaseStore'
 import { supabase, apakahSupabaseAktif } from '@/lib/supabase'
@@ -297,6 +299,25 @@ export function AuthProvider({ children, sesiAwal }) {
     [masuk],
   )
 
+  const perbaruiFoto = useCallback(
+    async (blob) => {
+      if (!sesi?.user) throw new Error('Silakan masuk terlebih dahulu.')
+      const avatarUrl = blob
+        ? await simpanFotoProfil(sesi.user.id, blob)
+        : (await hapusFotoProfil(sesi.user.id), null)
+
+      setSesi((lama) => {
+        if (!lama?.user) return lama
+        const { avatarUrl: _lama, ...tanpaFoto } = lama.user
+        const baru = { ...lama, user: avatarUrl ? { ...tanpaFoto, avatarUrl } : tanpaFoto }
+        if (!modeSupabase) simpanSesi(baru)
+        return baru
+      })
+      return avatarUrl
+    },
+    [sesi?.user, modeSupabase],
+  )
+
   const keluar = useCallback(async () => {
     hapusSesi()
     setSesi(null)
@@ -324,6 +345,7 @@ export function AuthProvider({ children, sesiAwal }) {
       kirimUlangVerifikasi,
       mintaKodeReset,
       aturUlangSandi,
+      perbaruiFoto,
       keluar,
     }),
     [
@@ -338,6 +360,7 @@ export function AuthProvider({ children, sesiAwal }) {
       kirimUlangVerifikasi,
       mintaKodeReset,
       aturUlangSandi,
+      perbaruiFoto,
       keluar,
     ],
   )

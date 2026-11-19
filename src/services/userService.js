@@ -6,10 +6,15 @@ import { buatJwt } from '@/auth/jwt'
 import { MODE_DEMO } from '@/config/mode'
 import { supabase, apakahSupabaseAktif } from '@/lib/supabase'
 import { beriTahuPerubahan } from './perubahanData'
+import { blobKeDataUrl } from '@/lib/fotoProfil'
 
 const PENGGUNA_BAWAAN = MODE_DEMO ? SEMUA_PENGGUNA : []
 
 export const KUNCI_AKUN = 'simonlomba.akun'
+
+export const KUNCI_FOTO = 'simonlomba.foto'
+
+const BUCKET_FOTO = 'avatar'
 
 export const KODE_ADMIN_DEMO = MODE_DEMO ? 'PRODI2026' : null
 
@@ -33,9 +38,32 @@ function simpanAkun(daftar) {
   }
 }
 
+function bacaFotoMock() {
+  try {
+    const mentah = window.localStorage.getItem(KUNCI_FOTO)
+    const peta = mentah ? JSON.parse(mentah) : {}
+    return peta && typeof peta === 'object' ? peta : {}
+  } catch {
+    return {}
+  }
+}
+
+function simpanFotoMock(peta) {
+  try {
+    window.localStorage.setItem(KUNCI_FOTO, JSON.stringify(peta))
+  } catch {
+    throw new ServiceError('Penyimpanan peramban penuh. Foto tidak bisa disimpan.', { status: 507 })
+  }
+}
+
+function denganFotoMock(pengguna) {
+  const foto = bacaFotoMock()[pengguna.id]
+  return foto ? { ...pengguna, avatarUrl: foto } : pengguna
+}
+
 function semuaPengguna() {
   if (apakahSupabaseAktif()) return [...PENGGUNA_BAWAAN, ...cacheProfil.values()]
-  return [...PENGGUNA_BAWAAN, ...bacaAkun().map((item) => item.user)]
+  return [...PENGGUNA_BAWAAN, ...bacaAkun().map((item) => item.user)].map(denganFotoMock)
 }
 
 export async function cekKodePeran(role, kode) {
@@ -63,6 +91,7 @@ export function barisKeProfil(baris) {
     prodi: baris.prodi,
     ...(baris.nim ? { nim: baris.nim } : {}),
     ...(baris.angkatan ? { angkatan: baris.angkatan } : {}),
+    ...(baris.avatar_url ? { avatarUrl: baris.avatar_url } : {}),
   }
 }
 
@@ -72,7 +101,7 @@ export function muatProfil() {
     pemuatanProfil = (async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, nama, email, role, nim, angkatan, prodi')
+        .select('id, nama, email, role, nim, angkatan, prodi, avatar_url')
       if (error) {
         pemuatanProfil = null
         console.warn('[SiMonLomba] gagal memuat profil:', error.message)
@@ -108,7 +137,7 @@ export function resetCacheProfil() {
 export async function ambilProfil(id) {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, nama, email, role, nim, angkatan, prodi')
+    .select('id, nama, email, role, nim, angkatan, prodi, avatar_url')
     .eq('id', id)
     .maybeSingle()
   if (error) throw new ServiceError(`Gagal memuat profil: ${error.message}`, { status: 500 })
@@ -187,7 +216,7 @@ export async function login({ email, password } = {}, opsi = {}) {
     })
   }
 
-  return { user: { ...pengguna }, token: buatToken(pengguna) }
+  return { user: denganFotoMock({ ...pengguna }), token: buatToken(pengguna) }
 }
 
 export async function registrasi(data = {}, opsi = {}) {
@@ -274,4 +303,63 @@ export function namaPengguna(id) {
 export function penggunaSinkron(id) {
   const pengguna = semuaPengguna().find((item) => item.id === id)
   return pengguna ? { ...pengguna } : null
+}
+
+async function hapusFotoLamaSupabase(userId, kecuali) {
+  const { data, error } = await supabase.storage.from(BUCKET_FOTO).list(userId)
+  if (error) return
+  const lama = (data ?? []).map((item) => `${userId}/${item.name}`).filter((jalur) => jalur !== kecuali)
+  if (lama.length) await supabase.storage.from(BUCKET_FOTO).remove(lama)
+}
+
+export async function simpanFotoProfil(userId, blob) {
+  if (!apakahSupabaseAktif()) {
+    const peta = bacaFotoMock()
+    peta[userId] = await blobKeDataUrl(blob)
+    simpanFotoMock(peta)
+    beriTahuPerubahan('profil')
+    return peta[userId]
+  }
+
+  const jalur = `${userId}/${Date.now().toString(36)}.webp`
+  const unggah = await supabase.storage
+    .from(BUCKET_FOTO)
+    .upload(jalur, blob, { contentType: 'image/webp', cacheControl: '31536000' })
+  if (unggah.error) {
+    throw new ServiceError(`Foto gagal diunggah: ${unggah.error.message}`, { status: 500 })
+  }
+
+  const url = supabase.storage.from(BUCKET_FOTO).getPublicUrl(jalur).data.publicUrl
+  const { error } = await supabase.from('profiles').update({ avatar_url: url }).eq('id', userId)
+  if (error) {
+    await supabase.storage.from(BUCKET_FOTO).remove([jalur])
+    throw new ServiceError(`Foto gagal disimpan: ${error.message}`, { status: 500 })
+  }
+
+  await hapusFotoLamaSupabase(userId, jalur)
+  const lama = cacheProfil.get(userId)
+  if (lama) cacheProfil.set(userId, { ...lama, avatarUrl: url })
+  beriTahuPerubahan('profil')
+  return url
+}
+
+export async function hapusFotoProfil(userId) {
+  if (!apakahSupabaseAktif()) {
+    const peta = bacaFotoMock()
+    delete peta[userId]
+    simpanFotoMock(peta)
+    beriTahuPerubahan('profil')
+    return
+  }
+
+  const { error } = await supabase.from('profiles').update({ avatar_url: null }).eq('id', userId)
+  if (error) throw new ServiceError(`Foto gagal dihapus: ${error.message}`, { status: 500 })
+
+  await hapusFotoLamaSupabase(userId, null)
+  const lama = cacheProfil.get(userId)
+  if (lama) {
+    const { avatarUrl: _, ...tanpaFoto } = lama
+    cacheProfil.set(userId, tanpaFoto)
+  }
+  beriTahuPerubahan('profil')
 }

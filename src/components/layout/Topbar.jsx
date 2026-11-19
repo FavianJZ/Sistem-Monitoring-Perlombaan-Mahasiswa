@@ -1,15 +1,6 @@
 import { LogOut, Menu } from 'lucide-react'
 import { ROLE_LABELS } from '@/config/navigation'
-
-function initials(name = '') {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase()
-}
+import { Avatar } from '@/components/ui/Avatar'
 
 export function Topbar({ user, onMenuClick, onLogout }) {
   return (
@@ -35,12 +26,7 @@ export function Topbar({ user, onMenuClick, onLogout }) {
                 {user.nim ? ` - ${user.nim}` : ''}
               </p>
             </div>
-            <span
-              aria-hidden="true"
-              className="grid size-10 place-items-center rounded-full bg-primary-100 text-sm font-bold text-primary-700"
-            >
-              {initials(user.nama)}
-            </span>
+            <Avatar nama={user.nama} src={user.avatarUrl} />
             {onLogout && (
               <button
                 type="button"
