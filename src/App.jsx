@@ -18,6 +18,7 @@ import DataMock from '@/pages/DataMock'
 import Login from '@/pages/Login'
 import Register from '@/pages/Register'
 import RegisterStaf from '@/pages/RegisterStaf'
+import LupaSandi from '@/pages/LupaSandi'
 import NotFound from '@/pages/NotFound'
 import { MODE_DEMO } from '@/config/mode'
 
@@ -31,6 +32,7 @@ export default function App({ sesiAwal }) {
           <Route path="/login" element={<Login />} />
           <Route path="/daftar" element={<Register />} />
           <Route path="/daftar-staf" element={<RegisterStaf />} />
+          <Route path="/lupa-sandi" element={<LupaSandi />} />
 
           <Route element={<RequireAuth />}>
             <Route element={<AppShell />}>

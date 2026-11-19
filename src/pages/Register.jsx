@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/auth/AuthContext'
+import { ModalVerifikasiOtp } from '@/components/auth/ModalVerifikasiOtp'
 import { berandaRole } from '@/auth/sesi'
 import {
   DOMAIN_KAMPUS,
@@ -95,7 +96,7 @@ function JudulBagian({ children }) {
 }
 
 export default function Register() {
-  const { user, daftar, memproses } = useAuth()
+  const { user, daftar, memproses, verifikasiEmail, kirimUlangVerifikasi } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
   const lokasi = useLocation()
@@ -108,6 +109,7 @@ export default function Register() {
   const [disentuh, setDisentuh] = useState({})
   const [percobaan, setPercobaan] = useState(0)
   const [galatServer, setGalatServer] = useState(null)
+  const [menungguVerifikasi, setMenungguVerifikasi] = useState(null)
   const [mengecek, setMengecek] = useState(false)
 
   const tujuan = lokasi.state?.dari
@@ -165,16 +167,30 @@ export default function Register() {
     }
 
     try {
-      const pengguna = await daftar({ ...form, role })
-      toast({
-        variant: 'success',
-        title: 'Akun berhasil dibuat',
-        description: `Selamat datang, ${pengguna.nama}.`,
-      })
-      navigate(tujuan ?? berandaRole(pengguna.role), { replace: true })
+      const hasil = await daftar({ ...form, role })
+      if (hasil?.perluVerifikasi) {
+        setMenungguVerifikasi(hasil)
+        return
+      }
+      selesai(hasil)
     } catch (error) {
       setGalatServer(error.message)
     }
+  }
+
+  function selesai(pengguna) {
+    toast({
+      variant: 'success',
+      title: 'Akun berhasil dibuat',
+      description: `Selamat datang, ${pengguna.nama}.`,
+    })
+    navigate(tujuan ?? berandaRole(pengguna.role), { replace: true })
+  }
+
+  async function handleVerifikasi(kode) {
+    const pengguna = await verifikasiEmail({ email: menungguVerifikasi.email, kode, role })
+    setMenungguVerifikasi(null)
+    selesai(pengguna)
   }
 
   const tombolLihat = (
@@ -356,6 +372,14 @@ export default function Register() {
           {memproses ? 'Membuat akun...' : 'Buat akun'}
         </Button>
       </form>
+      <ModalVerifikasiOtp
+        open={Boolean(menungguVerifikasi)}
+        email={menungguVerifikasi?.email ?? ''}
+        memproses={memproses}
+        onVerifikasi={handleVerifikasi}
+        onKirimUlang={() => kirimUlangVerifikasi(menungguVerifikasi.email)}
+        onClose={() => setMenungguVerifikasi(null)}
+      />
     </AuthLayout>
   )
 }

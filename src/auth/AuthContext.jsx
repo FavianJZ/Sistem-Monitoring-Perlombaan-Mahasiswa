@@ -23,11 +23,43 @@ function sesiTersimpanYangValid() {
   return null
 }
 
+export const EMAIL_BELUM_TERVERIFIKASI = 'EMAIL_BELUM_TERVERIFIKASI'
+
+const POLA_KODE_OTP = /^\d{6,8}$/
+
+function normalisasiEmail(email) {
+  return String(email ?? '').trim().toLowerCase()
+}
+
+function normalisasiKode(kode) {
+  const bersih = String(kode ?? '').replace(/\s/g, '')
+  if (!POLA_KODE_OTP.test(bersih)) throw new Error('Kode verifikasi terdiri dari 6 sampai 8 angka.')
+  return bersih
+}
+
+function emailBelumTerverifikasi(error) {
+  return error?.code === 'email_not_confirmed' || /email not confirmed/i.test(error?.message ?? '')
+}
+
 function terjemahkanGalatAuth(error) {
   const pesan = error?.message ?? ''
   if (/invalid login credentials/i.test(pesan)) return 'Email atau kata sandi tidak cocok.'
-  if (/email not confirmed/i.test(pesan)) {
-    return 'Akun belum aktif karena konfirmasi email Supabase masih menyala. Hubungi admin prodi.'
+  if (emailBelumTerverifikasi(error)) {
+    return 'Email akun ini belum diverifikasi. Masukkan kode yang kami kirim ke email Anda.'
+  }
+  if (error?.code === 'otp_expired' || /token has expired or is invalid|otp.*(expired|invalid)/i.test(pesan)) {
+    return 'Kode verifikasi salah atau sudah kedaluwarsa. Minta kode baru.'
+  }
+  if (error?.code === 'same_password' || /should be different from the old password/i.test(pesan)) {
+    return 'Kata sandi baru harus berbeda dari kata sandi lama.'
+  }
+  if (error?.code === 'weak_password' || /password should be/i.test(pesan)) {
+    return 'Kata sandi terlalu lemah. Gunakan minimal 8 karakter berisi huruf dan angka.'
+  }
+  const tunggu = /after (\d+) seconds?/i.exec(pesan)
+  if (tunggu) return `Tunggu ${tunggu[1]} detik sebelum meminta kode baru.`
+  if (/error sending (confirmation|recovery|magic link)? ?email|smtp/i.test(pesan)) {
+    return 'Email verifikasi gagal dikirim. Coba lagi nanti atau hubungi admin prodi.'
   }
   if (/already registered/i.test(pesan)) return 'Email ini sudah terdaftar. Silakan masuk.'
   if (/database error saving new user/i.test(pesan)) {
@@ -48,6 +80,16 @@ function metadataPendaftaran(data) {
   const kodePeran = data.role === 'admin' ? data.kodeAdmin : data.kodeDosen
   if (kodePeran) metadata.kode_peran = kodePeran.trim()
   return metadata
+}
+
+function pastikanPeran(profil, rolePermintaan) {
+  if (!profil) throw new Error('Profil gagal dibuat. Coba lagi atau hubungi admin prodi.')
+  if (rolePermintaan && profil.role !== rolePermintaan) {
+    throw new Error(
+      `Akun dibuat sebagai ${profil.role} karena kode otorisasi ${rolePermintaan} tidak valid.`,
+    )
+  }
+  return profil
 }
 
 const PAKAI_SUPABASE = apakahSupabaseAktif()
@@ -127,7 +169,14 @@ export function AuthProvider({ children, sesiAwal }) {
             email: alamat,
             password,
           })
-          if (error) throw new Error(terjemahkanGalatAuth(error))
+          if (error) {
+            const galat = new Error(terjemahkanGalatAuth(error))
+            if (emailBelumTerverifikasi(error)) {
+              galat.kode = EMAIL_BELUM_TERVERIFIKASI
+              galat.email = alamat
+            }
+            throw galat
+          }
           const profil = await pakaiSesiSupabase(data.session)
           if (!profil) throw new Error('Profil akun tidak ditemukan. Hubungi admin prodi.')
           return profil
@@ -160,18 +209,9 @@ export function AuthProvider({ children, sesiAwal }) {
             throw new Error('Email ini sudah terdaftar. Silakan masuk.')
           }
           if (!hasil.session) {
-            throw new Error(
-              'Akun dibuat, tetapi belum bisa masuk karena konfirmasi email Supabase masih menyala.',
-            )
+            return { perluVerifikasi: true, email: normalisasiEmail(data.email) }
           }
-          const profil = await pakaiSesiSupabase(hasil.session)
-          if (!profil) throw new Error('Profil gagal dibuat. Coba lagi atau hubungi admin prodi.')
-          if (data?.role && profil.role !== data.role) {
-            throw new Error(
-              `Akun dibuat sebagai ${profil.role} karena kode otorisasi ${data.role} tidak valid.`,
-            )
-          }
-          return profil
+          return pastikanPeran(await pakaiSesiSupabase(hasil.session), data?.role)
         }
 
         const hasil = await registrasiService(data)
@@ -184,6 +224,67 @@ export function AuthProvider({ children, sesiAwal }) {
       }
     },
     [modeSupabase, pakaiSesiSupabase],
+  )
+
+  const verifikasiEmail = useCallback(
+    async ({ email, kode, role }) => {
+      setMemproses(true)
+      try {
+        const { data, error } = await supabase.auth.verifyOtp({
+          email: normalisasiEmail(email),
+          token: normalisasiKode(kode),
+          type: 'email',
+        })
+        if (error) throw new Error(terjemahkanGalatAuth(error))
+        return pastikanPeran(await pakaiSesiSupabase(data.session), role)
+      } finally {
+        setMemproses(false)
+      }
+    },
+    [pakaiSesiSupabase],
+  )
+
+  const kirimUlangVerifikasi = useCallback(async (email) => {
+    const { error } = await supabase.auth.resend({ type: 'signup', email: normalisasiEmail(email) })
+    if (error) throw new Error(terjemahkanGalatAuth(error))
+  }, [])
+
+  const mintaKodeReset = useCallback(async (email) => {
+    const alamat = normalisasiEmail(email)
+    if (!alamat) throw new Error('Email wajib diisi.')
+    const { error } = await supabase.auth.resetPasswordForEmail(alamat)
+    if (error) throw new Error(terjemahkanGalatAuth(error))
+  }, [])
+
+  const aturUlangSandi = useCallback(
+    async ({ email, kode, password }) => {
+      setMemproses(true)
+      try {
+        const alamat = normalisasiEmail(email)
+        const { data: aktif } = await supabase.auth.getSession()
+        let sesiSb = aktif.session?.user?.email === alamat ? aktif.session : null
+
+        if (!sesiSb) {
+          const { data, error } = await supabase.auth.verifyOtp({
+            email: alamat,
+            token: normalisasiKode(kode),
+            type: 'recovery',
+          })
+          if (error) throw new Error(terjemahkanGalatAuth(error))
+          sesiSb = data.session
+        }
+
+        const { error: galatSandi } = await supabase.auth.updateUser({ password })
+        if (galatSandi) throw new Error(terjemahkanGalatAuth(galatSandi))
+
+        const profil = await pakaiSesiSupabase(sesiSb)
+        if (!profil) throw new Error('Profil akun tidak ditemukan. Hubungi admin prodi.')
+        return profil
+      } finally {
+        setMemproses(false)
+      }
+    },
+    [pakaiSesiSupabase],
   )
 
   const masukCepat = useCallback(
@@ -219,9 +320,26 @@ export function AuthProvider({ children, sesiAwal }) {
       masuk,
       masukCepat,
       daftar,
+      verifikasiEmail,
+      kirimUlangVerifikasi,
+      mintaKodeReset,
+      aturUlangSandi,
       keluar,
     }),
-    [sesi, siap, modeSupabase, memproses, masuk, masukCepat, daftar, keluar],
+    [
+      sesi,
+      siap,
+      modeSupabase,
+      memproses,
+      masuk,
+      masukCepat,
+      daftar,
+      verifikasiEmail,
+      kirimUlangVerifikasi,
+      mintaKodeReset,
+      aturUlangSandi,
+      keluar,
+    ],
   )
 
   return <AuthContext.Provider value={nilai}>{children}</AuthContext.Provider>

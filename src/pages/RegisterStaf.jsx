@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/auth/AuthContext'
+import { ModalVerifikasiOtp } from '@/components/auth/ModalVerifikasiOtp'
 import { berandaRole } from '@/auth/sesi'
 import { DOMAIN_KAMPUS, kekuatanSandi } from '@/auth/validasiRegistrasi'
 import {
@@ -42,7 +43,8 @@ const LABEL_KEKUATAN = ['Belum diisi', 'Lemah', 'Cukup', 'Kuat']
 const WARNA_KEKUATAN = ['bg-slate-200', 'bg-danger-500', 'bg-warning-500', 'bg-success-500']
 
 export default function RegisterStaf() {
-  const { user, daftar, memproses, modeSupabase } = useAuth()
+  const { user, daftar, memproses, modeSupabase, verifikasiEmail, kirimUlangVerifikasi } =
+    useAuth()
   const [mengecek, setMengecek] = useState(false)
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -53,6 +55,7 @@ export default function RegisterStaf() {
   const [setuju, setSetuju] = useState(false)
   const [lihatSandi, setLihatSandi] = useState(false)
   const [galatServer, setGalatServer] = useState(null)
+  const [menungguVerifikasi, setMenungguVerifikasi] = useState(null)
 
   const tujuan = lokasi.state?.dari
 
@@ -158,16 +161,30 @@ export default function RegisterStaf() {
         setuju: true,
       }
 
-      const pengguna = await daftar(payload)
-      toast({
-        variant: 'success',
-        title: 'Akun dosen berhasil dibuat',
-        description: `Selamat datang, ${pengguna.nama}.`,
-      })
-      navigate(tujuan ?? berandaRole(pengguna.role), { replace: true })
+      const hasil = await daftar(payload)
+      if (hasil?.perluVerifikasi) {
+        setMenungguVerifikasi(hasil)
+        return
+      }
+      selesai(hasil)
     } catch (error) {
       setGalatServer(error.message)
     }
+  }
+
+  function selesai(pengguna) {
+    toast({
+      variant: 'success',
+      title: 'Akun dosen berhasil dibuat',
+      description: `Selamat datang, ${pengguna.nama}.`,
+    })
+    navigate(tujuan ?? berandaRole(pengguna.role), { replace: true })
+  }
+
+  async function handleVerifikasi(kode) {
+    const pengguna = await verifikasiEmail({ email: menungguVerifikasi.email, kode, role: ROLE })
+    setMenungguVerifikasi(null)
+    selesai(pengguna)
   }
 
   const tombolLihat = (
@@ -369,6 +386,14 @@ export default function RegisterStaf() {
           </Link>
         </p>
       </form>
+      <ModalVerifikasiOtp
+        open={Boolean(menungguVerifikasi)}
+        email={menungguVerifikasi?.email ?? ''}
+        memproses={memproses}
+        onVerifikasi={handleVerifikasi}
+        onKirimUlang={() => kirimUlangVerifikasi(menungguVerifikasi.email)}
+        onClose={() => setMenungguVerifikasi(null)}
+      />
     </AuthLayout>
   )
 }
