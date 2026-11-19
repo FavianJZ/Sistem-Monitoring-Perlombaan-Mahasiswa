@@ -15,11 +15,7 @@ import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/auth/AuthContext'
 import { ModalVerifikasiOtp } from '@/components/auth/ModalVerifikasiOtp'
 import { berandaRole } from '@/auth/sesi'
-import {
-  DOMAIN_KAMPUS,
-  kekuatanSandi,
-  validasiRegistrasi,
-} from '@/auth/validasiRegistrasi'
+import { kekuatanSandi, validasiRegistrasi } from '@/auth/validasiRegistrasi'
 import { cekKetersediaanAkun, emailTerpakai, nimTerpakai } from '@/services/userService'
 import { PROGRAM_STUDI } from '@/config/domain'
 import { cn } from '@/lib/cn'
@@ -257,8 +253,8 @@ export default function Register() {
           type="email"
           name="email"
           autoComplete="email"
-          placeholder={`nama${DOMAIN_KAMPUS}`}
-          hint={`Gunakan email berakhiran ${DOMAIN_KAMPUS}.`}
+          placeholder="nama@gmail.com"
+          hint="Boleh email pribadi. Kode verifikasi dan pengingat jadwal lomba dikirim ke email ini."
           value={form.email}
           onChange={ubah('email')}
           onBlur={sentuh('email')}

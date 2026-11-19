@@ -37,7 +37,9 @@ export function validasiRegistrasi(data, cek = {}) {
 
   if (!email) galat.email = 'Email wajib diisi.'
   else if (!POLA_EMAIL.test(email)) galat.email = 'Format email tidak valid.'
-  else if (!email.endsWith(DOMAIN_KAMPUS)) galat.email = `Gunakan email kampus (${DOMAIN_KAMPUS}).`
+  else if (data.role !== 'mahasiswa' && !email.endsWith(DOMAIN_KAMPUS)) {
+    galat.email = `Gunakan email kampus (${DOMAIN_KAMPUS}).`
+  }
   else if (cek.emailTerpakai?.(email)) galat.email = 'Email ini sudah terdaftar. Silakan masuk.'
 
   if (data.role === 'mahasiswa') {

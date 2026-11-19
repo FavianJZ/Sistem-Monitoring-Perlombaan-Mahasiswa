@@ -34,17 +34,28 @@ describe('validasiRegistrasi', () => {
     expect(validasiRegistrasi(dasar)).toEqual({})
   })
 
-  it('menolak email non-kampus, NIM tidak 10 digit, dan sandi yang tidak cocok', () => {
+  it('menolak NIM tidak 10 digit dan sandi yang tidak cocok', () => {
     const galat = validasiRegistrasi({
       ...dasar,
-      email: 'nadia@gmail.com',
       nim: '123',
       konfirmasi: 'beda',
     })
 
-    expect(galat.email).toMatch(/email kampus/)
     expect(galat.nim).toMatch(/10 digit/)
     expect(galat.konfirmasi).toMatch(/tidak cocok/)
+  })
+
+  it('menerima email pribadi untuk mahasiswa, tapi tetap mewajibkan email kampus untuk dosen', () => {
+    expect(validasiRegistrasi({ ...dasar, email: 'user.mahasiswa20@gmail.com' }).email).toBeUndefined()
+    expect(validasiRegistrasi({ ...dasar, role: 'dosen', nim: '', email: 'user.dosen5@gmail.com' }).email).toMatch(
+      /email kampus/,
+    )
+  })
+
+  it('tetap menolak format email yang tidak valid', () => {
+    for (const email of ['user.mahasiswa20', 'user@', '@gmail.com', 'user mahasiswa@gmail.com']) {
+      expect(validasiRegistrasi({ ...dasar, email }).email).toMatch(/tidak valid/)
+    }
   })
 
   it('tidak mewajibkan NIM untuk dosen, tapi mewajibkan kode untuk admin', () => {

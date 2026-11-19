@@ -125,7 +125,7 @@ export default function Login() {
     >
           <h2 className="text-2xl font-bold text-slate-800">Masuk</h2>
           <p className="mt-1 text-sm text-slate-600">
-            Gunakan akun kampus Anda untuk melanjutkan.
+            Masuk dengan email yang Anda pakai saat mendaftar.
           </p>
 
           {galat && (
@@ -144,7 +144,7 @@ export default function Login() {
               type="email"
               name="email"
               autoComplete="username"
-              placeholder="nama@binus.ac.id"
+              placeholder="nama@email.com"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               error={galatField.email}
