@@ -1,0 +1,60 @@
+name: Backup database
+
+on:
+  schedule:
+    - cron: '0 18 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backup-database
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+    steps:
+      - name: Pastikan secret terisi
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then echo "::error::Secret SUPABASE_DB_URL belum diisi"; exit 1; fi
+          if [ -z "$BACKUP_PASSPHRASE" ]; then echo "::error::Secret BACKUP_PASSPHRASE belum diisi"; exit 1; fi
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Dump peran, skema, dan data
+        run: |
+          mkdir -p backup
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f backup/roles.sql --role-only
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f backup/schema.sql
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f backup/data.sql --data-only --use-copy --schema public,auth,storage
+
+      - name: Pastikan hasil dump tidak kosong
+        run: |
+          for berkas in roles schema data; do
+            if [ ! -s "backup/$berkas.sql" ]; then echo "::error::backup/$berkas.sql kosong"; exit 1; fi
+          done
+          wc -c backup/*.sql
+
+      - name: Kompres dan enkripsi
+        run: |
+          nama="simonlomba-backup-$(date -u +%Y%m%d)"
+          tar -czf "$nama.tar.gz" backup
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$BACKUP_PASSPHRASE" \
+            --symmetric --cipher-algo AES256 -o "$nama.tar.gz.gpg" "$nama.tar.gz"
+          rm -rf backup "$nama.tar.gz"
+          echo "NAMA_BACKUP=$nama" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.NAMA_BACKUP }}
+          path: ${{ env.NAMA_BACKUP }}.tar.gz.gpg
+          retention-days: 90
+          if-no-files-found: error
