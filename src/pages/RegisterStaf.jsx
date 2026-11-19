@@ -17,7 +17,7 @@ import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/auth/AuthContext'
 import { ModalVerifikasiOtp } from '@/components/auth/ModalVerifikasiOtp'
 import { berandaRole } from '@/auth/sesi'
-import { DOMAIN_KAMPUS, kekuatanSandi } from '@/auth/validasiRegistrasi'
+import { POLA_EMAIL, kekuatanSandi } from '@/auth/validasiRegistrasi'
 import {
   KODE_DOSEN_DEMO,
   cekKetersediaanAkun,
@@ -83,12 +83,12 @@ export default function RegisterStaf() {
 
     const email = form.email.trim().toLowerCase()
     if (!email) {
-      setGalatServer('Email kampus wajib diisi.')
+      setGalatServer('Email wajib diisi.')
       return
     }
 
-    if (!email.endsWith(DOMAIN_KAMPUS) && !email.endsWith('@binus.edu')) {
-      setGalatServer(`Gunakan domain email resmi institusi/dosen (${DOMAIN_KAMPUS} atau @binus.edu).`)
+    if (!POLA_EMAIL.test(email)) {
+      setGalatServer('Format email tidak valid.')
       return
     }
 
@@ -256,11 +256,11 @@ export default function RegisterStaf() {
         />
 
         <Input
-          label="Email resmi institusi"
+          label="Email"
           type="email"
           name="email"
-          placeholder={`nama${DOMAIN_KAMPUS} atau @binus.edu`}
-          hint="Gunakan email resmi institusi untuk verifikasi status pengajar."
+          placeholder="nama@gmail.com"
+          hint="Boleh email pribadi. Status dosen diverifikasi lewat kode otorisasi."
           value={form.email}
           onChange={ubah('email')}
           required

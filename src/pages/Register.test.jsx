@@ -45,11 +45,9 @@ describe('validasiRegistrasi', () => {
     expect(galat.konfirmasi).toMatch(/tidak cocok/)
   })
 
-  it('menerima email pribadi untuk mahasiswa, tapi tetap mewajibkan email kampus untuk dosen', () => {
+  it('menerima email pribadi untuk mahasiswa dan dosen', () => {
     expect(validasiRegistrasi({ ...dasar, email: 'user.mahasiswa20@gmail.com' }).email).toBeUndefined()
-    expect(validasiRegistrasi({ ...dasar, role: 'dosen', nim: '', email: 'user.dosen5@gmail.com' }).email).toMatch(
-      /email kampus/,
-    )
+    expect(validasiRegistrasi({ ...dasar, role: 'dosen', nim: '', email: 'user.dosen5@gmail.com' }).email).toBeUndefined()
   })
 
   it('tetap menolak format email yang tidak valid', () => {

@@ -21,7 +21,7 @@ describe('Halaman RegisterStaf (khusus dosen)', () => {
     renderApp('/daftar-staf')
 
     await user.type(screen.getByLabelText(/Nama lengkap/), 'User-Dosen(6)')
-    await user.type(screen.getByLabelText(/Email resmi/), 'user.dosen6@binus.ac.id')
+    await user.type(screen.getByLabelText(/^Email/), 'user.dosen6@binus.ac.id')
     await user.selectOptions(screen.getByLabelText(/Program studi/), 'Teknik Informatika')
     await user.type(screen.getByLabelText(/Kode otorisasi/i), 'SALAH123')
     await user.type(screen.getByLabelText(/^Kata sandi/), 'Rahasia123!')
@@ -38,12 +38,12 @@ describe('Halaman RegisterStaf (khusus dosen)', () => {
     expect(screen.queryByText(/Admin Program Studi/)).not.toBeInTheDocument()
   })
 
-  it('berhasil mendaftarkan dosen dengan kode otorisasi DOSEN2026', async () => {
+  it('berhasil mendaftarkan dosen dengan email pribadi dan kode otorisasi DOSEN2026', async () => {
     const user = userEvent.setup()
     renderApp('/daftar-staf')
 
     await user.type(screen.getByLabelText(/Nama lengkap/), 'User-Dosen(7)')
-    await user.type(screen.getByLabelText(/Email resmi/), 'user.dosen7@binus.ac.id')
+    await user.type(screen.getByLabelText(/^Email/), 'user.dosen7@gmail.com')
     await user.selectOptions(screen.getByLabelText(/Program studi/), 'Teknik Informatika')
     await user.type(screen.getByLabelText(/Kode otorisasi/i), KODE_DOSEN_DEMO)
     await user.type(screen.getByLabelText(/^Kata sandi/), 'Rahasia123!')
@@ -53,5 +53,22 @@ describe('Halaman RegisterStaf (khusus dosen)', () => {
     await user.click(screen.getByRole('button', { name: /Daftarkan Akun Dosen/ }))
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Dashboard Monitoring' })).toBeInTheDocument()
+  })
+
+  it('menolak email dengan format tidak valid', async () => {
+    const user = userEvent.setup()
+    renderApp('/daftar-staf')
+
+    await user.type(screen.getByLabelText(/Nama lengkap/), 'User-Dosen(8)')
+    await user.type(screen.getByLabelText(/^Email/), 'user.dosen8@gmail')
+    await user.selectOptions(screen.getByLabelText(/Program studi/), 'Teknik Informatika')
+    await user.type(screen.getByLabelText(/Kode otorisasi/i), KODE_DOSEN_DEMO)
+    await user.type(screen.getByLabelText(/^Kata sandi/), 'Rahasia123!')
+    await user.type(screen.getByLabelText(/Konfirmasi kata sandi/), 'Rahasia123!')
+    await user.click(screen.getByRole('checkbox'))
+
+    await user.click(screen.getByRole('button', { name: /Daftarkan Akun Dosen/ }))
+
+    expect(await screen.findByText('Format email tidak valid.')).toBeInTheDocument()
   })
 })

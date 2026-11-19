@@ -17,12 +17,6 @@ begin
     peran_final := peran_diminta;
   end if;
 
-  if peran_final <> 'mahasiswa'
-     and alamat not like '%@binus.ac.id' and alamat not like '%@binus.edu' then
-    raise exception 'Pendaftaran staf wajib memakai email @binus.ac.id atau @binus.edu.'
-      using errcode = '22023';
-  end if;
-
   insert into public.profiles (id, nama, email, role, nim, angkatan, prodi)
   values (
     new.id,
