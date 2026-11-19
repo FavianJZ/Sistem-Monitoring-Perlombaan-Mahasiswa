@@ -4,7 +4,8 @@ import { CalendarClock, CircleAlert, FolderCheck, LogIn, Trophy } from 'lucide-r
 import { AuthLayout } from '@/components/layout/AuthLayout'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { useAuth } from '@/auth/AuthContext'
+import { EMAIL_BELUM_TERVERIFIKASI, useAuth } from '@/auth/AuthContext'
+import { ModalVerifikasiOtp } from '@/components/auth/ModalVerifikasiOtp'
 import { AKUN_DEMO, SANDI_DEMO } from '@/auth/akunDemo'
 import { berandaRole } from '@/auth/sesi'
 import { MODE_DEMO } from '@/config/mode'
@@ -28,7 +29,8 @@ const SOROTAN = [
 ]
 
 export default function Login() {
-  const { user, masuk, masukCepat, memproses } = useAuth()
+  const { user, masuk, masukCepat, memproses, modeSupabase, verifikasiEmail, kirimUlangVerifikasi } =
+    useAuth()
   const navigate = useNavigate()
   const lokasi = useLocation()
 
@@ -36,6 +38,7 @@ export default function Login() {
   const [sandi, setSandi] = useState('')
   const [galat, setGalat] = useState(null)
   const [galatField, setGalatField] = useState({})
+  const [emailVerifikasi, setEmailVerifikasi] = useState(null)
 
   const tujuan = lokasi.state?.dari
 
@@ -65,8 +68,23 @@ export default function Login() {
       const pengguna = await masuk({ email, password: sandi })
       lanjutkan(pengguna)
     } catch (error) {
-      setGalat(error.message)
+      if (error.kode !== EMAIL_BELUM_TERVERIFIKASI) {
+        setGalat(error.message)
+        return
+      }
+      try {
+        await kirimUlangVerifikasi(error.email)
+      } catch (galatKirim) {
+        setGalat(galatKirim.message)
+      }
+      setEmailVerifikasi(error.email)
     }
+  }
+
+  async function handleVerifikasi(kode) {
+    const pengguna = await verifikasiEmail({ email: emailVerifikasi, kode })
+    setEmailVerifikasi(null)
+    lanjutkan(pengguna)
   }
 
   async function handleAkunDemo(id) {
@@ -144,9 +162,21 @@ export default function Login() {
               required
             />
 
-            <p className="-mt-2 text-right text-xs text-slate-500">
-              Lupa kata sandi? Hubungi admin program studi.
-            </p>
+            {modeSupabase ? (
+              <p className="-mt-2 text-right text-xs">
+                <Link
+                  to="/lupa-sandi"
+                  state={{ email: email.trim() }}
+                  className="font-semibold text-primary-700 hover:text-primary-800 hover:underline"
+                >
+                  Lupa kata sandi?
+                </Link>
+              </p>
+            ) : (
+              <p className="-mt-2 text-right text-xs text-slate-500">
+                Lupa kata sandi? Hubungi admin program studi.
+              </p>
+            )}
 
             <Button type="submit" size="lg" fullWidth loading={memproses} leadingIcon={LogIn}>
               Masuk
@@ -192,6 +222,15 @@ export default function Login() {
               </div>
             </div>
           )}
+
+          <ModalVerifikasiOtp
+            open={Boolean(emailVerifikasi)}
+            email={emailVerifikasi ?? ''}
+            memproses={memproses}
+            onVerifikasi={handleVerifikasi}
+            onKirimUlang={() => kirimUlangVerifikasi(emailVerifikasi)}
+            onClose={() => setEmailVerifikasi(null)}
+          />
     </AuthLayout>
   )
 }

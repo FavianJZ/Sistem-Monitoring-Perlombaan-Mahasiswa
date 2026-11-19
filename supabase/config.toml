@@ -25,4 +25,15 @@ enable_signup = true
 
 [auth.email]
 enable_signup = true
-enable_confirmations = false
+enable_confirmations = true
+otp_length = 8
+otp_expiry = 3600
+max_frequency = "60s"
+
+[auth.email.template.confirmation]
+subject = "Kode pendaftaran SiMonLomba"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Kode ganti kata sandi SiMonLomba"
+content_path = "./supabase/templates/recovery.html"
