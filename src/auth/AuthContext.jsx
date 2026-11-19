@@ -2,12 +2,14 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import {
   ambilProfil,
   hapusFotoProfil,
+  lengkapiProfil as lengkapiProfilService,
   login as loginService,
   muatProfil,
   penggunaSinkron,
   registrasi as registrasiService,
   resetCacheProfil,
   simpanFotoProfil,
+  sinkronFotoGoogle,
 } from '@/services/userService'
 import { resetCache as resetCacheLomba } from '@/services/supabaseStore'
 import { supabase, apakahSupabaseAktif } from '@/lib/supabase'
@@ -111,10 +113,15 @@ export function AuthProvider({ children, sesiAwal }) {
       setSesi(null)
       return null
     }
-    const profil = await ambilProfil(sesiSb.user.id)
+    let profil = await ambilProfil(sesiSb.user.id)
     if (!profil) {
       setSesi(null)
       return null
+    }
+    if (!profil.avatarUrl) {
+      const meta = sesiSb.user.user_metadata ?? {}
+      const fotoGoogle = await sinkronFotoGoogle(profil.id, meta.avatar_url ?? meta.picture)
+      if (fotoGoogle) profil = { ...profil, avatarUrl: fotoGoogle }
     }
     setSesi((lama) => {
       if (lama?.user?.id !== profil.id) {
@@ -299,6 +306,34 @@ export function AuthProvider({ children, sesiAwal }) {
     [masuk],
   )
 
+  const masukDenganGoogle = useCallback(async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/` },
+    })
+    if (error) throw new Error(terjemahkanGalatAuth(error))
+  }, [])
+
+  const lengkapiProfil = useCallback(
+    async (data) => {
+      if (!sesi?.user) throw new Error('Silakan masuk terlebih dahulu.')
+      setMemproses(true)
+      try {
+        const tambahan = await lengkapiProfilService(sesi.user.id, data)
+        setSesi((lama) => {
+          if (!lama?.user) return lama
+          const baru = { ...lama, user: { ...lama.user, ...tambahan } }
+          if (!modeSupabase) simpanSesi(baru)
+          return baru
+        })
+        return { ...sesi.user, ...tambahan }
+      } finally {
+        setMemproses(false)
+      }
+    },
+    [sesi?.user, modeSupabase],
+  )
+
   const perbaruiFoto = useCallback(
     async (blob) => {
       if (!sesi?.user) throw new Error('Silakan masuk terlebih dahulu.')
@@ -346,6 +381,8 @@ export function AuthProvider({ children, sesiAwal }) {
       mintaKodeReset,
       aturUlangSandi,
       perbaruiFoto,
+      masukDenganGoogle,
+      lengkapiProfil,
       keluar,
     }),
     [
@@ -361,6 +398,8 @@ export function AuthProvider({ children, sesiAwal }) {
       mintaKodeReset,
       aturUlangSandi,
       perbaruiFoto,
+      masukDenganGoogle,
+      lengkapiProfil,
       keluar,
     ],
   )

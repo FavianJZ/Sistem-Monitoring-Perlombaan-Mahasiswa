@@ -363,3 +363,71 @@ export async function hapusFotoProfil(userId) {
   }
   beriTahuPerubahan('profil')
 }
+
+const POLA_FOTO_GOOGLE = /^https:\/\/lh3\.googleusercontent\.com\/[A-Za-z0-9._~/=-]+$/
+
+export function fotoGoogleSah(url) {
+  return typeof url === 'string' && POLA_FOTO_GOOGLE.test(url)
+}
+
+export async function sinkronFotoGoogle(userId, url) {
+  if (!apakahSupabaseAktif() || !fotoGoogleSah(url)) return null
+  const { error } = await supabase
+    .from('profiles')
+    .update({ avatar_url: url })
+    .eq('id', userId)
+    .is('avatar_url', null)
+  if (error) {
+    console.warn('[SiMonLomba] gagal menyimpan foto Google:', error.message)
+    return null
+  }
+  const lama = cacheProfil.get(userId)
+  if (lama && !lama.avatarUrl) cacheProfil.set(userId, { ...lama, avatarUrl: url })
+  return url
+}
+
+export function validasiLengkapiProfil({ nim, angkatan, prodi }) {
+  const galat = {}
+  const tahunIni = new Date().getFullYear()
+  if (!/^\d{10}$/.test(String(nim ?? ''))) galat.nim = 'NIM harus 10 digit angka.'
+  const tahun = Number(angkatan)
+  if (!Number.isInteger(tahun) || tahun < 2000 || tahun > tahunIni) galat.angkatan = 'Angkatan tidak valid.'
+  if (!String(prodi ?? '').trim()) galat.prodi = 'Program studi wajib dipilih.'
+  return galat
+}
+
+export async function lengkapiProfil(userId, data) {
+  const galat = validasiLengkapiProfil(data)
+  const pertama = Object.values(galat)[0]
+  if (pertama) throw new ServiceError(pertama, { status: 422, kode: 'DATA_TIDAK_VALID' })
+
+  const nim = String(data.nim).trim()
+  const angkatan = Number(data.angkatan)
+  const prodi = String(data.prodi).trim()
+
+  if (!apakahSupabaseAktif()) {
+    if (nimTerpakai(nim)) throw new ServiceError('NIM ini sudah terdaftar pada akun lain.', { status: 409 })
+    const daftar = bacaAkun()
+    const akun = daftar.find((item) => item.user.id === userId)
+    if (akun) {
+      akun.user = { ...akun.user, nim, angkatan, prodi }
+      simpanAkun(daftar)
+    }
+    return { nim, angkatan, prodi }
+  }
+
+  const { error } = await supabase.rpc('lengkapi_profil', {
+    p_nim: nim,
+    p_angkatan: angkatan,
+    p_prodi: prodi,
+  })
+  if (error) {
+    const duplikat = error.code === '23505' || /sudah terdaftar/i.test(error.message)
+    throw new ServiceError(duplikat ? 'NIM ini sudah terdaftar pada akun lain.' : error.message, {
+      status: duplikat ? 409 : 422,
+    })
+  }
+  const lama = cacheProfil.get(userId)
+  if (lama) cacheProfil.set(userId, { ...lama, nim, angkatan, prodi })
+  return { nim, angkatan, prodi }
+}

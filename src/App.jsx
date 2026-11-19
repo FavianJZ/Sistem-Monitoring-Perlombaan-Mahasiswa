@@ -19,6 +19,8 @@ import Login from '@/pages/Login'
 import Register from '@/pages/Register'
 import RegisterStaf from '@/pages/RegisterStaf'
 import LupaSandi from '@/pages/LupaSandi'
+import LengkapiProfil from '@/pages/LengkapiProfil'
+import Privasi from '@/pages/Privasi'
 import NotFound from '@/pages/NotFound'
 import { MODE_DEMO } from '@/config/mode'
 
@@ -33,8 +35,10 @@ export default function App({ sesiAwal }) {
           <Route path="/daftar" element={<Register />} />
           <Route path="/daftar-staf" element={<RegisterStaf />} />
           <Route path="/lupa-sandi" element={<LupaSandi />} />
+          <Route path="/privasi" element={<Privasi />} />
 
           <Route element={<RequireAuth />}>
+            <Route path="lengkapi-profil" element={<LengkapiProfil />} />
             <Route element={<AppShell />}>
 
               <Route element={<RequireAuth roles={['mahasiswa']} />}>

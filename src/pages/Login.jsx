@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { EMAIL_BELUM_TERVERIFIKASI, useAuth } from '@/auth/AuthContext'
 import { ModalVerifikasiOtp } from '@/components/auth/ModalVerifikasiOtp'
+import { TombolGoogle } from '@/components/auth/TombolGoogle'
 import { AKUN_DEMO, SANDI_DEMO } from '@/auth/akunDemo'
 import { berandaRole } from '@/auth/sesi'
 import { MODE_DEMO } from '@/config/mode'
@@ -183,6 +184,8 @@ export default function Login() {
             </Button>
           </form>
 
+          <TombolGoogle onGalat={setGalat} />
+
           <div className="mt-5 border-t border-slate-100 pt-4 text-center text-sm text-slate-600">
             <p>
               Belum punya akun?{' '}
@@ -192,6 +195,11 @@ export default function Login() {
                 className="font-semibold text-primary-700 hover:text-primary-800 hover:underline"
               >
                 Daftar sekarang
+              </Link>
+            </p>
+            <p className="mt-2 text-xs">
+              <Link to="/privasi" className="text-slate-500 hover:text-slate-700 hover:underline">
+                Kebijakan privasi
               </Link>
             </p>
           </div>

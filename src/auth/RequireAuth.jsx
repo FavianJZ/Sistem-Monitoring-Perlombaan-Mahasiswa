@@ -2,6 +2,12 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from './AuthContext'
 import { berandaRole } from './sesi'
 
+export const RUTE_LENGKAPI_PROFIL = '/lengkapi-profil'
+
+export function perluLengkapiProfil(user) {
+  return user?.role === 'mahasiswa' && !user.nim
+}
+
 export function RequireAuth({ roles }) {
   const { user, siap } = useAuth()
   const lokasi = useLocation()
@@ -16,6 +22,10 @@ export function RequireAuth({ roles }) {
 
   if (!user) {
     return <Navigate to="/login" replace state={{ dari: lokasi.pathname + lokasi.search }} />
+  }
+
+  if (perluLengkapiProfil(user) && lokasi.pathname !== RUTE_LENGKAPI_PROFIL) {
+    return <Navigate to={RUTE_LENGKAPI_PROFIL} replace />
   }
 
   if (roles && !roles.includes(user.role)) {

@@ -14,6 +14,7 @@ import { Select } from '@/components/ui/Select'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/auth/AuthContext'
 import { ModalVerifikasiOtp } from '@/components/auth/ModalVerifikasiOtp'
+import { TombolGoogle } from '@/components/auth/TombolGoogle'
 import { berandaRole } from '@/auth/sesi'
 import { kekuatanSandi, validasiRegistrasi } from '@/auth/validasiRegistrasi'
 import { cekKetersediaanAkun, emailTerpakai, nimTerpakai } from '@/services/userService'
@@ -368,6 +369,8 @@ export default function Register() {
           {memproses ? 'Membuat akun...' : 'Buat akun'}
         </Button>
       </form>
+
+      <TombolGoogle label="Daftar dengan Google" onGalat={setGalatServer} />
       <ModalVerifikasiOtp
         open={Boolean(menungguVerifikasi)}
         email={menungguVerifikasi?.email ?? ''}
