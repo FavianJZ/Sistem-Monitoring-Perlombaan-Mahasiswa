@@ -1,6 +1,5 @@
 
 
-export const DOMAIN_KAMPUS = '@binus.ac.id'
 
 export const PERAN_REGISTRASI = [
   { value: 'mahasiswa', label: 'Mahasiswa', deskripsi: 'Catat & unggah bukti lomba' },
@@ -8,7 +7,7 @@ export const PERAN_REGISTRASI = [
   { value: 'admin', label: 'Admin Prodi', deskripsi: 'Kelola arsip & laporan' },
 ]
 
-const POLA_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+export const POLA_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export function kekuatanSandi(sandi = '') {
   const syarat = [
@@ -37,7 +36,6 @@ export function validasiRegistrasi(data, cek = {}) {
 
   if (!email) galat.email = 'Email wajib diisi.'
   else if (!POLA_EMAIL.test(email)) galat.email = 'Format email tidak valid.'
-  else if (!email.endsWith(DOMAIN_KAMPUS)) galat.email = `Gunakan email kampus (${DOMAIN_KAMPUS}).`
   else if (cek.emailTerpakai?.(email)) galat.email = 'Email ini sudah terdaftar. Silakan masuk.'
 
   if (data.role === 'mahasiswa') {

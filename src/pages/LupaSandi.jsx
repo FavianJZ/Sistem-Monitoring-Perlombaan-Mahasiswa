@@ -120,7 +120,7 @@ export default function LupaSandi() {
   return (
     <AuthLayout
       judul="Atur ulang kata sandi akun SiMonLomba."
-      deskripsi="Kami akan mengirim kode verifikasi ke email kampus Anda. Kode itu dipakai untuk membuat kata sandi baru."
+      deskripsi="Kami akan mengirim kode verifikasi ke email akun Anda. Kode itu dipakai untuk membuat kata sandi baru."
     >
       <h2 className="text-2xl font-bold text-slate-800">Lupa kata sandi</h2>
 
@@ -141,7 +141,7 @@ export default function LupaSandi() {
               type="email"
               name="email"
               autoComplete="username"
-              placeholder="nama@binus.ac.id"
+              placeholder="nama@email.com"
               leadingIcon={Mail}
               value={email}
               onChange={(event) => setEmail(event.target.value)}
