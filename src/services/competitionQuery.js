@@ -152,11 +152,23 @@ export function cocokPencarian(lomba, kataKunci) {
   return sumber.some((nilai) => normalkan(nilai).includes(kunci))
 }
 
+export function ikutLomba(lomba, pengguna) {
+  if (!lomba || !pengguna?.id) return false
+  if (lomba.createdBy === pengguna.id) return true
+  const nim = String(pengguna.nim ?? '').trim()
+  return Boolean(nim) && (lomba.anggota ?? []).some((a) => String(a?.nim ?? '').trim() === nim)
+}
+
+export function filterPeserta(pengguna) {
+  return { peserta: { id: pengguna.id, nim: pengguna.nim ?? null } }
+}
+
 export function filterLomba(items = [], filter = {}, acuan = new Date()) {
   const { dari, sampai } = rentangDariMode(filter, acuan)
 
   return items.filter((lomba) => {
     if (filter.createdBy && lomba.createdBy !== filter.createdBy) return false
+    if (filter.peserta && !ikutLomba(lomba, filter.peserta)) return false
     if (filter.dosenPembimbingId && lomba.dosenPembimbingId !== filter.dosenPembimbingId) {
       return false
     }

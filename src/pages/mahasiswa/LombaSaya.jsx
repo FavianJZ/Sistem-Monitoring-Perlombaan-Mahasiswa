@@ -16,6 +16,7 @@ import { useAuth } from '@/auth/AuthContext'
 import { useAsync } from '@/hooks/useAsync'
 import { useDebounce } from '@/hooks/useDebounce'
 import { daftarLomba } from '@/services/competitionService'
+import { filterPeserta } from '@/services/competitionQuery'
 import { formatTanggal, waktuTahap } from '@/lib/date'
 import { STATUS_LOMBA, labelTahapan } from '@/config/domain'
 
@@ -43,7 +44,7 @@ export default function LombaSaya() {
 
   const filter = useMemo(
     () => ({
-      createdBy: user.id,
+      ...filterPeserta(user),
       search: kataKunci,
       status: status || undefined,
       sort: sort.key,
@@ -51,7 +52,7 @@ export default function LombaSaya() {
       page,
       pageSize: UKURAN_HALAMAN,
     }),
-    [user.id, kataKunci, status, sort.key, sort.order, page],
+    [user, kataKunci, status, sort.key, sort.order, page],
   )
 
   const { data, loading, error } = useAsync(() => daftarLomba(filter), [filter])

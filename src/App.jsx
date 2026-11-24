@@ -13,6 +13,7 @@ import MonitoringLomba from '@/pages/dosen/MonitoringLomba'
 import DetailLombaDosen from '@/pages/dosen/DetailLombaDosen'
 import KalenderAgenda from '@/pages/dosen/KalenderAgenda'
 import ArsipPrestasi from '@/pages/dosen/ArsipPrestasi'
+import KelolaPengguna from '@/pages/dosen/KelolaPengguna'
 import StyleGuide from '@/pages/StyleGuide'
 import DataMock from '@/pages/DataMock'
 import Login from '@/pages/Login'
@@ -54,6 +55,10 @@ export default function App({ sesiAwal }) {
                 <Route path="monitoring/lomba/:id" element={<DetailLombaDosen />} />
                 <Route path="monitoring/kalender" element={<KalenderAgenda />} />
                 <Route path="monitoring/arsip" element={<ArsipPrestasi />} />
+              </Route>
+
+              <Route element={<RequireAuth roles={['admin']} />}>
+                <Route path="monitoring/pengguna" element={<KelolaPengguna />} />
               </Route>
 
               <Route path="profil" element={<Profil />} />

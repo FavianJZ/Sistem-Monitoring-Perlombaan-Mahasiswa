@@ -3,6 +3,7 @@ import {
   daftarPengingat,
   geserTanggal,
   isiEmailPengingat,
+  pemanggilSah,
   penerimaPengingat,
   tanggalHariIni,
 } from '../../supabase/functions/kirim-pengingat/pengingat.js'
@@ -120,5 +121,20 @@ describe('isiEmailPengingat', () => {
     const { html } = isiEmailPengingat(pengingat(3, '<img src=x onerror=alert(1)>'), 'https://situs.test')
     expect(html).not.toContain('<img src=x')
     expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;')
+  })
+})
+
+describe('pemanggilSah (CRON_SECRET opsional)', () => {
+  it('menerima semua pemanggil bila CRON_SECRET belum diisi', () => {
+    expect(pemanggilSah(null, undefined)).toBe(true)
+    expect(pemanggilSah('apa saja', '')).toBe(true)
+  })
+
+  it('hanya menerima header yang sama persis bila CRON_SECRET diisi', () => {
+    expect(pemanggilSah('rahasia-uji-123', 'rahasia-uji-123')).toBe(true)
+    expect(pemanggilSah(null, 'rahasia-uji-123')).toBe(false)
+    expect(pemanggilSah('', 'rahasia-uji-123')).toBe(false)
+    expect(pemanggilSah('rahasia-uji-124', 'rahasia-uji-123')).toBe(false)
+    expect(pemanggilSah('rahasia-uji-1234', 'rahasia-uji-123')).toBe(false)
   })
 })

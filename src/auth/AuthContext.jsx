@@ -67,7 +67,7 @@ function terjemahkanGalatAuth(error) {
   }
   if (/already registered/i.test(pesan)) return 'Email ini sudah terdaftar. Silakan masuk.'
   if (/database error saving new user/i.test(pesan)) {
-    return 'Pendaftaran ditolak: NIM atau email sudah terdaftar, atau email bukan domain BINUS.'
+    return 'Pendaftaran ditolak: NIM atau email sudah dipakai akun lain. Bila itu milik Anda, hubungi admin program studi.'
   }
   if (/rate limit|too many|security purposes/i.test(pesan)) {
     return 'Terlalu banyak percobaan. Coba lagi beberapa saat.'

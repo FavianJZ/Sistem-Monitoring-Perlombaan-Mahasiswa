@@ -3,9 +3,22 @@ import { SMTPClient } from 'https://deno.land/x/denomailer@1.6.0/mod.ts'
 import {
   daftarPengingat,
   isiEmailPengingat,
+  pemanggilSah,
   penerimaPengingat,
   tanggalHariIni,
 } from './pengingat.js'
+
+const UKURAN_HALAMAN = 1000
+
+async function ambilSemua(buatKueri) {
+  const semua = []
+  for (let dari = 0; ; dari += UKURAN_HALAMAN) {
+    const { data, error } = await buatKueri().range(dari, dari + UKURAN_HALAMAN - 1)
+    if (error) return { data: null, error }
+    semua.push(...(data ?? []))
+    if (!data || data.length < UKURAN_HALAMAN) return { data: semua, error: null }
+  }
+}
 
 
 function jawab(status, isi) {
@@ -15,7 +28,11 @@ function jawab(status, isi) {
   })
 }
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
+  if (!pemanggilSah(req.headers.get('x-cron-secret'), Deno.env.get('CRON_SECRET'))) {
+    return jawab(401, { galat: 'Pemanggil tidak dikenal.' })
+  }
+
   const smtpUser = Deno.env.get('SMTP_USER')
   const smtpPass = Deno.env.get('SMTP_PASS')
   const situsUrl = Deno.env.get('SITUS_URL')
@@ -27,8 +44,8 @@ Deno.serve(async () => {
   })
 
   const [lomba, profil] = await Promise.all([
-    supabase.from('data_lomba').select('id, created_by, data'),
-    supabase.from('profiles').select('id, email, nim'),
+    ambilSemua(() => supabase.from('data_lomba').select('id, created_by, data').order('id')),
+    ambilSemua(() => supabase.from('profiles').select('id, email, nim').order('id')),
   ])
   if (lomba.error || profil.error) {
     return jawab(500, { galat: (lomba.error ?? profil.error).message })

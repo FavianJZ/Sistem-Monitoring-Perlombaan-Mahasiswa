@@ -146,3 +146,11 @@ export function isiEmailPengingat(pengingat, situsUrl) {
 
   return { subjek, teks, html }
 }
+
+export function pemanggilSah(kiriman, rahasia) {
+  if (!rahasia) return true
+  if (typeof kiriman !== 'string' || kiriman.length !== rahasia.length) return false
+  let beda = 0
+  for (let i = 0; i < rahasia.length; i += 1) beda |= kiriman.charCodeAt(i) ^ rahasia.charCodeAt(i)
+  return beda === 0
+}

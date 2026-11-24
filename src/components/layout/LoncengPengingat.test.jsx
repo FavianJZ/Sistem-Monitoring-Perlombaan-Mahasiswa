@@ -84,7 +84,7 @@ describe('lonceng pengingat di topbar', () => {
   it('menampilkan keadaan kosong bila tidak ada jadwal dekat', async () => {
     const pengguna = userEvent.setup()
     const sesi = SESI_MAHASISWA()
-    renderApp('/', { sesi: { ...sesi, user: { ...sesi.user, id: 'mhs-tanpa-lomba' } } })
+    renderApp('/', { sesi: { ...sesi, user: { ...sesi.user, id: 'mhs-tanpa-lomba', nim: '2502000000' } } })
 
     const tombol = await screen.findByRole('button', { name: /^Pengingat jadwal/ })
     expect(tombol).toHaveAccessibleName('Pengingat jadwal, tidak ada jadwal dekat')

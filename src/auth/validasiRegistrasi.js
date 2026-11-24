@@ -40,7 +40,7 @@ export function validasiRegistrasi(data, cek = {}) {
 
   if (data.role === 'mahasiswa') {
     if (!/^\d{10}$/.test(data.nim ?? '')) galat.nim = 'NIM harus 10 digit angka.'
-    else if (cek.nimTerpakai?.(data.nim)) galat.nim = 'NIM ini sudah terdaftar.'
+    else if (cek.nimTerpakai?.(data.nim)) galat.nim = 'NIM ini sudah dipakai akun lain. Bila ini NIM Anda, hubungi admin program studi.'
     if (!data.angkatan) galat.angkatan = 'Pilih tahun angkatan.'
   }
 

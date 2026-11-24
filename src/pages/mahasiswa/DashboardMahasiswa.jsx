@@ -14,6 +14,7 @@ import { useAuth } from '@/auth/AuthContext'
 import { useAsync } from '@/hooks/useAsync'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { agendaLomba, daftarLomba, statistikLomba } from '@/services/competitionService'
+import { filterPeserta } from '@/services/competitionQuery'
 import { formatTanggalDenganHari, toneSisaHari, waktuTahap } from '@/lib/date'
 import { labelTahapan } from '@/config/domain'
 
@@ -39,8 +40,8 @@ export default function DashboardMahasiswa() {
   const ambil = useCallback(
     () =>
       Promise.all([
-        statistikLomba({ createdBy: user.id }),
-        agendaLomba({ createdBy: user.id }, { limit: 5 }),
+        statistikLomba(filterPeserta(user)),
+        agendaLomba(filterPeserta(user), { limit: 5 }),
         daftarLomba({
           createdBy: user.id,
           hanyaDokumenBelumLengkap: true,
@@ -52,7 +53,7 @@ export default function DashboardMahasiswa() {
         agenda,
         perluDilengkapi,
       })),
-    [user.id],
+    [user],
   )
 
   const { data, loading, error } = useAsync(ambil, [ambil])

@@ -6,6 +6,7 @@ import { buatJwt } from '@/auth/jwt'
 import { MODE_DEMO } from '@/config/mode'
 import { supabase, apakahSupabaseAktif } from '@/lib/supabase'
 import { beriTahuPerubahan } from './perubahanData'
+import { ambilSemuaHalaman } from './supabaseStore'
 import { blobKeDataUrl } from '@/lib/fotoProfil'
 
 const PENGGUNA_BAWAAN = MODE_DEMO ? SEMUA_PENGGUNA : []
@@ -99,9 +100,12 @@ export function muatProfil() {
   if (!apakahSupabaseAktif()) return Promise.resolve()
   if (!pemuatanProfil) {
     pemuatanProfil = (async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, nama, email, role, nim, angkatan, prodi, avatar_url')
+      const { data, error } = await ambilSemuaHalaman(() =>
+        supabase
+          .from('profiles')
+          .select('id, nama, email, role, nim, angkatan, prodi, avatar_url')
+          .order('id'),
+      )
       if (error) {
         pemuatanProfil = null
         console.warn('[SiMonLomba] gagal memuat profil:', error.message)
@@ -148,7 +152,8 @@ export async function ambilProfil(id) {
 }
 
 function penggunaDenganRole(role) {
-  return semuaPengguna()
+  const sumber = apakahSupabaseAktif() ? [...cacheProfil.values()] : semuaPengguna()
+  return sumber
     .filter((item) => item.role === role)
     .map((item) => ({ ...item }))
 }
@@ -296,6 +301,72 @@ export async function daftarAdmin(opsi = {}) {
   return penggunaDenganRole('admin')
 }
 
+export const PERAN_AKUN = ['mahasiswa', 'dosen', 'admin']
+
+export async function daftarSemuaPengguna(opsi = {}) {
+  await jeda(opsi.jeda)
+  await muatProfil()
+  const sumber = apakahSupabaseAktif() ? [...cacheProfil.values()] : semuaPengguna()
+  return sumber
+    .map((item) => ({ ...item, demo: !apakahSupabaseAktif() && !bacaAkun().some((a) => a.user.id === item.id) }))
+    .sort((a, b) => a.nama.localeCompare(b.nama, 'id-ID'))
+}
+
+function ubahAkunMock(id, ubah) {
+  const daftar = bacaAkun()
+  const indeks = daftar.findIndex((item) => item.user.id === id)
+  if (indeks === -1) {
+    throw new ServiceError('Akun demo bawaan tidak bisa diubah.', { status: 403 })
+  }
+  daftar[indeks] = { ...daftar[indeks], user: ubah({ ...daftar[indeks].user }) }
+  simpanAkun(daftar)
+  beriTahuPerubahan('profil')
+}
+
+async function panggilRpcAdmin(nama, args) {
+  const { error } = await supabase.rpc(nama, args)
+  if (error) throw new ServiceError(error.message, { status: error.code === '42501' ? 403 : 400 })
+  const { data } = await supabase
+    .from('profiles')
+    .select('id, nama, email, role, nim, angkatan, prodi, avatar_url')
+    .eq('id', args.p_pengguna)
+    .maybeSingle()
+  if (data) cacheProfil.set(data.id, barisKeProfil(data))
+  beriTahuPerubahan('profil')
+}
+
+export async function ubahPeranAkun(admin, id, peran) {
+  if (admin?.role !== 'admin') {
+    throw new ServiceError('Hanya admin yang boleh mengubah peran akun.', { status: 403 })
+  }
+  if (!PERAN_AKUN.includes(peran)) throw new ServiceError('Peran tidak dikenal.', { status: 400 })
+  if (admin.id === id) {
+    throw new ServiceError('Admin tidak bisa mengubah perannya sendiri.', { status: 403 })
+  }
+  if (apakahSupabaseAktif()) {
+    await panggilRpcAdmin('admin_ubah_peran', { p_pengguna: id, p_peran: peran })
+    return
+  }
+  ubahAkunMock(id, (user) => {
+    const { nim, angkatan, ...lain } = user
+    return peran === 'mahasiswa' ? { ...user, role: peran } : { ...lain, role: peran }
+  })
+}
+
+export async function kosongkanNimAkun(admin, id) {
+  if (admin?.role !== 'admin') {
+    throw new ServiceError('Hanya admin yang boleh mengosongkan NIM.', { status: 403 })
+  }
+  if (apakahSupabaseAktif()) {
+    await panggilRpcAdmin('admin_kosongkan_nim', { p_pengguna: id })
+    return
+  }
+  ubahAkunMock(id, (user) => {
+    const { nim, angkatan, ...lain } = user
+    return lain
+  })
+}
+
 export function namaPengguna(id) {
   return semuaPengguna().find((item) => item.id === id)?.nama ?? '-'
 }
@@ -406,7 +477,7 @@ export async function lengkapiProfil(userId, data) {
   const prodi = String(data.prodi).trim()
 
   if (!apakahSupabaseAktif()) {
-    if (nimTerpakai(nim)) throw new ServiceError('NIM ini sudah terdaftar pada akun lain.', { status: 409 })
+    if (nimTerpakai(nim)) throw new ServiceError('NIM ini sudah dipakai akun lain. Bila ini NIM Anda, hubungi admin program studi.', { status: 409 })
     const daftar = bacaAkun()
     const akun = daftar.find((item) => item.user.id === userId)
     if (akun) {
@@ -423,7 +494,7 @@ export async function lengkapiProfil(userId, data) {
   })
   if (error) {
     const duplikat = error.code === '23505' || /sudah terdaftar/i.test(error.message)
-    throw new ServiceError(duplikat ? 'NIM ini sudah terdaftar pada akun lain.' : error.message, {
+    throw new ServiceError(duplikat ? 'NIM ini sudah dipakai akun lain. Bila ini NIM Anda, hubungi admin program studi.' : error.message, {
       status: duplikat ? 409 : 422,
     })
   }

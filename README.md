@@ -16,12 +16,14 @@ mendapat arsip prestasi yang siap diekspor untuk laporan akreditasi.
 - Pendaftaran lomba bertahap: detail lomba, anggota tim, timeline, poster, bukti daftar dan bayar.
 - Dashboard dan daftar *Lomba Saya* dengan status, kelengkapan dokumen, dan tahapan terdekat.
 - Lapor hasil beserta sertifikat; prestasi baru dihitung setelah sertifikat diverifikasi dosen.
+- Anggota tim (dicocokkan lewat NIM) ikut melihat lomba dan berkasnya; hanya ketua yang bisa mengubah.
 - Status *Tidak Lanjut* untuk lomba yang gugur, mundur, atau dibatalkan.
 
 **Dosen pembimbing dan admin program studi**
 - Dashboard monitoring: sebaran status, tingkat, bidang, dan prestasi terverifikasi.
 - Verifikasi berkas (setujui/tolak dengan catatan), kalender agenda, filter lengkap.
 - Arsip prestasi dengan ekspor CSV, Excel, dan PDF.
+- Admin: menu **Kelola Pengguna** untuk mengubah peran akun dan melepas NIM yang diklaim akun yang salah.
 
 **Akun dan notifikasi**
 - Daftar dengan email pribadi; verifikasi email dengan **kode OTP**; lupa kata sandi dengan kode.
@@ -57,7 +59,7 @@ src/
   pages/         halaman mahasiswa, dosen, masuk/daftar, privasi
   services/      akses data (Supabase atau data contoh lokal)
 supabase/
-  migrations/    13 berkas SQL, dijalankan berurutan
+  migrations/    14 berkas SQL, dijalankan berurutan
   templates/     template email kode OTP (Confirm sign up, Reset password)
   functions/     Edge Function kirim-pengingat
 docs/            panduan setup dan dokumentasi
@@ -96,7 +98,7 @@ Untuk menampilkan akun demo di mode data contoh, buat `.env.development.local` b
 | `VITE_MODE_DEMO` | Tidak | `true` hanya untuk situs demo berisi data contoh |
 
 Secret Edge Function `kirim-pengingat` (diisi di Supabase, bukan di Vercel):
-`SMTP_USER`, `SMTP_PASS`, `SITUS_URL`.
+`SMTP_USER`, `SMTP_PASS`, `SITUS_URL`, dan `CRON_SECRET` (opsional, disarankan).
 
 Jangan pernah menaruh kunci `service_role`, App Password Gmail, atau Client Secret Google di
 repository maupun di Vercel.
