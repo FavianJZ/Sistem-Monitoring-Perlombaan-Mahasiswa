@@ -2,6 +2,9 @@ import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { BinusLogo } from '@/components/brand/BinusLogo'
 
+const EMAIL_KONTAK = import.meta.env.VITE_EMAIL_KONTAK?.trim()
+const KONTAK = EMAIL_KONTAK ? `admin program studi atau ${EMAIL_KONTAK}` : 'admin program studi'
+
 const BAGIAN = [
   {
     judul: 'Data yang kami simpan',
@@ -38,7 +41,7 @@ const BAGIAN = [
     judul: 'Hak Anda',
     isi: [
       'Anda dapat mengganti atau menghapus foto profil kapan saja dari halaman Profil.',
-      'Untuk memperbaiki data yang tidak bisa diubah sendiri (NIM, email, peran) atau menghapus akun beserta datanya, hubungi admin program studi atau favianjz20@gmail.com.',
+      `Untuk memperbaiki data yang tidak bisa diubah sendiri (NIM, email, peran) atau menghapus akun beserta datanya, hubungi ${KONTAK}.`,
     ],
   },
 ]

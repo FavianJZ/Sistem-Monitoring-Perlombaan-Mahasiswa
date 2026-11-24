@@ -118,8 +118,8 @@ export function AuthProvider({ children, sesiAwal }) {
       setSesi(null)
       return null
     }
-    if (!profil.avatarUrl) {
-      const meta = sesiSb.user.user_metadata ?? {}
+    const meta = sesiSb.user.user_metadata ?? {}
+    if (!profil.avatarUrl && !meta.foto_google_dimatikan) {
       const fotoGoogle = await sinkronFotoGoogle(profil.id, meta.avatar_url ?? meta.picture)
       if (fotoGoogle) profil = { ...profil, avatarUrl: fotoGoogle }
     }
@@ -337,6 +337,10 @@ export function AuthProvider({ children, sesiAwal }) {
   const perbaruiFoto = useCallback(
     async (blob) => {
       if (!sesi?.user) throw new Error('Silakan masuk terlebih dahulu.')
+      if (!blob && modeSupabase) {
+        const { error } = await supabase.auth.updateUser({ data: { foto_google_dimatikan: true } })
+        if (error) console.warn('[SiMonLomba] gagal menandai foto Google:', error.message)
+      }
       const avatarUrl = blob
         ? await simpanFotoProfil(sesi.user.id, blob)
         : (await hapusFotoProfil(sesi.user.id), null)

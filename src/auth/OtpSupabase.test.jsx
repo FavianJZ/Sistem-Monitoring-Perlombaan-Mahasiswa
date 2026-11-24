@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { alamatSekarang, renderApp } from '@/test/utils'
 import { AuthProvider, EMAIL_BELUM_TERVERIFIKASI, useAuth } from './AuthContext'
 import { validasiSandiBaru } from '@/pages/LupaSandi'
+import { sinkronFotoGoogle } from '@/services/userService'
 
 const auth = vi.hoisted(() => ({
   getSession: vi.fn(),
@@ -31,6 +32,7 @@ vi.mock('@/services/userService', async (asli) => ({
     role: 'mahasiswa',
   })),
   muatProfil: vi.fn(),
+  sinkronFotoGoogle: vi.fn(async () => null),
 }))
 
 const EMAIL = 'user.mahasiswa1@binus.ac.id'
@@ -155,6 +157,45 @@ describe('OTP Supabase di AuthContext', () => {
 
     expect(auth.verifyOtp).not.toHaveBeenCalled()
     expect(auth.updateUser).toHaveBeenCalledWith({ password: 'SandiBaru123' })
+  })
+})
+
+describe('foto Google', () => {
+  it('menyinkronkan foto Google untuk akun tanpa foto', async () => {
+    sinkronFotoGoogle.mockClear()
+    const foto = 'https://lh3.googleusercontent.com/a/ABC=s96-c'
+    auth.verifyOtp.mockResolvedValue({
+      data: { session: { ...SESI_SB, user: { ...SESI_SB.user, user_metadata: { avatar_url: foto } } } },
+      error: null,
+    })
+    const { result } = pakaiAuth()
+    await waitFor(() => expect(result.current.siap).toBe(true))
+    await act(async () => {
+      await result.current.verifikasiEmail({ email: EMAIL, kode: '12345678' })
+    })
+    expect(sinkronFotoGoogle).toHaveBeenCalledWith('uid-1', foto)
+  })
+
+  it('tidak memasang lagi foto Google yang sudah dihapus pengguna', async () => {
+    sinkronFotoGoogle.mockClear()
+    auth.verifyOtp.mockResolvedValue({
+      data: {
+        session: {
+          ...SESI_SB,
+          user: {
+            ...SESI_SB.user,
+            user_metadata: { avatar_url: 'https://lh3.googleusercontent.com/a/ABC=s96-c', foto_google_dimatikan: true },
+          },
+        },
+      },
+      error: null,
+    })
+    const { result } = pakaiAuth()
+    await waitFor(() => expect(result.current.siap).toBe(true))
+    await act(async () => {
+      await result.current.verifikasiEmail({ email: EMAIL, kode: '12345678' })
+    })
+    expect(sinkronFotoGoogle).not.toHaveBeenCalled()
   })
 })
 

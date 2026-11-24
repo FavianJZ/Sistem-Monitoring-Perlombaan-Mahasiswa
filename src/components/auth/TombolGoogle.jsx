@@ -47,6 +47,9 @@ export function TombolGoogle({ label = 'Masuk dengan Google', onGalat }) {
         {!mengalihkan && <LogoGoogle />}
         {label}
       </Button>
+      <p className="mt-2 text-center text-xs text-slate-500">
+        Khusus mahasiswa. Dosen masuk dengan email dan kata sandi.
+      </p>
     </>
   )
 }

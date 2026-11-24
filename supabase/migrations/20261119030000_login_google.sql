@@ -2,7 +2,7 @@ alter table public.profiles drop constraint if exists profiles_avatar_url_sah;
 alter table public.profiles
   add constraint profiles_avatar_url_sah check (
     avatar_url is null
-    or avatar_url ~ ('^https://[^/]+/storage/v1/object/public/avatar/' || id::text || '/[A-Za-z0-9._-]+$')
+    or avatar_url ~ ('^https?://[^/]+/storage/v1/object/public/avatar/' || id::text || '/[A-Za-z0-9._-]+$')
     or avatar_url ~ '^https://lh3\.googleusercontent\.com/[A-Za-z0-9._~/=-]+$'
   ) not valid;
 
