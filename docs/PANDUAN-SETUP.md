@@ -92,9 +92,9 @@ Vercel men-deploy situs **dari repository GitHub**, jadi kode harus ada di GitHu
 4. **Jangan** centang "Add a README", ".gitignore", atau "license". Repository harus kosong.
 5. Klik **Create repository**.
 
-### 3.3 Unggah kode — pilih salah satu cara
+### 3.3 Unggah kode - pilih salah satu cara
 
-#### Cara A — GitHub Desktop (paling mudah, disarankan)
+#### Cara A - GitHub Desktop (paling mudah, disarankan)
 
 1. Unduh dan pasang **GitHub Desktop**: <https://desktop.github.com>. Masuk dengan akun GitHub Anda.
 2. **File → Add local repository…** → pilih folder hasil ekstrak.
@@ -105,7 +105,7 @@ Vercel men-deploy situs **dari repository GitHub**, jadi kode harus ada di GitHu
    - Centang **Keep this code private** bila ingin privat.
 5. Buka repository di GitHub; pastikan folder `src`, `supabase`, dan file `package.json` muncul.
 
-#### Cara B — Upload lewat browser
+#### Cara B - Upload lewat browser
 
 1. Di halaman repository kosong, klik tautan **uploading an existing file**.
 2. Seret **isi** folder hasil ekstrak (bukan foldernya) ke halaman.
@@ -121,7 +121,7 @@ Vercel men-deploy situs **dari repository GitHub**, jadi kode harus ada di GitHu
    .vercel
    ```
 
-#### Cara C — Command line (bila sudah terbiasa git)
+#### Cara C - Command line (bila sudah terbiasa git)
 
 ```bash
 cd Sistem-Monitoring-Perlombaan-Mahasiswa-main
@@ -143,7 +143,7 @@ dan berkas `package.json`, `vercel.json`.
 2. Isi:
    - **Name**: `simonlomba`
    - **Database Password**: klik **Generate a password**, lalu **simpan** (dipakai untuk backup).
-   - **Region**: **Southeast Asia (Singapore)** — paling dekat ke Indonesia.
+   - **Region**: **Southeast Asia (Singapore)** - paling dekat ke Indonesia.
    - **Plan**: Free.
 3. Klik **Create new project**, tunggu 1–2 menit sampai status **Healthy**.
 
@@ -174,7 +174,7 @@ berkas paling kecil.
 2. Buka berkas pertama dengan Notepad/VS Code, **salin seluruh isinya**, tempel ke SQL Editor,
    klik **Run** (atau `Ctrl + Enter`).
 3. Pastikan muncul **Success. No rows returned**. Bila muncul peringatan
-   *"Potential issue detected … destructive operations"*, klik **Run query** — perintah `drop … if exists`
+   *"Potential issue detected … destructive operations"*, klik **Run query** - perintah `drop … if exists`
    di berkas ini aman untuk database baru.
 4. Kosongkan editor, ulangi untuk berkas berikutnya.
 
@@ -197,7 +197,7 @@ Urutan berkas:
 | 13 | `20261119030000_login_google.sql` | Login Google dan lengkapi profil |
 | 14 | `20261124000000_perbaikan_audit.sql` | Akses berkas anggota tim, alat admin (ubah peran, lepas NIM) |
 
-**Titik periksa** — jalankan query ini di SQL Editor:
+**Titik periksa** - jalankan query ini di SQL Editor:
 
 ```sql
 select
@@ -211,7 +211,7 @@ select
 Hasil yang benar: `tabel_utama = 4`, `bucket = 2`, `fungsi = 4`.
 
 > Migrasi sudah diuji berurutan pada database kosong: 14/14 berhasil.
-> Bila satu berkas gagal, **jangan lanjut** — lihat [Troubleshooting → Migrasi gagal](#migrasi-gagal).
+> Bila satu berkas gagal, **jangan lanjut** - lihat [Troubleshooting → Migrasi gagal](#migrasi-gagal).
 
 ---
 
@@ -256,7 +256,7 @@ Agar kode OTP dan pengingat sampai ke semua mahasiswa, email dikirim lewat Gmail
    (bila halaman tidak tersedia, Verifikasi 2 Langkah belum aktif).
 2. **Nama aplikasi**: `SiMonLomba` → klik **Buat**.
 3. Muncul **sandi 16 huruf** (contoh bentuk: `abcd efgh ijkl mnop`).
-   **Salin dan simpan sekarang** — Google tidak akan menampilkannya lagi.
+   **Salin dan simpan sekarang** - Google tidak akan menampilkannya lagi.
 
 > App Password ini dipakai **dua kali**: di SMTP Supabase (bagian 8) dan di secret Edge Function
 > (bagian 12). Bila hilang, buat App Password baru lalu ganti di kedua tempat.
@@ -332,7 +332,7 @@ Dengan ini, setiap akun baru wajib memasukkan kode dari email sebelum bisa masuk
 | `VITE_SUPABASE_ANON_KEY` | anon public key dari bagian 4.1 |
 | `VITE_EMAIL_KONTAK` | (opsional) email yang tampil di halaman Kebijakan Privasi, mis. email prodi |
 
-   **Jangan** menambahkan `VITE_MODE_DEMO` — variabel itu hanya untuk situs demo berisi data contoh.
+   **Jangan** menambahkan `VITE_MODE_DEMO` - variabel itu hanya untuk situs demo berisi data contoh.
 
 5. Klik **Deploy**, tunggu 1–2 menit sampai muncul **Congratulations**.
 6. Catat alamat situs, contohnya `https://simonlomba-prodi.vercel.app`
@@ -458,7 +458,7 @@ pesan *provider is not enabled*.
    (tambahkan juga `http://localhost:5173` bila perlu).
 3. **Authorised redirect URIs** → **Add URI**:
    `https://<project-ref>.supabase.co/auth/v1/callback`
-   — salin persis dari Supabase **Authentication → Sign In / Providers → Google → Callback URL**.
+   - salin persis dari Supabase **Authentication → Sign In / Providers → Google → Callback URL**.
 4. **Create**. Salin **Client ID** dan **Client secret** (secret hanya tampil sekali; boleh klik
    **Download JSON** sebagai cadangan, tapi jangan taruh berkasnya di repository).
 
@@ -555,7 +555,7 @@ tanda kutip) untuk environment **Production** → **Deployments → ⋯ → Rede
 | `relation "public.profiles" does not exist` | Urutan berkas terlewat | Jalankan dari berkas nomor 1 secara berurutan |
 | `already exists` | Berkas dijalankan dua kali | Umumnya aman diabaikan; lanjutkan berkas berikutnya |
 | `permission denied for schema auth` | Dijalankan bukan dari SQL Editor dashboard | Jalankan lewat **SQL Editor** Supabase |
-| Pesan lain | — | Jangan lanjut; salin pesan galatnya, periksa kembali isi berkas tersalin utuh |
+| Pesan lain | - | Jangan lanjut; salin pesan galatnya, periksa kembali isi berkas tersalin utuh |
 
 ### Email kode verifikasi tidak masuk
 
