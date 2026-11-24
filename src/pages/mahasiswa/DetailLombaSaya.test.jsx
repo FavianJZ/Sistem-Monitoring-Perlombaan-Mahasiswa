@@ -373,3 +373,26 @@ describe('Detail lomba - hapus', () => {
     expect(screen.queryByRole('button', { name: 'Hapus lomba' })).not.toBeInTheDocument()
   })
 })
+
+describe('Detail lomba - dibuka anggota tim (bukan pemilik)', () => {
+  it('menampilkan data lomba tanpa tombol ubah, hapus, atau lapor hasil', async () => {
+    await bukaDetail('lomba-01', buatSesi('mhs-3'))
+
+    expect(screen.getByText(/tercatat sebagai/)).toHaveTextContent('anggota tim')
+    expect(screen.queryByRole('button', { name: 'Edit Lomba' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Edit Info' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Hapus lomba' })).not.toBeInTheDocument()
+
+    const pengguna = userEvent.setup()
+    await pengguna.click(within(tablist()).getByRole('tab', { name: /^Tim\b/ }))
+    expect(screen.queryByRole('button', { name: 'Kelola Tim' })).not.toBeInTheDocument()
+    await pengguna.click(within(tablist()).getByRole('tab', { name: /^Hasil/ }))
+    expect(screen.queryByRole('button', { name: 'Tandai tidak lanjut' })).not.toBeInTheDocument()
+  })
+
+  it('pemilik tetap melihat tombol ubah', async () => {
+    await bukaDetail('lomba-01', SESI_MAHASISWA())
+    expect(screen.getByRole('button', { name: 'Edit Lomba' })).toBeInTheDocument()
+    expect(screen.queryByText(/tercatat sebagai/)).not.toBeInTheDocument()
+  })
+})

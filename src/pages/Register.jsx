@@ -155,7 +155,7 @@ export default function Register() {
         setGalatServer(
           cek.emailTerpakai
             ? 'Email ini sudah terdaftar. Silakan masuk.'
-            : 'NIM ini sudah terdaftar pada akun lain.',
+            : 'NIM ini sudah dipakai akun lain. Bila ini NIM Anda, hubungi admin program studi.',
         )
         return
       }

@@ -23,6 +23,7 @@ import { TimelineVertical } from '@/components/ui/TimelineVertical'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { SkeletonText } from '@/components/ui/Skeleton'
 import { useToast } from '@/components/ui/Toast'
+import { useAuth } from '@/auth/AuthContext'
 import { useAsync } from '@/hooks/useAsync'
 import { detailLomba } from '@/services/competitionService'
 import { tahapanTerurut } from '@/services/competitionQuery'
@@ -39,6 +40,7 @@ import { ModalHapusLomba } from '@/features/lomba/ModalHapusLomba'
 export default function DetailLombaSaya() {
   const { id } = useParams()
   const { toast } = useToast()
+  const { user } = useAuth()
   const navigate = useNavigate()
   const [tab, setTab] = useState('info')
   const [editModalBuka, setEditModalBuka] = useState(false)
@@ -85,6 +87,7 @@ export default function DetailLombaSaya() {
   }
 
   const tahapan = tahapanTerurut(lomba)
+  const pemilik = lomba.createdBy === user?.id
 
   const tabs = [
     { id: 'info', label: 'Info' },
@@ -130,13 +133,15 @@ export default function DetailLombaSaya() {
         description={lomba.penyelenggara}
         actions={
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              leadingIcon={Pencil}
-              onClick={() => bukaEdit('info')}
-            >
-              Edit Lomba
-            </Button>
+            {pemilik && (
+              <Button
+                variant="outline"
+                leadingIcon={Pencil}
+                onClick={() => bukaEdit('info')}
+              >
+                Edit Lomba
+              </Button>
+            )}
             <Button as={Link} to="/lomba-saya" variant="ghost" leadingIcon={ArrowLeft}>
               Kembali ke daftar
             </Button>
@@ -154,7 +159,17 @@ export default function DetailLombaSaya() {
         <KelengkapanBadge lengkap={lomba.kelengkapan.lengkap} />
       </div>
 
-      {lomba.kelengkapan?.adaDitolak && (
+      {!pemilik && (
+        <div className="mb-6 flex items-start gap-2.5 rounded-lg border border-primary-200 bg-primary-50 p-4 text-sm text-primary-900">
+          <Users className="mt-0.5 size-5 shrink-0 text-primary-600" aria-hidden="true" />
+          <p>
+            Anda tercatat sebagai <strong>anggota tim</strong> lomba ini. Hanya ketua yang
+            mendaftarkan lomba yang bisa mengubah data, mengunggah berkas, dan melaporkan hasil.
+          </p>
+        </div>
+      )}
+
+      {pemilik && lomba.kelengkapan?.adaDitolak && (
         <div className="mb-6 flex items-start justify-between gap-3 rounded-lg border border-danger-200 bg-danger-50 p-4 text-danger-900">
           <div className="flex items-start gap-2.5">
             <AlertCircle className="mt-0.5 size-5 shrink-0 text-danger-600" aria-hidden="true" />
@@ -200,18 +215,20 @@ export default function DetailLombaSaya() {
         <TabPanel id="info" aktif={tab} idPrefix="detail-lomba" className="px-5 py-4">
           <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
             <h3 className="text-sm font-semibold text-slate-800">Rincian Informasi Perlombaan</h3>
-            <Button
-              size="sm"
-              variant="outline"
-              leadingIcon={FileEdit}
-              onClick={() => bukaEdit('info')}
-            >
-              Edit Info
-            </Button>
+            {pemilik && (
+              <Button
+                size="sm"
+                variant="outline"
+                leadingIcon={FileEdit}
+                onClick={() => bukaEdit('info')}
+              >
+                Edit Info
+              </Button>
+            )}
           </div>
           <InfoLomba lomba={lomba} />
 
-          {lomba.penghapusan.boleh && (
+          {pemilik && lomba.penghapusan.boleh && (
             <div className="mt-6 flex flex-col gap-3 rounded-lg border border-danger-200 bg-danger-50/60 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-semibold text-danger-900">Salah memasukkan lomba ini?</p>
@@ -236,14 +253,16 @@ export default function DetailLombaSaya() {
         <TabPanel id="tim" aktif={tab} idPrefix="detail-lomba" className="px-5 py-4">
           <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
             <h3 className="text-sm font-semibold text-slate-800">Susunan Anggota Tim</h3>
-            <Button
-              size="sm"
-              variant="outline"
-              leadingIcon={Users}
-              onClick={() => bukaEdit('tim')}
-            >
-              Kelola Tim
-            </Button>
+            {pemilik && (
+              <Button
+                size="sm"
+                variant="outline"
+                leadingIcon={Users}
+                onClick={() => bukaEdit('tim')}
+              >
+                Kelola Tim
+              </Button>
+            )}
           </div>
           <DaftarAnggota lomba={lomba} />
         </TabPanel>
@@ -255,14 +274,16 @@ export default function DetailLombaSaya() {
         <TabPanel id="timeline" aktif={tab} idPrefix="detail-lomba" className="px-5 py-4">
           <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
             <h3 className="text-sm font-semibold text-slate-800">Rangkaian Tahapan Perlombaan</h3>
-            <Button
-              size="sm"
-              variant="outline"
-              leadingIcon={CalendarDays}
-              onClick={() => bukaEdit('timeline')}
-            >
-              Kelola Tahapan
-            </Button>
+            {pemilik && (
+              <Button
+                size="sm"
+                variant="outline"
+                leadingIcon={CalendarDays}
+                onClick={() => bukaEdit('timeline')}
+              >
+                Kelola Tahapan
+              </Button>
+            )}
           </div>
           {tahapan.length === 0 ? (
             <EmptyState
@@ -270,9 +291,11 @@ export default function DetailLombaSaya() {
               title="Belum ada tahapan"
               description="Timeline lomba ini belum diisi."
               action={
-                <Button size="sm" variant="outline" onClick={() => bukaEdit('timeline')}>
-                  Tambah Tahapan Sekarang
-                </Button>
+                pemilik ? (
+                  <Button size="sm" variant="outline" onClick={() => bukaEdit('timeline')}>
+                    Tambah Tahapan Sekarang
+                  </Button>
+                ) : null
               }
             />
           ) : (
@@ -285,17 +308,19 @@ export default function DetailLombaSaya() {
             <RingkasanTidakLanjut lomba={lomba} />
           ) : lomba.hasil ? (
             <RingkasanHasil lomba={lomba} onPerbarui={jalankan} />
-          ) : lomba.pelaporan.boleh ? (
+          ) : pemilik && lomba.pelaporan.boleh ? (
             <FormLaporHasil lomba={lomba} onTersimpan={handleTersimpan} />
           ) : (
             <EmptyState
               icon={CalendarClock}
               title="Belum bisa melaporkan hasil"
-              description={lomba.pelaporan.alasan}
+              description={
+                pemilik ? lomba.pelaporan.alasan : 'Hasil lomba dilaporkan oleh ketua tim.'
+              }
             />
           )}
 
-          {lomba.penghentian.boleh && (
+          {pemilik && lomba.penghentian.boleh && (
             <div className="mt-6 flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-semibold text-slate-900">Tidak melanjutkan lomba ini?</p>

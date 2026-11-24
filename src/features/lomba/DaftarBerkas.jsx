@@ -27,6 +27,7 @@ function KartuBerkas({
   pratinjau,
   role,
   bolehVerifikasi = role === 'dosen' || role === 'admin',
+  bolehUnggahUlang = true,
   onLihat,
   onSetujui,
   onBukaTolak,
@@ -128,7 +129,7 @@ function KartuBerkas({
             </div>
           ) : null
         ) : (
-          status === 'ditolak' && (
+          bolehUnggahUlang && status === 'ditolak' && (
             <Button
               variant="danger"
               size="sm"
@@ -161,6 +162,7 @@ export function DaftarBerkas({ lomba, onPerbarui, tampilkanKelengkapan = true })
   const role = user?.role ?? 'mahasiswa'
   const bolehVerifikasi =
     role === 'admin' || (role === 'dosen' && Boolean(user?.id) && lomba?.dosenPembimbingId === user.id)
+  const bolehUnggahUlang = role === 'mahasiswa' && Boolean(user?.id) && lomba?.createdBy === user.id
 
   async function handleSetujui(targetBerkas) {
     setMemproses(true)
@@ -251,7 +253,9 @@ export function DaftarBerkas({ lomba, onPerbarui, tampilkanKelengkapan = true })
           <div>
             <p className="font-semibold">
               {role === 'mahasiswa'
-                ? 'Terdapat dokumen yang ditolak dan memerlukan perbaikan:'
+                ? bolehUnggahUlang
+                  ? 'Terdapat dokumen yang ditolak dan memerlukan perbaikan:'
+                  : 'Dokumen berikut ditolak dan menunggu ketua tim mengunggah ulang:'
                 : 'Dokumen berikut telah ditolak dan menunggu mahasiswa mengunggah ulang:'}
             </p>
             <ul className="mt-1.5 list-inside list-disc space-y-0.5 text-xs text-danger-800">
@@ -285,6 +289,7 @@ export function DaftarBerkas({ lomba, onPerbarui, tampilkanKelengkapan = true })
               pratinjau={item.url || (item.tipe === 'poster' ? lomba.posterUrl : null)}
               role={role}
               bolehVerifikasi={bolehVerifikasi}
+              bolehUnggahUlang={bolehUnggahUlang}
               onLihat={(b) => setBerkasPratinjau(b)}
               onSetujui={handleSetujui}
               onBukaTolak={(b) => setBerkasTolak(b)}
@@ -301,6 +306,7 @@ export function DaftarBerkas({ lomba, onPerbarui, tampilkanKelengkapan = true })
         lomba={lomba}
         role={role}
         bolehVerifikasi={bolehVerifikasi}
+        bolehUnggahUlang={bolehUnggahUlang}
         onSetujui={handleSetujui}
         onTolak={(b) => setBerkasTolak(b)}
         onUnggahUlang={(b) => setBerkasUnggahUlang(b)}

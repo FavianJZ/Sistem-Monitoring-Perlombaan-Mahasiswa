@@ -25,6 +25,7 @@ export function ModalPratinjauDokumen({
   lomba,
   role = 'mahasiswa',
   bolehVerifikasi = role === 'dosen' || role === 'admin',
+  bolehUnggahUlang = true,
   onSetujui,
   onTolak,
   onUnggahUlang,
@@ -129,7 +130,7 @@ export function ModalPratinjauDokumen({
               ) : null
             ) : (
               <>
-                {statusVerifikasi === 'ditolak' && (
+                {bolehUnggahUlang && statusVerifikasi === 'ditolak' && (
                   <Button
                     variant="primary"
                     leadingIcon={FileCheck}

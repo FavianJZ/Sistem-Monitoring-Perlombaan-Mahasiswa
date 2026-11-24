@@ -9,6 +9,7 @@ import {
   bolehHapusLomba,
   bolehTandaiTidakLanjut,
   filterLomba,
+  filterPeserta,
   hitungKelengkapan,
   hitungStatistik,
   paginasi,
@@ -433,7 +434,7 @@ export async function pengingatJadwal(pengguna, opsi = {}) {
   if (!pengguna) return []
   const filter =
     pengguna.role === 'mahasiswa'
-      ? { createdBy: pengguna.id }
+      ? filterPeserta(pengguna)
       : pengguna.role === 'dosen'
         ? { dosenPembimbingId: pengguna.id }
         : {}

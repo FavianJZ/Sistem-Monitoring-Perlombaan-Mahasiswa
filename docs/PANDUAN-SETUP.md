@@ -167,7 +167,7 @@ Bila tab **Legacy API keys** tidak ada di project Anda, lihat
 ## 5. Jalankan migrasi database
 
 Migrasi adalah berkas SQL yang membuat tabel, aturan keamanan, fungsi, dan tempat penyimpanan berkas.
-Ada **13 berkas** di folder `supabase/migrations`, dan **harus dijalankan berurutan** dari nama
+Ada **14 berkas** di folder `supabase/migrations`, dan **harus dijalankan berurutan** dari nama
 berkas paling kecil.
 
 1. Di Supabase, buka **SQL Editor** → **New query**.
@@ -195,6 +195,7 @@ Urutan berkas:
 | 11 | `20261119010000_email_pribadi_bebas.sql` | Boleh daftar dengan email pribadi |
 | 12 | `20261119020000_foto_profil.sql` | Penyimpanan foto profil |
 | 13 | `20261119030000_login_google.sql` | Login Google dan lengkapi profil |
+| 14 | `20261124000000_perbaikan_audit.sql` | Akses berkas anggota tim, alat admin (ubah peran, lepas NIM) |
 
 **Titik periksa** - jalankan query ini di SQL Editor:
 
@@ -204,12 +205,12 @@ select
      where table_schema = 'public'
        and table_name in ('profiles', 'data_lomba', 'kode_otorisasi_peran', 'pengingat_terkirim')) as tabel_utama,
   (select count(*) from storage.buckets where id in ('berkas-lomba', 'avatar')) as bucket,
-  (select count(*) from pg_proc where proname in ('handle_user_terdaftar', 'lengkapi_profil')) as fungsi;
+  (select count(*) from pg_proc where proname in ('handle_user_terdaftar', 'lengkapi_profil', 'admin_ubah_peran', 'admin_kosongkan_nim')) as fungsi;
 ```
 
-Hasil yang benar: `tabel_utama = 4`, `bucket = 2`, `fungsi = 2`.
+Hasil yang benar: `tabel_utama = 4`, `bucket = 2`, `fungsi = 4`.
 
-> Migrasi sudah diuji berurutan pada database kosong: 13/13 berhasil.
+> Migrasi sudah diuji berurutan pada database kosong: 14/14 berhasil.
 > Bila satu berkas gagal, **jangan lanjut** - lihat [Troubleshooting → Migrasi gagal](#migrasi-gagal).
 
 ---
@@ -385,17 +386,25 @@ untuk baris berikutnya), lalu **Save**:
 | `SMTP_USER` | alamat Gmail pengirim |
 | `SMTP_PASS` | App Password 16 huruf (bagian 7.2) |
 | `SITUS_URL` | ALAMAT_SITUS, mis. `https://simonlomba-prodi.vercel.app` |
+| `CRON_SECRET` | *(disarankan)* teks acak panjang; buat di SQL Editor dengan `select encode(gen_random_bytes(24), 'hex');` lalu salin hasilnya |
+
+Dengan `CRON_SECRET`, fungsi hanya mau dijalankan oleh pemanggil yang mengirim header
+`x-cron-secret` berisi nilai yang sama (bagian 12.4). Tanpa secret ini fungsi tetap berjalan, tetapi
+siapa pun yang memegang anon key bisa memicunya (email ganda tetap dicegah).
 
 ### 12.3 Uji fungsi sekali
 
 1. Halaman fungsi `kirim-pengingat` → tombol **Test** (kanan atas).
-2. Method `POST`, body `{}` → **Send Request**.
+2. Method `POST`, body `{}`. Bila Anda mengisi `CRON_SECRET`, tambahkan header `x-cron-secret`
+   berisi nilai yang sama → **Send Request**.
 3. Hasil yang benar (contoh): `{"tanggal":"2026-12-01","ditemukan":0,"terkirim":0,"dilewati":0,"gagal":0}`
    - `tanggal` harus tanggal hari ini (WIB).
    - `ditemukan` = jumlah jadwal yang jatuh hari ini/H-3. Angka 0 normal bila belum ada lomba.
 
 Bila muncul `SMTP_USER atau SMTP_PASS belum diisi`, ulangi bagian 12.2.
 Bila muncul `SITUS_URL belum diisi`, tambahkan secret `SITUS_URL`.
+Bila muncul `Pemanggil tidak dikenal.` (HTTP 401), header `x-cron-secret` tidak ada atau nilainya
+berbeda dari secret `CRON_SECRET`.
 
 ### 12.4 Jadwalkan setiap pagi
 
@@ -409,6 +418,8 @@ Bila muncul `SITUS_URL belum diisi`, tambahkan secret `SITUS_URL`.
    - **HTTP Headers** → **Add header**: name `Authorization`, value `Bearer ` (dengan satu spasi)
      diikuti **anon public key** dari bagian 4.1.
      **Jangan** memakai kunci service_role.
+   - Bila Anda mengisi `CRON_SECRET`: **Add header** lagi, name `x-cron-secret`, value sama dengan
+     secret `CRON_SECRET`.
    - **HTTP Request Body**: biarkan kosong.
 3. **Create cron job**.
 
@@ -489,6 +500,9 @@ select email, role from public.profiles where role = 'admin';
 
 Keluar lalu masuk lagi agar peran baru terbaca.
 
+Admin pertama dibuat lewat SQL; admin berikutnya cukup lewat menu **Kelola Pengguna** di aplikasi
+(hanya terlihat oleh admin): pilih akun → ubah perannya → konfirmasi.
+
 ### Akun mahasiswa
 
 Mahasiswa mendaftar sendiri lewat tombol **Daftar sekarang** di halaman masuk (atau **Daftar
@@ -500,7 +514,7 @@ dengan Google**). Email pribadi diperbolehkan.
 
 Centang semuanya sebelum situs dibagikan ke mahasiswa:
 
-- [ ] Ke-13 migrasi berhasil; query periksa di bagian 5 menghasilkan `4 / 2 / 2`.
+- [ ] Ke-14 migrasi berhasil; query periksa di bagian 5 menghasilkan `4 / 2 / 4`.
 - [ ] Kode dosen dan admin **sudah diganti** (bagian 6).
 - [ ] SMTP Gmail tersimpan; dua template email berisi kode (bagian 8).
 - [ ] **Confirm email** menyala (bagian 9).
@@ -572,7 +586,7 @@ ulang otomatis → masukkan kode.
 ### Pendaftaran ditolak / "Database error saving new user"
 
 - Email atau NIM sudah dipakai akun lain.
-- Migrasi nomor 11–13 belum dijalankan (fungsi pendaftaran versi lama).
+- Migrasi nomor 11–14 belum dijalankan (fungsi pendaftaran versi lama).
 - Lihat **Logs → Postgres** untuk pesan dari fungsi `handle_user_terdaftar`.
 
 ### Dosen terdaftar sebagai mahasiswa
@@ -583,17 +597,25 @@ Dua penyebab umum:
 - Dosen menekan **Masuk dengan Google**. Login Google selalu membuat akun mahasiswa (di bawah
   tombolnya tertulis *Khusus mahasiswa*).
 
-Perbaiki perannya (bila diarahkan ke *Lengkapi profil*, tidak perlu diisi; cukup jalankan ini lalu
-keluar dan masuk lagi):
+Perbaiki perannya: admin membuka **Kelola Pengguna** → cari email dosen itu → ubah peran ke
+**Dosen Pembimbing** → konfirmasi. Dosen tersebut lalu keluar dan masuk lagi (bila diarahkan ke
+*Lengkapi profil*, tidak perlu diisi).
+
+Bila belum ada admin, jalankan di SQL Editor:
 ```sql
 update public.profiles set role = 'dosen', nim = null, angkatan = null where email = 'email.dosen@contoh.com';
 ```
 
 ### NIM sudah dipakai akun lain
 
-Mahasiswa mendapat pesan *NIM ini sudah terdaftar* padahal belum pernah mendaftar, artinya ada
-akun lain yang memakai NIM tersebut (salah ketik atau sengaja). Karena email pribadi diperbolehkan,
-NIM tidak diverifikasi otomatis. Periksa dan bebaskan NIM itu:
+Mahasiswa mendapat pesan *NIM ini sudah dipakai akun lain* padahal belum pernah mendaftar, artinya
+ada akun lain yang memakai NIM tersebut (salah ketik atau sengaja). Karena email pribadi
+diperbolehkan, NIM tidak diverifikasi otomatis.
+
+Admin membuka **Kelola Pengguna** → cari NIM tersebut → periksa email pemakainya → **Kosongkan
+NIM**. Setelah itu pemilik NIM yang sah bisa mendaftar atau melengkapi profil.
+
+Alternatif lewat SQL Editor:
 
 ```sql
 select id, nama, email, nim from public.profiles where nim = '2502000000';
@@ -651,16 +673,19 @@ Supabase → dashboard project → **Restore project**, tunggu sampai **Healthy*
 
 Itu tanda situs berjalan dalam mode data contoh. Lihat bagian pertama troubleshooting.
 
-### Anggota tim tidak melihat poster/berkas lomba
+### Anggota tim tidak melihat lomba atau berkasnya
 
-Lomba dikelola oleh mahasiswa yang mendaftarkannya. Anggota tim lain tercatat lewat NIM dan menerima
-email pengingat, tetapi berkas lomba hanya bisa dibuka pemilik lomba, dosen, dan admin. Mintalah
-pemilik lomba yang mengunggah atau memperbarui berkas.
+Anggota tim melihat lomba di **Lomba Saya** bila NIM di profilnya sama dengan NIM yang dicatat
+ketua tim. Mereka bisa membuka berkas, tetapi hanya ketua (yang mendaftarkan lomba) yang bisa
+mengubah data, mengunggah berkas, dan melaporkan hasil.
 
-### Perubahan dosen tertimpa / pesan "Dosen hanya boleh memverifikasi berkas"
+- Lomba tidak muncul → cocokkan NIM di **Profil** anggota dengan NIM di tab **Tim** lomba.
+- Berkas tidak bisa dibuka → migrasi nomor 14 belum dijalankan.
 
-Terjadi bila dua orang mengubah lomba yang sama hampir bersamaan dengan data yang belum dimuat ulang.
-Muat ulang halaman (`F5`), lalu ulangi perubahan.
+### Pesan "data ini sedang diubah orang lain"
+
+Dua orang menyimpan lomba yang sama pada saat bersamaan. Aplikasi sudah mencoba ulang otomatis;
+bila pesan tetap muncul, muat ulang halaman (`F5`) lalu ulangi perubahan.
 
 ---
 

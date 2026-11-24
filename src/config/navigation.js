@@ -8,6 +8,7 @@ import {
   Palette,
   Trophy,
   UserRound,
+  UsersRound,
 } from 'lucide-react'
 
 export const NAV_ITEMS = {
@@ -26,7 +27,11 @@ export const NAV_ITEMS = {
   ],
 }
 
-NAV_ITEMS.admin = NAV_ITEMS.dosen
+NAV_ITEMS.admin = [
+  ...NAV_ITEMS.dosen.slice(0, -1),
+  { to: '/monitoring/pengguna', label: 'Kelola Pengguna', icon: UsersRound },
+  ...NAV_ITEMS.dosen.slice(-1),
+]
 
 export const DEV_NAV_ITEMS = [
   { to: '/styleguide', label: 'Style Guide', icon: Palette },

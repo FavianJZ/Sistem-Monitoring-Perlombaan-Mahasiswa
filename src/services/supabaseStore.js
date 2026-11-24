@@ -156,13 +156,24 @@ export function resetCache() {
   }
 }
 
+export const UKURAN_HALAMAN_SERVER = 1000
+
+export async function ambilSemuaHalaman(buatKueri, ukuran = UKURAN_HALAMAN_SERVER) {
+  const semua = []
+  for (let dari = 0; ; dari += ukuran) {
+    const { data, error } = await buatKueri().range(dari, dari + ukuran - 1)
+    if (error) return { data: null, error }
+    semua.push(...(data ?? []))
+    if (!data || data.length < ukuran) return { data: semua, error: null }
+  }
+}
+
 async function muat() {
   if (!pemuatan) {
     pemuatan = (async () => {
-      const { data, error } = await supabase
-        .from(TABEL)
-        .select('*')
-        .order('dibuat_pada', { ascending: true })
+      const { data, error } = await ambilSemuaHalaman(() =>
+        supabase.from(TABEL).select('*').order('dibuat_pada', { ascending: true }).order('id'),
+      )
       if (error) {
         pemuatan = null
         throw new Error(`Gagal memuat data lomba: ${error.message}`)
@@ -208,17 +219,44 @@ export function pesanGalatSimpan(error) {
   return error?.message ?? 'Terjadi kesalahan tak dikenal.'
 }
 
-async function simpanKeServer(record, { baru }) {
+export const GALAT_BENTROK = 'BENTROK'
+
+function pathBerkas(record) {
+  return [record?.posterPath, ...(record?.berkas ?? []).map((b) => b.path)].filter(Boolean)
+}
+
+async function hapusBerkasStorage(paths) {
+  if (!paths.length) return
+  const { error } = await supabase.storage.from(BUCKET).remove(paths)
+  if (error) console.warn('[SiMonLomba] gagal menghapus berkas lama:', error.message)
+}
+
+async function simpanKeServer(record, { baru, versi = null }) {
   const uid = await idPenggunaAktif()
   const siap = await siapkanUntukDisimpan(record, uid)
   const baris = recordKeBaris(siap)
 
-  const kueri = baru
-    ? supabase.from(TABEL).insert({ ...baris, created_by: uid })
-    : supabase.from(TABEL).update({ dosen_pembimbing_id: baris.dosen_pembimbing_id, data: baris.data }).eq('id', siap.id)
+  let kueri
+  if (baru) {
+    kueri = supabase.from(TABEL).insert({ ...baris, created_by: uid })
+  } else {
+    kueri = supabase
+      .from(TABEL)
+      .update({ dosen_pembimbing_id: baris.dosen_pembimbing_id, data: baris.data })
+      .eq('id', siap.id)
+    if (versi) kueri = kueri.eq('diperbarui_pada', versi)
+  }
 
-  const { data, error } = await kueri.select('*').single()
+  const { data, error } = await kueri.select('*').maybeSingle()
   if (error) throw new Error(`Gagal menyimpan lomba: ${pesanGalatSimpan(error)}`)
+  if (!data) {
+    if (versi) {
+      const galat = new Error('Data lomba baru saja diubah orang lain.')
+      galat.kode = GALAT_BENTROK
+      throw galat
+    }
+    throw new Error(`Gagal menyimpan lomba: ${pesanGalatSimpan({ code: 'PGRST116' })}`)
+  }
 
   const [hasil] = await lengkapiUrl([barisKeRecord(data)])
   cache.set(hasil.id, hasil)
@@ -231,10 +269,36 @@ export async function tambah(record) {
   return simpanKeServer(record, { baru: true })
 }
 
+const PERCOBAAN_SIMPAN = 3
+
 export async function perbarui(id, pengubah) {
-  const lama = await bacaSatu(id)
-  if (!lama) return null
-  return simpanKeServer({ ...pengubah(lama), id, createdBy: lama.createdBy }, { baru: false })
+  await muat()
+  for (let percobaan = 1; ; percobaan += 1) {
+    const baris = await ambilBaris(id)
+    if (!baris) {
+      cache.delete(id)
+      return null
+    }
+    const lama = barisKeRecord(baris)
+    try {
+      const hasil = await simpanKeServer(
+        { ...pengubah(salin(lama)), id, createdBy: lama.createdBy },
+        { baru: false, versi: baris.diperbarui_pada },
+      )
+      const sisa = new Set(pathBerkas(hasil))
+      await hapusBerkasStorage(pathBerkas(lama).filter((p) => !sisa.has(p)))
+      return hasil
+    } catch (galat) {
+      if (galat.kode !== GALAT_BENTROK || percobaan >= PERCOBAAN_SIMPAN) {
+        if (galat.kode === GALAT_BENTROK) {
+          throw new Error(
+            'Gagal menyimpan lomba: data ini sedang diubah orang lain. Muat ulang halaman lalu coba lagi.',
+          )
+        }
+        throw galat
+      }
+    }
+  }
 }
 
 export async function hapus(id) {
@@ -245,8 +309,7 @@ export async function hapus(id) {
   if (error) throw new Error(`Gagal menghapus lomba: ${error.message}`)
   if (!count) return false
 
-  const paths = [lama.posterPath, ...(lama.berkas ?? []).map((b) => b.path)].filter(Boolean)
-  if (paths.length) await supabase.storage.from(BUCKET).remove(paths)
+  await hapusBerkasStorage(pathBerkas(lama))
 
   cache.delete(id)
   beriTahuPerubahan('lokal')
