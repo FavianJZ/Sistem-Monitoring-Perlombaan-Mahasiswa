@@ -6,8 +6,8 @@ create table if not exists public.kode_otorisasi_peran (
 alter table public.kode_otorisasi_peran enable row level security;
 
 insert into public.kode_otorisasi_peran (role, kode) values
-  ('dosen', 'DOSEN2026'),
-  ('admin', 'PRODI2026')
+  ('dosen', replace(gen_random_uuid()::text, '-', '')),
+  ('admin', replace(gen_random_uuid()::text, '-', ''))
 on conflict (role) do nothing;
 
 create or replace function public.cek_kode_peran(p_role text, p_kode text)

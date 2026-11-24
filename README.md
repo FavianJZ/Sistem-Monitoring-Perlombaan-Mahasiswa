@@ -1,42 +1,107 @@
-# Sistem Monitoring Perlombaan Mahasiswa (Frontend + Backend)
+# SiMonLomba — Sistem Monitoring Perlombaan Mahasiswa
 
-Platform web untuk monitoring, pendaftaran, dan pengelolaan partisipasi perlombaan mahasiswa serta arsip prestasi berbasis React dan Vite.
+Aplikasi web untuk mencatat, memantau, dan mengarsipkan keikutsertaan mahasiswa dalam perlombaan:
+mahasiswa mendaftarkan lomba beserta buktinya, dosen pembimbing memverifikasi, dan program studi
+mendapat arsip prestasi yang siap diekspor untuk laporan akreditasi.
 
-##  Fitur Utama
+> **Ingin memasang SiMonLomba sendiri?** Ikuti **[docs/PANDUAN-SETUP.md](docs/PANDUAN-SETUP.md)** —
+> langkah lengkap dari unduh ZIP sampai situs berjalan di Vercel + Supabase milik Anda,
+> termasuk email Gmail, login Google, pengingat jadwal, dan troubleshooting.
 
-- **Dashboard Mahasiswa & Dosen**: Pemantauan status lomba, timeline kegiatan, dan ringkasan statistik.
-- **Pendaftaran Lomba**: Form registrasi lomba dengan validasi terstruktur, draft otomatis, poster, dan manajemen anggota tim.
-- **Monitoring & Verifikasi**: Tinjauan detail lomba, riwayat progres, dan pengunggahan bukti serta pelaporan hasil.
-- **Arsip Prestasi & Ekspor Data**: Rekapitulasi prestasi mahasiswa dengan fitur ekspor ke format Excel dan PDF.
-- **Kalender Agenda**: Visualisasi jadwal dan tenggat waktu kompetisi.
+---
 
-##  Teknologi
+## Fitur
 
-- **Framework**: React 19 + Vite
-- **Styling**: Tailwind CSS v4
-- **Routing**: React Router DOM v7
-- **Icons**: Lucide React
-- **Ekspor Dokumen**: jsPDF, jspdf-autotable, write-excel-file
-- **Testing**: Vitest, React Testing Library, Playwright
+**Mahasiswa**
+- Pendaftaran lomba bertahap: detail lomba, anggota tim, timeline, poster, bukti daftar dan bayar.
+- Dashboard dan daftar *Lomba Saya* dengan status, kelengkapan dokumen, dan tahapan terdekat.
+- Lapor hasil beserta sertifikat; prestasi baru dihitung setelah sertifikat diverifikasi dosen.
+- Status *Tidak Lanjut* untuk lomba yang gugur, mundur, atau dibatalkan.
 
-##  Menjalankan Proyek
+**Dosen pembimbing dan admin program studi**
+- Dashboard monitoring: sebaran status, tingkat, bidang, dan prestasi terverifikasi.
+- Verifikasi berkas (setujui/tolak dengan catatan), kalender agenda, filter lengkap.
+- Arsip prestasi dengan ekspor CSV, Excel, dan PDF.
 
-1. **Install dependensi**:
-   ```bash
-   npm install
-   ```
+**Akun dan notifikasi**
+- Daftar dengan email pribadi; verifikasi email dengan **kode OTP**; lupa kata sandi dengan kode.
+- **Masuk dengan Google** (opsional) dengan langkah *Lengkapi profil* (NIM, angkatan, prodi).
+- Foto profil: unggah sendiri atau otomatis dari Google.
+- **Pengingat jadwal**: lonceng di aplikasi untuk tahapan hari ini sampai 3 hari ke depan, dan
+  email otomatis pukul 07.00 WIB pada H-3 dan hari H.
+- Tampilan responsif untuk ponsel.
 
-2. **Jalankan development server**:
-   ```bash
-   npm run dev
-   ```
+**Keamanan**
+- Aturan akses dijaga di database (Row Level Security dan trigger), bukan hanya di tampilan:
+  mahasiswa tidak bisa memalsukan status atau hasil, dosen hanya memverifikasi lomba bimbingannya,
+  peran dosen/admin memerlukan kode otorisasi.
 
-3. **Build produksi**:
-   ```bash
-   npm run build
-   ```
+## Teknologi
 
-4. **Jalankan pengujian**:
-   ```bash
-   npm test
-   ```
+| Bagian | Teknologi |
+| --- | --- |
+| Antarmuka | React 19, Vite 8, Tailwind CSS 4, React Router 7, Lucide |
+| Backend | Supabase: Auth, Postgres + RLS, Storage, Realtime, Edge Functions (Deno), Cron |
+| Email | SMTP Gmail (kode OTP lewat Supabase Auth, pengingat lewat Edge Function) |
+| Hosting | Vercel |
+| Ekspor | jsPDF, jspdf-autotable, write-excel-file |
+| Pengujian | Vitest, React Testing Library |
+
+## Struktur folder
+
+```
+src/
+  auth/          sesi, AuthContext (daftar, masuk, OTP, Google), penjaga rute
+  components/    komponen UI, layout (Topbar, lonceng pengingat), komponen auth
+  features/      logika per fitur: lomba, pendaftaran, monitoring, arsip/ekspor
+  pages/         halaman mahasiswa, dosen, masuk/daftar, privasi
+  services/      akses data (Supabase atau data contoh lokal)
+supabase/
+  migrations/    13 berkas SQL, dijalankan berurutan
+  templates/     template email kode OTP (Confirm sign up, Reset password)
+  functions/     Edge Function kirim-pengingat
+docs/            panduan setup dan dokumentasi
+```
+
+## Menjalankan di komputer sendiri
+
+Perlu Node.js 22 LTS atau lebih baru.
+
+```bash
+npm ci
+npm run dev
+```
+
+Buka <http://localhost:5173>. Tanpa konfigurasi, aplikasi memakai **data contoh** yang tersimpan
+di browser. Untuk menyambungkan ke Supabase, salin `.env.example` menjadi `.env.local` dan isi
+`VITE_SUPABASE_URL` serta `VITE_SUPABASE_ANON_KEY`.
+
+Untuk menampilkan akun demo di mode data contoh, buat `.env.development.local` berisi
+`VITE_MODE_DEMO=true` (kata sandi semua akun demo: `demo1234`).
+
+| Perintah | Fungsi |
+| --- | --- |
+| `npm run dev` | Server pengembangan |
+| `npm test` | Menjalankan semua tes otomatis |
+| `npm run build` | Build produksi ke folder `dist/` |
+| `npm run preview` | Melihat hasil build di komputer |
+
+## Variabel lingkungan
+
+| Nama | Wajib | Keterangan |
+| --- | --- | --- |
+| `VITE_SUPABASE_URL` | Ya (produksi) | Project URL Supabase |
+| `VITE_SUPABASE_ANON_KEY` | Ya (produksi) | Kunci `anon` public Supabase |
+| `VITE_EMAIL_KONTAK` | Tidak | Email kontak di halaman `/privasi` |
+| `VITE_MODE_DEMO` | Tidak | `true` hanya untuk situs demo berisi data contoh |
+
+Secret Edge Function `kirim-pengingat` (diisi di Supabase, bukan di Vercel):
+`SMTP_USER`, `SMTP_PASS`, `SITUS_URL`.
+
+Jangan pernah menaruh kunci `service_role`, App Password Gmail, atau Client Secret Google di
+repository maupun di Vercel.
+
+## Pemecahan masalah
+
+Daftar masalah yang sering terjadi beserta solusinya ada di
+[docs/PANDUAN-SETUP.md → Troubleshooting](docs/PANDUAN-SETUP.md#16-troubleshooting).

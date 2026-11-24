@@ -7,7 +7,6 @@ import {
   tanggalHariIni,
 } from './pengingat.js'
 
-const SITUS_URL = Deno.env.get('SITUS_URL') ?? 'https://sistem-monitoring-perlombaan-mahasi.vercel.app'
 
 function jawab(status, isi) {
   return new Response(JSON.stringify(isi), {
@@ -19,7 +18,9 @@ function jawab(status, isi) {
 Deno.serve(async () => {
   const smtpUser = Deno.env.get('SMTP_USER')
   const smtpPass = Deno.env.get('SMTP_PASS')
+  const situsUrl = Deno.env.get('SITUS_URL')
   if (!smtpUser || !smtpPass) return jawab(500, { galat: 'SMTP_USER atau SMTP_PASS belum diisi.' })
+  if (!situsUrl) return jawab(500, { galat: 'SITUS_URL belum diisi.' })
 
   const supabase = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'), {
     auth: { persistSession: false },
@@ -74,8 +75,8 @@ Deno.serve(async () => {
         continue
       }
 
-      const { subjek, teks, html } = isiEmailPengingat(pengingat, SITUS_URL)
       try {
+        const { subjek, teks, html } = isiEmailPengingat(pengingat, situsUrl)
         await klienSmtp().send({
           from: `SiMonLomba <${smtpUser}>`,
           to: smtpUser,
