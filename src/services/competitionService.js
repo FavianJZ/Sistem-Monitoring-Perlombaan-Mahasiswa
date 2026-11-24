@@ -426,3 +426,17 @@ export function resetDataMock(acuan) {
 }
 
 export { hitungKelengkapan }
+
+export const HARI_PENGINGAT = 3
+
+export async function pengingatJadwal(pengguna, opsi = {}) {
+  if (!pengguna) return []
+  const filter =
+    pengguna.role === 'mahasiswa'
+      ? { createdBy: pengguna.id }
+      : pengguna.role === 'dosen'
+        ? { dosenPembimbingId: pengguna.id }
+        : {}
+  const agenda = await agendaLomba(filter, { ...opsi, limit: 0 })
+  return agenda.filter((item) => item.sisaHari >= 0 && item.sisaHari <= HARI_PENGINGAT)
+}

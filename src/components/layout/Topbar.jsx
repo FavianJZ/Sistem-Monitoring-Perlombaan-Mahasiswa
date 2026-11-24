@@ -1,6 +1,7 @@
 import { LogOut, Menu } from 'lucide-react'
 import { ROLE_LABELS } from '@/config/navigation'
 import { Avatar } from '@/components/ui/Avatar'
+import { LoncengPengingat } from './LoncengPengingat'
 
 export function Topbar({ user, onMenuClick, onLogout }) {
   return (
@@ -26,6 +27,7 @@ export function Topbar({ user, onMenuClick, onLogout }) {
                 {user.nim ? ` - ${user.nim}` : ''}
               </p>
             </div>
+            <LoncengPengingat user={user} />
             <Avatar nama={user.nama} src={user.avatarUrl} />
             {onLogout && (
               <button
